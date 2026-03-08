@@ -3,29 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برج الصيد | Borj Al-Sayd</title>
+    <title>برج الصيد</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
-        <div class="logo">🏹 برج الصيد</div>
-        <button id="menu-btn">☰ القائمة</button>
+        <a href="/" class="logo">🏹 برج الصيد</a>
+        <nav>
+            {% if session.get('user_id') %}
+                <a href="/news">المخطوطات</a>
+                <a href="/store">المتجر</a>
+                <a href="/graveyard">المقبرة</a>
+                <a href="/profile">رخصتي</a>
+            {% endif %}
+        </nav>
     </header>
-
     <main>
-        <div class="flash-messages">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-              {% if messages %}
-                {% for category, message in messages %}
-                  <div class="flash {{ category }}">{{ message }}</div>
-                {% endfor %}
-              {% endif %}
-            {% endwith %}
-        </div>
-
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}
+        {% endwith %}
         {% block content %}{% endblock %}
     </main>
-
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
