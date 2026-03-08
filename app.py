@@ -2,12 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, News, StoreItem, GlobalSettings
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 
 app = Flask(__name__)
 
-# رابط الاتصال بـ MongoDB السحابية (ستضعه لاحقاً في إعدادات Render)
+# الاتصال بقاعدة البيانات السحابية
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')
 }
@@ -36,12 +36,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- مسارات التسجيل والدخول ---
+# --- المسارات العامة ---
 @app.route('/')
 def home():
     active_users = User.objects(status='active')
     current_zone_num = max([u.zone for u in active_users]) if active_users else 0
-    zones = {0: 'المنطقة الأساسية', 1: 'المنطقة الأولى', 2: 'المنطقة الثانية', 3: 'المنطقة الثالث', 4: 'المنطقة الرابعة', 5: 'القمة'}
+    zones = {0: 'المنطقة الأساسية', 1: 'المنطقة الأولى', 2: 'المنطقة الثانية', 3: 'المنطقة الثالثة', 4: 'المنطقة الرابعة', 5: 'القمة'}
     return render_template('index.html', current_zone=zones.get(current_zone_num, 'المنطقة الأساسية'))
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -53,7 +53,7 @@ def register():
         
         is_first = User.objects.count() == 0
         last_user = User.objects.order_by('-hunter_id').first()
-        new_id = (last_user.hunter_id + 1) if last_user and last_user.hunter_id else 1000 # توليد ID مميز
+        new_id = (last_user.hunter_id + 1) if last_user and last_user.hunter_id else 1000
         
         new_user = User(
             hunter_id=new_id,
@@ -64,7 +64,7 @@ def register():
             status='active' if is_first else 'pending'
         )
         new_user.save()
-        flash('تم التسجيل! بانتظار التفعيل.' if not is_first else 'تم إنشاء حساب الإدارة بنجاح!', 'success')
+        flash('تم إنشاء حساب الإدارة بنجاح!' if is_first else 'تم التسجيل بنجاح! بانتظار التفعيل.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -84,17 +84,15 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('home'))
 
-# --- ملف الصائد والإعدادات ---
+# --- ملف الصائد (الرخصة) ---
 @app.route('/profile')
 @login_required
 def profile():
     user = User.objects(id=session['user_id']).first()
     settings = GlobalSettings.objects(setting_name='main_config').first()
     banner_url = settings.banner_url if settings else 'https://via.placeholder.com/800x200/111/FFD700?text=Borj+Al-Sayd'
-    
     zones_classes = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
     zone_class = zones_classes.get(user.zone, 'floor-0')
-    
     return render_template('profile.html', user=user, zone_class=zone_class, banner_url=banner_url)
 
 @app.route('/settings', methods=['POST'])
@@ -103,17 +101,10 @@ def update_settings():
     user = User.objects(id=session['user_id']).first()
     action = request.form.get('action')
 
-    # تغيير كلمة المرور
-    if action == 'change_password':
-        user.password_hash = generate_password_hash(request.form.get('new_password'))
-        flash('تم تغيير كلمة المرور بنجاح.', 'success')
-
-    # تغيير الصورة (الأفاتار)
-    elif action == 'change_avatar':
+    if action == 'change_avatar':
         user.avatar = request.form.get('new_avatar')
         flash('تم تحديث صورتك الشخصية.', 'success')
 
-    # تغيير الاسم (بشرط مرور 15 يوم)
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         if User.objects(username=new_name).first():
@@ -131,6 +122,85 @@ def update_settings():
     user.save()
     return redirect(url_for('profile'))
 
-# مسارات الأخبار والإدارة بقيت كما هي في الدفعة القادمة...
+# --- المخطوطات، المقبرة، والمتجر ---
+@app.route('/news', methods=['GET', 'POST'])
+@login_required
+def news():
+    news_list = News.objects().order_by('-created_at')
+    user = User.objects(id=session['user_id']).first()
+    
+    if request.method == 'POST':
+        guess = request.form.get('guess')
+        news_id = request.form.get('news_id')
+        news_item = News.objects(id=news_id).first()
+        if news_item and guess == news_item.puzzle_answer:
+            user.points += news_item.reward_points
+            user.save()
+            flash(f'إجابة صحيحة! كسبت {news_item.reward_points} نقطة.', 'success')
+        else:
+            flash('إجابة خاطئة، حاول مجدداً.', 'error')
+        return redirect(url_for('news'))
+        
+    return render_template('news.html', news_list=news_list)
+
+@app.route('/graveyard')
+def graveyard():
+    frozen_users = User.objects(status='frozen')
+    return render_template('graveyard.html', users=frozen_users)
+
+@app.route('/store')
+@login_required
+def store():
+    items = StoreItem.objects()
+    return render_template('store.html', items=items)
+
+# --- لوحة التحكم (الإدارة) ---
+@app.route('/admin', methods=['GET', 'POST'])
+@admin_required
+def admin_panel():
+    users = User.objects()
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action in ['activate', 'freeze', 'add_points', 'change_zone', 'change_rank']:
+            user = User.objects(id=request.form.get('user_id')).first()
+            if action == 'activate': user.status = 'active'
+            elif action == 'freeze': user.status = 'frozen'
+            elif action == 'add_points': user.points = int(request.form.get('points_amount', 0))
+            elif action == 'change_zone': user.zone = int(request.form.get('zone_num', 0))
+            elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
+            user.save()
+            
+        elif action == 'add_news':
+            new_news = News(
+                title=request.form.get('title'),
+                content=request.form.get('content'),
+                puzzle_type=request.form.get('puzzle_type'),
+                puzzle_answer=request.form.get('puzzle_answer'),
+                reward_points=int(request.form.get('reward_points', 0))
+            )
+            new_news.save()
+            
+        elif action == 'add_store_item':
+            new_item = StoreItem(
+                name=request.form.get('item_name'),
+                description=request.form.get('item_desc'),
+                price=int(request.form.get('item_price'))
+            )
+            new_item.save()
+            
+        elif action == 'update_banner':
+            settings = GlobalSettings.objects(setting_name='main_config').first()
+            if not settings:
+                settings = GlobalSettings(setting_name='main_config')
+            settings.banner_url = request.form.get('banner_url')
+            settings.save()
+            
+        flash('تم تنفيذ الأمر الإمبراطوري بنجاح!', 'success')
+        return redirect(url_for('admin_panel'))
+        
+    return render_template('admin.html', users=users)
+
 if __name__ == '__main__':
     app.run(debug=True)
+
