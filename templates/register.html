@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hunter-card form-container">
+    <h3>تسجيل الدخول للبرج</h3>
+    <form method="POST" action="{{ url_for('register') }}">
+        <div class="form-group">
+            <label>اسم الصائد (بالموقع):</label>
+            <input type="text" name="username" required placeholder="اختر اسماً مرعباً...">
+        </div>
+        <div class="form-group">
+            <label>رابط حسابك في فيسبوك:</label>
+            <input type="url" name="facebook_link" required placeholder="https://facebook.com/your.profile">
+            <small style="color: var(--text-muted); font-size: 12px;">*نحتاجه لنتأكد من هويتك ونفعل حسابك</small>
+        </div>
+        <div class="form-group">
+            <label>كلمة المرور:</label>
+            <input type="password" name="password" required>
+        </div>
+        <button type="submit" class="btn-primary">طلب الانضمام (بوابة البرج)</button>
+    </form>
+    <p style="text-align: center; margin-top: 15px;">
+        لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">ادخل من هنا</a>
+    </p>
+</div>
+{% endblock %}
