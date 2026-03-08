@@ -4,10 +4,11 @@ from models import db, User, News, StoreItem, GlobalSettings
 from functools import wraps
 from datetime import datetime
 import os
+import base64
 
 app = Flask(__name__)
 
-# الاتصال بقاعدة البيانات السحابية (MongoDB)
+# الاتصال بقاعدة البيانات السحابية
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')
 }
@@ -15,7 +16,7 @@ app.config['SECRET_KEY'] = 'super-secret-hunter-key-change-later'
 
 db.init_app(app)
 
-# --- الحماية (Decorators) ---
+# --- الحماية ---
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -90,8 +91,6 @@ def logout():
 @login_required
 def profile():
     user = User.objects(id=session['user_id']).first()
-    
-    # درع حماية: إذا كانت الجلسة قديمة واللاعب غير موجود في القاعدة الجديدة، اطرده لتسجيل الدخول
     if not user:
         session.pop('user_id', None)
         return redirect(url_for('login'))
@@ -108,15 +107,17 @@ def profile():
 @login_required
 def update_settings():
     user = User.objects(id=session['user_id']).first()
-    if not user:
-        session.pop('user_id', None)
-        return redirect(url_for('login'))
-
+    if not user: return redirect(url_for('login'))
     action = request.form.get('action')
 
     if action == 'change_avatar':
-        user.avatar = request.form.get('new_avatar')
-        flash('تم تحديث صورتك الشخصية بنجاح.', 'success')
+        file = request.files.get('avatar_file')
+        if file and file.filename != '':
+            encoded = base64.b64encode(file.read()).decode('utf-8')
+            user.avatar = f"data:{file.content_type};base64,{encoded}"
+            flash('تم رفع وتحديث صورتك الشخصية بنجاح!', 'success')
+        else:
+            flash('لم تقم باختيار أي صورة!', 'error')
 
     elif action == 'change_name':
         new_name = request.form.get('new_name')
@@ -152,9 +153,8 @@ def news():
             user.save()
             flash(f'إجابة صحيحة! لقد كسبت {news_item.reward_points} نقطة.', 'success')
         else:
-            flash('إجابة خاطئة، حاول مجدداً أيها الصائد.', 'error')
+            flash('إجابة خاطئة، حاول مجدداً.', 'error')
         return redirect(url_for('news'))
-        
     return render_template('news.html', news_list=news_list)
 
 @app.route('/graveyard')
@@ -176,7 +176,6 @@ def admin_panel():
     if request.method == 'POST':
         action = request.form.get('action')
         
-        # 1. إدارة اللاعبين
         if action in ['activate', 'freeze', 'add_points', 'change_zone', 'change_rank']:
             user = User.objects(id=request.form.get('user_id')).first()
             if user:
@@ -187,7 +186,6 @@ def admin_panel():
                 elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
                 user.save()
             
-        # 2. إضافة خبر / لغز
         elif action == 'add_news':
             new_news = News(
                 title=request.form.get('title'),
@@ -198,7 +196,6 @@ def admin_panel():
             )
             new_news.save()
             
-        # 3. إضافة منتج للمتجر
         elif action == 'add_store_item':
             new_item = StoreItem(
                 name=request.form.get('item_name'),
@@ -207,7 +204,6 @@ def admin_panel():
             )
             new_item.save()
             
-        # 4. تغيير الغلاف الموحد
         elif action == 'update_banner':
             settings = GlobalSettings.objects(setting_name='main_config').first()
             if not settings:
@@ -217,8 +213,8 @@ def admin_panel():
             
         flash('تم تنفيذ الأمر الإمبراطوري بنجاح!', 'success')
         return redirect(url_for('admin_panel'))
-        
     return render_template('admin.html', users=users)
 
 if __name__ == '__main__':
     app.run(debug=True)
+
