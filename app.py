@@ -23,6 +23,9 @@ def home():
     # مؤقتاً سنرسل بيانات وهمية لتجربة التصميم
     current_floor = "البوابة" 
     return render_template('index.html', current_floor=current_floor)
+@app.route('/test')
+def test():
+    return "محرك بايثون يعمل بنجاح والخلل في مجلد القوالب!"
 
 if __name__ == '__main__':
     app.run(debug=True)
