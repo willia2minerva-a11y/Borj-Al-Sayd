@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hunter-card {{ floor_class }}" style="text-align: center;">
+    {% if user.status == 'pending' %}<div class="flash error">حسابك مجمد (بانتظار الإدارة)</div>{% endif %}
+    <div style="font-size: 60px;">👤</div>
+    <h2>{{ user.username }}</h2>
+    <p style="color: var(--floor-3-gold);">الرتبة: {{ floor_name }}</p>
+    <hr style="border-color: var(--floor-0-black); margin: 20px 0;">
+    <div style="display: flex; justify-content: space-around;">
+        <div><span>النقاط</span><br><strong style="font-size: 24px; color: var(--floor-4-diamond);">{{ user.points }}</strong></div>
+        <div><span>الحالة</span><br><strong>{{ 'مجمد' if user.status != 'active' else 'نشط' }}</strong></div>
+    </div>
+    {% if user.role == 'admin' %}<br><a href="/admin" class="btn-primary" style="display:block; margin-top:15px;">⚙️ لوحة الإدارة</a>{% endif %}
+</div>
+{% endblock %}
+
