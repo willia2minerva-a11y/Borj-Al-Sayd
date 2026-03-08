@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>📜 مخطوطات البرج</h2>
+{% for n in news_list %}
+<div class="hunter-card" style="padding: 0;">
+    <div class="accordion-header">{{ n.title }}</div>
+    <div class="accordion-content">
+        <p style="padding-top:15px;">{{ n.content | safe }}</p>
+        
+        {% if n.puzzle_type == 'secret_word' %}
+        <div style="background:#222; padding:15px; border-radius:5px; margin-top:15px;">
+            <form method="POST">
+                <input type="hidden" name="news_id" value="{{ n.id }}">
+                <input type="text" name="guess" placeholder="اكتب الكلمة السرية هنا..." style="width:70%; padding:8px; background:#111; color:#fff; border:1px solid var(--floor-0-black);" required>
+                <button type="submit" class="btn-primary" style="width:25%; padding:8px;">إرسال</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<p>لا توجد مخطوطات حالياً.</p>
+{% endfor %}
+{% endblock %}
+
