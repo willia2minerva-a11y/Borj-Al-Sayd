@@ -1,16 +1,63 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hunter-card {{ floor_class }}" style="text-align: center;">
-    {% if user.status == 'pending' %}<div class="flash error">حسابك مجمد (بانتظار الإدارة)</div>{% endif %}
-    <div style="font-size: 60px;">👤</div>
-    <h2>{{ user.username }}</h2>
-    <p style="color: var(--floor-3-gold);">الرتبة: {{ floor_name }}</p>
-    <hr style="border-color: var(--floor-0-black); margin: 20px 0;">
-    <div style="display: flex; justify-content: space-around;">
-        <div><span>النقاط</span><br><strong style="font-size: 24px; color: var(--floor-4-diamond);">{{ user.points }}</strong></div>
-        <div><span>الحالة</span><br><strong>{{ 'مجمد' if user.status != 'active' else 'نشط' }}</strong></div>
+<div class="hunter-card {{ zone_class }}" style="text-align: center; margin-top: 40px;">
+    <img src="{{ banner_url }}" class="profile-banner" alt="Banner">
+    
+    <div class="avatar-ring {{ zone_class }}">
+        {% if user.avatar.startswith('http') %}
+            <img src="{{ user.avatar }}" alt="Avatar">
+        {% else %}
+            <div class="emoji-avatar">{{ user.avatar }}</div>
+        {% endif %}
     </div>
-    {% if user.role == 'admin' %}<br><a href="/admin" class="btn-primary" style="display:block; margin-top:15px;">⚙️ لوحة الإدارة</a>{% endif %}
+
+    <div class="special-rank">{{ user.special_rank }}</div>
+
+    <h2>{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
+    
+    <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
+    
+    <div style="display: flex; justify-content: space-around;">
+        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong style="font-size: 24px; color: var(--zone-4-diamond);">{{ user.points }}</strong></div>
+        <div><span style="color: var(--text-muted); font-size:12px;">الحالة</span><br><strong>{{ 'مجمد' if user.status != 'active' else 'نشط' }}</strong></div>
+    </div>
+
+    <div class="inventory-box">
+        <div style="width: 100%; color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">🎒 حقيبة المشتريات</div>
+        {% for item in user.inventory %}
+            <span class="inventory-item">{{ item }}</span>
+        {% else %}
+            <span style="color: #555; font-size: 12px;">الحقيبة فارغة</span>
+        {% endfor %}
+    </div>
+
+    {% if user.role == 'admin' %}
+        <br><a href="/admin" class="btn-primary" style="background: var(--zone-5-fire); color: #fff;">⚙️ دخول غرفة التحكم (الأدمن)</a>
+    {% endif %}
+</div>
+
+<div class="hunter-card">
+    <div class="accordion-header">⚙️ إعدادات الصائد</div>
+    <div class="accordion-content">
+        <br>
+        <form method="POST" action="/settings" style="margin-bottom: 15px;">
+            <input type="hidden" name="action" value="change_avatar">
+            <label style="color: var(--zone-2-silver); font-size:12px;">تغيير صورتك (ضع رابط صورة أو إيموجي):</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" name="new_avatar" value="{{ user.avatar }}" required>
+                <button type="submit" class="btn-primary" style="width: 30%;">حفظ</button>
+            </div>
+        </form>
+
+        <form method="POST" action="/settings" id="name-change-form">
+            <input type="hidden" name="action" value="change_name">
+            <label style="color: var(--zone-2-silver); font-size:12px;">تغيير الاسم (مسموح مرة كل 15 يوم):</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" name="new_name" placeholder="الاسم الجديد..." required>
+                <button type="submit" class="btn-primary" style="width: 30%; background: var(--zone-2-silver);">تغيير</button>
+            </div>
+        </form>
+        <br>
+    </div>
 </div>
 {% endblock %}
-
