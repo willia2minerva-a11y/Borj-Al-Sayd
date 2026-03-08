@@ -1,30 +1,40 @@
-from flask_sqlalchemy import SQLAlchemy
+from flask_mongoengine import MongoEngine
 from datetime import datetime
 
-db = SQLAlchemy()
+db = MongoEngine()
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    facebook_link = db.Column(db.String(255), nullable=True)
-    password_hash = db.Column(db.String(255), nullable=False)
-    points = db.Column(db.Integer, default=0)
-    floor = db.Column(db.Integer, default=0)
-    status = db.Column(db.String(20), default='pending') # pending, active, frozen
-    role = db.Column(db.String(20), default='hunter') # hunter, admin
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class User(db.Document):
+    hunter_id = db.IntField(unique=True) # الـ ID المميز للاعب (مثال: 1001)
+    username = db.StringField(unique=True, required=True)
+    facebook_link = db.StringField()
+    password_hash = db.StringField(required=True)
+    
+    avatar = db.StringField(default='👤') # صورة الملف الشخصي أو إيموجي
+    points = db.IntField(default=0)
+    zone = db.IntField(default=0) # 0: المنطقة الأساسية، 1: المنطقة الأولى...
+    
+    special_rank = db.StringField(default='صائد مبتدئ') # الرتبة المميزة التي يمنحها الأدمن
+    status = db.StringField(default='pending') # pending, active, frozen
+    role = db.StringField(default='hunter') # hunter, admin
+    
+    inventory = db.ListField(db.StringField()) # حقيبة المنتجات المشتراة
+    last_name_change = db.DateTimeField(default=None) # تاريخ آخر تغيير للاسم
+    created_at = db.DateTimeField(default=datetime.utcnow)
 
-class News(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False) # محتوى الخبر أو اللغز
-    puzzle_type = db.Column(db.String(50), nullable=True) # sequence, secret_word, link, trap, none
-    puzzle_answer = db.Column(db.String(200), nullable=True)
-    reward_points = db.Column(db.Integer, default=0)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+class News(db.Document):
+    title = db.StringField(required=True)
+    content = db.StringField(required=True)
+    puzzle_type = db.StringField(default='none')
+    puzzle_answer = db.StringField()
+    reward_points = db.IntField(default=0)
+    created_at = db.DateTimeField(default=datetime.utcnow)
 
-class StoreItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
-    price = db.Column(db.Integer, nullable=False)
+class StoreItem(db.Document):
+    name = db.StringField(required=True)
+    description = db.StringField(required=True)
+    price = db.IntField(required=True)
+
+class GlobalSettings(db.Document):
+    # لحفظ الغلاف الموحد الذي يضعه الأدمن
+    setting_name = db.StringField(unique=True, default='main_config')
+    banner_url = db.StringField(default='https://i.imgur.com/default_banner.jpg')
