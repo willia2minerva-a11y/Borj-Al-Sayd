@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>📜 المخطوطات والألغاز</h2>
+{% for n in news_list %}
+<div class="hunter-card" style="padding: 0; border-color: var(--zone-3-gold);">
+    <div class="accordion-header" style="color: var(--zone-3-gold);">{{ n.title }} <span style="font-size:12px; float:left; color:#888;">الجوائز المتبقية: {{ n.max_winners - n.current_winners }}</span></div>
+    <div class="accordion-content">
+        <p style="padding-top:15px;">{{ n.content | safe }}</p>
+        
+        {% if user.role == 'admin' and n.puzzle_type == 'secret_link' %}
+        <div style="background:#420; padding:10px; border:1px solid #f00; margin-top:10px;">
+            <strong style="color:#f00;">ملاحظة للآدمن:</strong> هذا هو الرابط السري لهذا اللغز، انسخه وضعه كفخ في النصوص الأخرى:<br>
+            <code style="color:var(--zone-4-diamond); user-select: all;">/secret_link/{{ n.id }}</code>
+        </div>
+        {% endif %}
+
+        {% if n.puzzle_type == 'secret_word' %}
+        <div style="background:#222; padding:15px; border-radius:5px; margin-top:15px;">
+            <form method="POST">
+                <input type="hidden" name="news_id" value="{{ n.id }}">
+                <input type="text" name="guess" placeholder="اكتب الكلمة السرية هنا..." style="width:70%; padding:8px; background:#111; color:var(--zone-4-diamond); border:1px solid var(--zone-0-black);" required>
+                <button type="submit" class="btn-primary" style="width:25%; padding:8px;">إرسال</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<p>المكتبة فارغة.</p>
+{% endfor %}
+{% endblock %}
+
