@@ -1,237 +1,42 @@
-/* =========================================
-   برج الصيد | Borj Al-Sayd - CSS Master File
-   ========================================= */
-
 :root {
-    /* الألوان الأساسية للموقع (Dark Theme) */
-    --bg-main: #0f1115;
-    --bg-card: #1a1d24;
-    --text-main: #e2e8f0;
-    --text-muted: #94a3b8;
-    
-    /* ألوان الطوابق (الرتب) */
-    --floor-0-black: #2d3748; /* البوابة */
-    --floor-1-wood: #8B5A2B; /* خشبي */
-    --floor-2-silver: #C0C0C0; /* فضي */
-    --floor-3-gold: #FFD700; /* ذهبي */
-    --floor-4-diamond: #00FFFF; /* ألماسي */
-    --floor-5-fire: #FF4500; /* ناري */
+    --bg-main: #0f1115; --bg-card: #1a1d24; --text-main: #e2e8f0; --text-muted: #94a3b8;
+    --floor-0-black: #2d3748; --floor-1-wood: #8B5A2B; --floor-2-silver: #C0C0C0; 
+    --floor-3-gold: #FFD700; --floor-4-diamond: #00FFFF; --floor-5-fire: #FF4500;
 }
+body { background: var(--bg-main); color: var(--text-main); font-family: sans-serif; direction: rtl; margin: 0; }
+main { padding: 20px; max-width: 800px; margin: 0 auto; }
+header { background: var(--bg-card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--floor-0-black); }
+.logo { font-size: 24px; font-weight: bold; color: var(--floor-3-gold); text-decoration: none; }
+nav a { color: var(--text-main); margin-right: 15px; text-decoration: none; font-weight: bold; }
+nav a:hover { color: var(--floor-3-gold); }
+.global-banner { text-align: center; margin-bottom: 20px; }
+.global-banner span { color: var(--floor-3-gold); }
+.hunter-card { background: var(--bg-card); border-radius: 10px; padding: 20px; margin: 15px auto; border: 2px solid var(--floor-0-black); box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; color: var(--floor-2-silver); }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border-radius: 5px; border: 1px solid var(--floor-0-black); background: #111; color: var(--text-main); box-sizing: border-box; }
+.btn-primary { background: var(--floor-3-gold); color: #000; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s ease; }
+.btn-primary:hover { background: var(--floor-4-diamond); box-shadow: 0 0 10px var(--floor-4-diamond); }
+.btn-danger { background: #e74c3c; color: #fff; }
+.flash { padding: 12px; margin-bottom: 10px; border-radius: 5px; text-align: center; font-weight: bold; }
+.flash.success { background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; color: #2ecc71; }
+.flash.error { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; }
+/* ألوان الطوابق */
+.floor-0 { border-color: var(--floor-0-black); }
+.floor-1 { border-color: var(--floor-1-wood); }
+.floor-2 { border-color: var(--floor-2-silver); }
+.floor-3 { border-color: var(--floor-3-gold); }
+.floor-4 { border-color: var(--floor-4-diamond); box-shadow: 0 0 10px var(--floor-4-diamond); }
+.floor-5 { border-color: var(--floor-5-fire); box-shadow: 0 0 15px var(--floor-5-fire); }
+/* المقبرة */
+.frozen-card { filter: grayscale(100%); opacity: 0.7; }
+/* الألغاز */
+.secret-word { cursor: pointer; transition: 0.3s; font-weight: bold; }
+.secret-word.glow-effect { color: var(--floor-3-gold); text-shadow: 0 0 8px var(--floor-3-gold); }
+.accordion-header { background: #222; padding: 15px; cursor: pointer; border-radius: 5px; margin-bottom: 5px; font-weight: bold; }
+.accordion-content { padding: 0 15px; max-height: 0; overflow: hidden; transition: 0.3s; background: #111; }
+/* جداول الإدارة */
+table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+th, td { border: 1px solid var(--floor-0-black); padding: 10px; text-align: center; }
+th { background: var(--floor-0-black); color: var(--floor-3-gold); }
 
-/* -----------------------------------------
-   1. الإعدادات الأساسية (Base)
-   ----------------------------------------- */
-body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    direction: rtl; /* دعم اللغة العربية أساسياً */
-    margin: 0;
-    padding: 0;
-}
-
-main {
-    padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-/* -----------------------------------------
-   2. الهيدر والشريط العلوي (Header & Nav)
-   ----------------------------------------- */
-header {
-    background-color: var(--bg-card);
-    padding: 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 2px solid var(--floor-0-black);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--floor-3-gold);
-}
-
-#menu-btn {
-    background: transparent;
-    color: var(--text-main);
-    border: 1px solid var(--floor-2-silver);
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: 0.3s ease;
-}
-
-#menu-btn:hover {
-    background: var(--floor-2-silver);
-    color: var(--bg-main);
-}
-
-/* -----------------------------------------
-   3. اللافتة والبطاقات (Banners & Cards)
-   ----------------------------------------- */
-.global-banner {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.global-banner h2 {
-    color: var(--text-main);
-}
-
-.global-banner span {
-    color: var(--floor-3-gold); /* يتغير لاحقاً برمجياً */
-}
-
-.hunter-card {
-    background-color: var(--bg-card);
-    border-radius: 10px;
-    padding: 20px;
-    margin: 15px auto;
-    border: 2px solid var(--floor-0-black); /* يتغير برمجياً حسب الطابق */
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-}
-
-/* -----------------------------------------
-   4. النماذج والتسجيل (Forms & Inputs)
-   ----------------------------------------- */
-.form-container {
-    max-width: 400px;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--floor-2-silver);
-    font-weight: bold;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border-radius: 5px;
-    border: 1px solid var(--floor-0-black);
-    background-color: #111;
-    color: var(--text-main);
-    box-sizing: border-box; /* يمنع خروج المربع عن الإطار */
-    outline: none;
-    transition: 0.3s ease;
-}
-
-.form-group input:focus {
-    border-color: var(--floor-3-gold); /* يضيء بالذهبي عند الكتابة */
-    box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-}
-
-/* -----------------------------------------
-   5. الأزرار والروابط (Buttons & Links)
-   ----------------------------------------- */
-.btn-primary {
-    background-color: var(--floor-3-gold);
-    color: #000;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    font-size: 16px;
-    transition: 0.3s ease;
-}
-
-.btn-primary:hover {
-    background-color: var(--floor-4-diamond);
-    box-shadow: 0 0 10px var(--floor-4-diamond);
-}
-
-a {
-    color: var(--floor-3-gold);
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s ease;
-}
-
-a:hover {
-    color: var(--floor-4-diamond);
-}
-
-/* -----------------------------------------
-   6. الرسائل التنبيهية (Flash Messages)
-   ----------------------------------------- */
-.flash-messages {
-    margin-bottom: 20px;
-}
-
-.flash {
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    text-align: center;
-    font-weight: bold;
-}
-
-.flash.success { 
-    background-color: rgba(46, 204, 113, 0.1); 
-    border: 1px solid #2ecc71; 
-    color: #2ecc71; 
-}
-
-.flash.error { 
-    background-color: rgba(231, 76, 60, 0.1); 
-    border: 1px solid #e74c3c; 
-    color: #e74c3c; 
-}
-
-.flash.info { 
-    background-color: rgba(52, 152, 219, 0.1); 
-    border: 1px solid #3498db; 
-    color: #3498db; 
-}
-
-/* -----------------------------------------
-   7. الألغاز والتأثيرات (Puzzles & Accordion)
-   ----------------------------------------- */
-/* تأثير توهج لغز الكلمات المتسلسلة */
-.secret-word {
-    cursor: pointer;
-    transition: text-shadow 0.3s ease, color 0.3s ease;
-}
-
-.secret-word.glow-effect {
-    color: var(--floor-3-gold);
-    text-shadow: 0 0 8px var(--floor-3-gold);
-}
-
-/* تصميم الأخبار المطوية (Accordion) */
-.accordion-header {
-    background-color: var(--bg-card);
-    padding: 15px;
-    cursor: pointer;
-    border: 1px solid var(--floor-0-black);
-    border-radius: 5px;
-    margin-bottom: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s ease;
-}
-
-.accordion-header:hover {
-    background-color: #22262f;
-}
-
-.accordion-content {
-    padding: 0 15px;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    background-color: #111;
-    border-radius: 0 0 5px 5px;
-    margin-bottom: 10px;
-}
