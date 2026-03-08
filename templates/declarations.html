@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>📢 التصريحات</h2>
+{% for n in news_list %}
+<div class="hunter-card" style="padding: 0;">
+    <div class="accordion-header">{{ n.title }}</div>
+    <div class="accordion-content">
+        <p style="padding-top:15px; color: var(--text-main);">{{ n.content | safe }}</p>
+    </div>
+</div>
+{% else %}
+<p>لا توجد تصريحات حالياً.</p>
+{% endfor %}
+{% endblock %}
+
