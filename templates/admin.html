@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>👑 لوحة تحكم الإدارة</h2>
+
+<div class="hunter-card">
+    <h3>📝 نشر خبر / لغز جديد</h3>
+    <form method="POST">
+        <input type="hidden" name="action" value="add_news">
+        <div class="form-group"><input type="text" name="title" placeholder="عنوان الخبر" required></div>
+        <div class="form-group"><textarea name="content" placeholder="محتوى الخبر (يمكنك وضع أكواد HTML للكلمات المتسلسلة)" required></textarea></div>
+        <div class="form-group">
+            <label>نوع اللغز المرفق:</label>
+            <select name="puzzle_type">
+                <option value="none">بدون لغز</option>
+                <option value="secret_word">مربع إدخال الكلمة السرية</option>
+                <option value="sequence">الكلمات المتسلسلة (تتم في المحتوى أعلاه)</option>
+            </select>
+        </div>
+        <div class="form-group"><input type="text" name="puzzle_answer" placeholder="إجابة الكلمة السرية (إن وجدت)"></div>
+        <div class="form-group"><input type="number" name="reward_points" placeholder="النقاط كجائزة" value="0"></div>
+        <button type="submit" class="btn-primary">نشر في المخطوطات</button>
+    </form>
+</div>
+
+<div class="hunter-card" style="overflow-x: auto;">
+    <h3>👥 إدارة اللاعبين</h3>
+    <table>
+        <tr><th>الاسم</th><th>النقاط</th><th>الطابق</th><th>الحالة</th><th>إجراء سريع</th></tr>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="action" value="add_points">
+                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                    <input type="number" name="points_amount" value="{{ u.points }}" style="width: 50px; padding:2px;">
+                    <button type="submit" class="btn-primary" style="padding: 2px 5px;">حفظ</button>
+                </form>
+            </td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="action" value="change_floor">
+                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                    <input type="number" name="floor_num" value="{{ u.floor }}" style="width: 40px; padding:2px;">
+                    <button type="submit" class="btn-primary" style="padding: 2px 5px;">نقل</button>
+                </form>
+            </td>
+            <td>{{ '🟢 نشط' if u.status=='active' else '🔴 مجمد' }}</td>
+            <td>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="user_id" value="{{ u.id }}">
+                    {% if u.status != 'active' %}
+                        <input type="hidden" name="action" value="activate">
+                        <button type="submit" class="btn-primary btn-activate">إحياء</button>
+                    {% else %}
+                        <input type="hidden" name="action" value="freeze">
+                        <button type="submit" class="btn-primary btn-danger">تجميد</button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}
+
