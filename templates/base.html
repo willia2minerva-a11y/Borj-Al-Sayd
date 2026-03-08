@@ -9,14 +9,20 @@
 <body>
     <header>
         <a href="/" class="logo">🏹 برج الصيد</a>
-        <nav>
-            {% if session.get('user_id') %}
-                <a href="/news">المخطوطات</a>
-                <a href="/store">المتجر</a>
-                <a href="/profile">رخصتي</a>
-            {% endif %}
-        </nav>
+        {% if session.get('user_id') %}
+            <button id="menu-toggle" class="menu-btn">☰</button>
+        {% endif %}
     </header>
+    
+    {% if session.get('user_id') %}
+    <nav id="side-nav">
+        <a href="/news">📜 التصريحات والمخطوطات</a>
+        <a href="/store">🛒 المتجر السري</a>
+        <a href="/graveyard">💀 المقبرة</a>
+        <a href="/profile">🛡️ رخصتي</a>
+    </nav>
+    {% endif %}
+
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
