@@ -1,28 +1,15 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<div class="global-banner">
-    <h2>المرحلة الحالية: <span>{{ current_floor }}</span></h2>
-</div>
-
+<div class="global-banner"><h2>المرحلة الحالية: <span>{{ current_zone }}</span></h2></div>
 <div class="hunter-card" style="text-align: center;">
     <h3>أهلاً بك في برج الصيد</h3>
-    
     {% if session.get('user_id') %}
-        
-        <p>أنت الآن داخل البرج أيها الصائد. استعد للتحديات!</p>
-        <br>
-        <a href="{{ url_for('logout') }}" class="btn-primary" style="background-color: var(--floor-5-fire); text-align: center; display: inline-block; width: 80%; margin-top: 15px;">تسجيل الخروج من البرج</a>
-        
+        <p>أنت الآن داخل البرج.</p><br>
+        <a href="{{ url_for('profile') }}" class="btn-primary">🛡️ عرض رخصتي</a><br><br>
+        <a href="{{ url_for('logout') }}" style="color:var(--zone-5-fire);">تسجيل الخروج</a>
     {% else %}
-        
-        <p>هل تملك الشجاعة لدخول البرج ومواجهة الألغاز؟</p>
-        <br>
-        <a href="{{ url_for('register') }}" class="btn-primary" style="text-align: center; display: inline-block; width: 80%; margin-bottom: 15px;">طلب الانضمام (إنشاء حساب)</a>
-        <br>
-        <a href="{{ url_for('login') }}" style="color: var(--floor-2-silver); text-decoration: underline;">لدي تصريح دخول بالفعل (تسجيل الدخول)</a>
-        
+        <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام</a><br>
+        <a href="{{ url_for('login') }}">تسجيل الدخول</a>
     {% endif %}
-
 </div>
 {% endblock %}
