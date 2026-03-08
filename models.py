@@ -13,28 +13,32 @@ class User(db.Document):
     zone = db.IntField(default=0)
     special_rank = db.StringField(default='صائد مبتدئ')
     status = db.StringField(default='pending') # pending, active, frozen
-    role = db.StringField(default='hunter') # hunter, admin
+    role = db.StringField(default='hunter')
     inventory = db.ListField(db.StringField())
     last_name_change = db.DateTimeField(default=None)
+    ip_address = db.StringField() # لحظر الحسابات المتعددة
+    friends = db.ListField(db.IntField()) # قائمة ID الأصدقاء
+    friend_requests = db.ListField(db.IntField()) # طلبات الصداقة المعلقة
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='declaration') # declaration (تصريح) أو manuscript (مخطوطة)
-    puzzle_type = db.StringField(default='none') # none, secret_word, sequence, secret_link
+    category = db.StringField(default='news') # news, declaration
+    author = db.StringField(default='الإدارة') # اسم صاحب التصريح
+    puzzle_type = db.StringField(default='none') # none, secret_word, sequence, secret_link, fake_account
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
-    max_winners = db.IntField(default=1) # عدد الفائزين المسموح بهم
-    current_winners = db.IntField(default=0) # عدد من حلوه حتى الآن
-    winners_list = db.ListField(db.StringField()) # قائمة ID الفائزين لمنع أخذ الجائزة مرتين
+    max_winners = db.IntField(default=1)
+    current_winners = db.IntField(default=0)
+    winners_list = db.ListField(db.StringField())
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class StoreItem(db.Document):
     name = db.StringField(required=True)
     description = db.StringField(required=True)
     price = db.IntField(required=True)
-    image = db.StringField(default='') # صورة الأداة Base64
+    image = db.StringField(default='')
 
 class GlobalSettings(db.Document):
     setting_name = db.StringField(unique=True, default='main_config')
