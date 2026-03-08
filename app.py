@@ -13,6 +13,7 @@ app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')
 }
 app.config['SECRET_KEY'] = 'super-secret-hunter-key-change-later'
+app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024 # أقصى حجم للصورة 5 ميجا
 
 db.init_app(app)
 
@@ -29,16 +30,15 @@ def login_required(f):
 def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
+        if 'user_id' not in session: return redirect(url_for('login'))
         user = User.objects(id=session['user_id']).first()
         if not user or user.role != 'admin':
-            flash('منطقة محرمة! هذا المكان مخصص لإدارة البرج فقط.', 'error')
+            flash('منطقة محرمة!', 'error')
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated
 
-# --- المسارات العامة ---
+# --- مسارات التسجيل والأساسيات ---
 @app.route('/')
 def home():
     active_users = User.objects(status='active')
@@ -50,23 +50,14 @@ def home():
 def register():
     if request.method == 'POST':
         if User.objects(username=request.form['username']).first():
-            flash('الاسم مستخدم بالفعل، اختر اسماً آخر.', 'error')
+            flash('الاسم مستخدم بالفعل.', 'error')
             return redirect(url_for('register'))
-        
         is_first = User.objects.count() == 0
         last_user = User.objects.order_by('-hunter_id').first()
         new_id = (last_user.hunter_id + 1) if last_user and last_user.hunter_id else 1000
-        
-        new_user = User(
-            hunter_id=new_id,
-            username=request.form['username'],
-            facebook_link=request.form['facebook_link'],
-            password_hash=generate_password_hash(request.form['password']),
-            role='admin' if is_first else 'hunter',
-            status='active' if is_first else 'pending'
-        )
+        new_user = User(hunter_id=new_id, username=request.form['username'], facebook_link=request.form['facebook_link'], password_hash=generate_password_hash(request.form['password']), role='admin' if is_first else 'hunter', status='active' if is_first else 'pending')
         new_user.save()
-        flash('تم إنشاء حساب الإدارة بنجاح!' if is_first else 'تم التسجيل بنجاح! بانتظار التفعيل من الإدارة.', 'success')
+        flash('تم التسجيل! بانتظار التفعيل.' if not is_first else 'تم إنشاء حساب الإدارة!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -76,9 +67,9 @@ def login():
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(user.password_hash, request.form['password']):
             session['user_id'] = str(user.id)
-            flash(f'أهلاً بك مجدداً يا {user.username}', 'success')
+            flash(f'أهلاً بك يا {user.username}', 'success')
             return redirect(url_for('home'))
-        flash('بيانات الدخول خاطئة.', 'error')
+        flash('بيانات خاطئة.', 'error')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -86,96 +77,111 @@ def logout():
     session.pop('user_id', None)
     return redirect(url_for('home'))
 
-# --- ملف الصائد والإعدادات ---
 @app.route('/profile')
 @login_required
 def profile():
     user = User.objects(id=session['user_id']).first()
-    if not user:
-        session.pop('user_id', None)
-        return redirect(url_for('login'))
-        
+    if not user: session.pop('user_id', None); return redirect(url_for('login'))
     settings = GlobalSettings.objects(setting_name='main_config').first()
     banner_url = settings.banner_url if settings else 'https://via.placeholder.com/800x200/111/FFD700?text=Borj+Al-Sayd'
-    
     zones_classes = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
-    zone_class = zones_classes.get(user.zone, 'floor-0')
-    
-    return render_template('profile.html', user=user, zone_class=zone_class, banner_url=banner_url)
+    return render_template('profile.html', user=user, zone_class=zones_classes.get(user.zone, 'floor-0'), banner_url=banner_url)
 
 @app.route('/settings', methods=['POST'])
 @login_required
 def update_settings():
     user = User.objects(id=session['user_id']).first()
-    if not user: return redirect(url_for('login'))
     action = request.form.get('action')
-
     if action == 'change_avatar':
         file = request.files.get('avatar_file')
         if file and file.filename != '':
             encoded = base64.b64encode(file.read()).decode('utf-8')
             user.avatar = f"data:{file.content_type};base64,{encoded}"
-            flash('تم رفع وتحديث صورتك الشخصية بنجاح!', 'success')
-        else:
-            flash('لم تقم باختيار أي صورة!', 'error')
-
+            flash('تم تحديث الصورة!', 'success')
     elif action == 'change_name':
         new_name = request.form.get('new_name')
-        if User.objects(username=new_name).first():
-            flash('هذا الاسم محجوز لصائد آخر!', 'error')
+        if User.objects(username=new_name).first(): flash('الاسم محجوز!', 'error')
         else:
             now = datetime.utcnow()
             if user.last_name_change is None or (now - user.last_name_change).days >= 15:
-                user.username = new_name
-                user.last_name_change = now
-                flash('تم تغيير اسمك بنجاح!', 'success')
+                user.username = new_name; user.last_name_change = now; flash('تم تغيير الاسم!', 'success')
             else:
-                days_left = 15 - (now - user.last_name_change).days
-                flash(f'عذراً! لا يمكنك تغيير اسمك إلا بعد {days_left} يوم.', 'error')
-    
+                flash(f'انتظر {15 - (now - user.last_name_change).days} يوم.', 'error')
     user.save()
     return redirect(url_for('profile'))
 
-# --- المخطوطات، المقبرة، والمتجر ---
-@app.route('/news', methods=['GET', 'POST'])
+# --- التصريحات والمخطوطات والألغاز ---
+@app.route('/declarations')
 @login_required
-def news():
-    news_list = News.objects().order_by('-created_at')
+def declarations():
+    decs = News.objects(category='declaration').order_by('-created_at')
+    return render_template('declarations.html', news_list=decs)
+
+@app.route('/manuscripts', methods=['GET', 'POST'])
+@login_required
+def manuscripts():
     user = User.objects(id=session['user_id']).first()
-    if not user: return redirect(url_for('login'))
+    mans = News.objects(category='manuscript').order_by('-created_at')
     
+    # حل لغز الكلمة السرية
     if request.method == 'POST':
         guess = request.form.get('guess')
         news_id = request.form.get('news_id')
-        news_item = News.objects(id=news_id).first()
-        if news_item and guess == news_item.puzzle_answer:
-            user.points += news_item.reward_points
-            user.save()
-            flash(f'إجابة صحيحة! لقد كسبت {news_item.reward_points} نقطة.', 'success')
+        puzzle = News.objects(id=news_id).first()
+        
+        if puzzle and guess == puzzle.puzzle_answer:
+            if str(user.id) in puzzle.winners_list:
+                flash('لقد قمت بحل هذا اللغز مسبقاً!', 'error')
+            elif puzzle.current_winners >= puzzle.max_winners:
+                flash('للأسف، اكتمل عدد الفائزين المسموح به لهذا اللغز!', 'error')
+            else:
+                user.points += puzzle.reward_points
+                puzzle.current_winners += 1
+                puzzle.winners_list.append(str(user.id))
+                user.save(); puzzle.save()
+                flash(f'إجابة أسطورية! كسبت {puzzle.reward_points} نقطة.', 'success')
         else:
-            flash('إجابة خاطئة، حاول مجدداً.', 'error')
-        return redirect(url_for('news'))
-    return render_template('news.html', news_list=news_list)
+            flash('إجابة خاطئة.', 'error')
+        return redirect(url_for('manuscripts'))
+    return render_template('manuscripts.html', news_list=mans, user=user)
+
+# رابط اللغز السري
+@app.route('/secret_link/<puzzle_id>')
+@login_required
+def secret_link_claim(puzzle_id):
+    user = User.objects(id=session['user_id']).first()
+    try:
+        puzzle = News.objects(id=puzzle_id, puzzle_type='secret_link').first()
+        if not puzzle: return redirect(url_for('home'))
+        
+        if str(user.id) in puzzle.winners_list:
+            flash('لقد اكتشفت هذا الرابط مسبقاً وأخذت الجائزة!', 'error')
+        elif puzzle.current_winners >= puzzle.max_winners:
+            flash('لقد سبقك صيادون آخرون واكتشفوا الرابط قبلك، نفدت الجوائز!', 'error')
+        else:
+            user.points += puzzle.reward_points
+            puzzle.current_winners += 1
+            puzzle.winners_list.append(str(user.id))
+            user.save(); puzzle.save()
+            flash(f'🎉 اكتشاف عظيم! لقد وجدت الرابط السري وكسبت {puzzle.reward_points} نقطة!', 'success')
+    except:
+        pass
+    return redirect(url_for('manuscripts'))
 
 @app.route('/graveyard')
-def graveyard():
-    frozen_users = User.objects(status='frozen')
-    return render_template('graveyard.html', users=frozen_users)
+def graveyard(): return render_template('graveyard.html', users=User.objects(status='frozen'))
 
 @app.route('/store')
 @login_required
-def store():
-    items = StoreItem.objects()
-    return render_template('store.html', items=items)
+def store(): return render_template('store.html', items=StoreItem.objects())
 
-# --- لوحة التحكم الإمبراطورية ---
+# --- غرفة الإدارة ---
 @app.route('/admin', methods=['GET', 'POST'])
 @admin_required
 def admin_panel():
     users = User.objects()
     if request.method == 'POST':
         action = request.form.get('action')
-        
         if action in ['activate', 'freeze', 'add_points', 'change_zone', 'change_rank']:
             user = User.objects(id=request.form.get('user_id')).first()
             if user:
@@ -185,36 +191,38 @@ def admin_panel():
                 elif action == 'change_zone': user.zone = int(request.form.get('zone_num', 0))
                 elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
                 user.save()
-            
+                
         elif action == 'add_news':
             new_news = News(
                 title=request.form.get('title'),
                 content=request.form.get('content'),
+                category=request.form.get('category'),
                 puzzle_type=request.form.get('puzzle_type'),
                 puzzle_answer=request.form.get('puzzle_answer'),
-                reward_points=int(request.form.get('reward_points', 0))
+                reward_points=int(request.form.get('reward_points', 0)),
+                max_winners=int(request.form.get('max_winners', 1))
             )
             new_news.save()
             
         elif action == 'add_store_item':
-            new_item = StoreItem(
-                name=request.form.get('item_name'),
-                description=request.form.get('item_desc'),
-                price=int(request.form.get('item_price'))
-            )
+            new_item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')))
+            file = request.files.get('item_image')
+            if file and file.filename != '':
+                encoded = base64.b64encode(file.read()).decode('utf-8')
+                new_item.image = f"data:{file.content_type};base64,{encoded}"
             new_item.save()
             
         elif action == 'update_banner':
-            settings = GlobalSettings.objects(setting_name='main_config').first()
-            if not settings:
-                settings = GlobalSettings(setting_name='main_config')
-            settings.banner_url = request.form.get('banner_url')
-            settings.save()
-            
-        flash('تم تنفيذ الأمر الإمبراطوري بنجاح!', 'success')
+            settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config')
+            file = request.files.get('banner_file')
+            if file and file.filename != '':
+                encoded = base64.b64encode(file.read()).decode('utf-8')
+                settings.banner_url = f"data:{file.content_type};base64,{encoded}"
+                settings.save()
+                
+        flash('تم التنفيذ بنجاح!', 'success')
         return redirect(url_for('admin_panel'))
     return render_template('admin.html', users=users)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == '__main__': app.run(debug=True)
 
