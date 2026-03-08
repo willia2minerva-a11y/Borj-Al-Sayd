@@ -5,21 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>برج الصيد</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header>
-        <a href="/" class="logo">🏹 برج الصيد</a>
-        {% if session.get('user_id') %}
-            <button id="menu-toggle" class="menu-btn">☰</button>
-        {% endif %}
+        <a href="/" class="logo">🎣 برج الصيد</a>
+        <div>
+            <button id="lang-toggle" class="lang-btn">EN/AR</button>
+            {% if session.get('user_id') %}<button id="menu-toggle" class="menu-btn">☰</button>{% endif %}
+        </div>
     </header>
     {% if session.get('user_id') %}
     <nav id="side-nav">
+        <a href="/">🏠 الرئيسية</a>
+        <a href="/news">📜 الأخبار والألغاز</a>
         <a href="/declarations">📢 التصريحات</a>
-        <a href="/manuscripts">📜 المخطوطات (الألغاز)</a>
-        <a href="/store">🛒 المتجر السري</a>
+        <a href="/store">🛒 المتجر</a>
         <a href="/graveyard">💀 المقبرة</a>
-        <a href="/profile">🛡️ رخصتي</a>
+        <a href="/profile">🪪 رخصتي</a>
     </nav>
     {% endif %}
     <main>
