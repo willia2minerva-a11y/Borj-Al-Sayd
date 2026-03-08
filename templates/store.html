@@ -1,6 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 <h2>🛒 المتجر السري</h2>
-<p>سيتم توفير القدرات والأدوات قريباً من قبل الإدارة...</p>
+<div class="store-grid">
+    {% for item in items %}
+    <div class="store-item">
+        {% if item.image %}<img src="{{ item.image }}" alt="{{ item.name }}">{% endif %}
+        <h3 style="color: var(--zone-3-gold); margin: 0;">{{ item.name }}</h3>
+        <p style="font-size: 13px; color: var(--text-muted);">{{ item.description }}</p>
+        <div class="store-price">{{ item.price }} 💎</div>
+        <button class="btn-primary" onclick="alert('الشراء المباشر سيتم إضافته قريباً!')">شراء</button>
+    </div>
+    {% else %}
+    <p>المتجر فارغ حالياً.</p>
+    {% endfor %}
+</div>
 {% endblock %}
-
