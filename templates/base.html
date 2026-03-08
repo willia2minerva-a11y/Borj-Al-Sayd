@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>برج الصيد</title>
+    <title>برج الصيد | Borj Al-Sayd</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -13,14 +13,17 @@
             {% if session.get('user_id') %}
                 <a href="/news">المخطوطات</a>
                 <a href="/store">المتجر</a>
-                <a href="/graveyard">المقبرة</a>
                 <a href="/profile">رخصتي</a>
             {% endif %}
         </nav>
     </header>
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
         {% endwith %}
         {% block content %}{% endblock %}
     </main>
