@@ -4,7 +4,7 @@
     <img src="{{ banner_url }}" class="profile-banner" alt="Banner">
     
     <div class="avatar-ring {{ zone_class }}">
-        {% if user.avatar.startswith('http') %}
+        {% if user.avatar.startswith('data:image') or user.avatar.startswith('http') %}
             <img src="{{ user.avatar }}" alt="Avatar">
         {% else %}
             <div class="emoji-avatar">{{ user.avatar }}</div>
@@ -40,20 +40,22 @@
     <div class="accordion-header">⚙️ إعدادات الصائد</div>
     <div class="accordion-content">
         <br>
-        <form method="POST" action="/settings" style="margin-bottom: 15px;">
+        <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 20px; background: #111; padding: 15px; border-radius: 5px; border: 1px solid var(--zone-0-black);">
             <input type="hidden" name="action" value="change_avatar">
-            <label style="color: var(--zone-2-silver); font-size:12px;">تغيير صورتك (ضع رابط صورة أو إيموجي):</label>
+            <label style="color: var(--zone-3-gold); font-size:14px; font-weight: bold; display: block; margin-bottom: 10px;">📸 رفع صورة الهوية (الأفاتار):</label>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: -5px;">اختر صورة من جهازك لتظهر في رخصتك</p>
             <div style="display: flex; gap: 5px;">
-                <input type="text" name="new_avatar" value="{{ user.avatar }}" required>
-                <button type="submit" class="btn-primary" style="width: 30%;">حفظ</button>
+                <input type="file" name="avatar_file" accept="image/*" style="background: var(--bg-card); color: #fff; width: 100%;" required>
+                <button type="submit" class="btn-primary" style="width: 30%;">رفع</button>
             </div>
         </form>
 
-        <form method="POST" action="/settings" id="name-change-form">
+        <form method="POST" action="/settings" id="name-change-form" style="background: #111; padding: 15px; border-radius: 5px; border: 1px solid var(--zone-0-black);">
             <input type="hidden" name="action" value="change_name">
-            <label style="color: var(--zone-2-silver); font-size:12px;">تغيير الاسم (مسموح مرة كل 15 يوم):</label>
+            <label style="color: var(--zone-3-gold); font-size:14px; font-weight: bold; display: block; margin-bottom: 10px;">✍️ تغيير لقب الصائد:</label>
+            <p style="font-size: 11px; color: #e74c3c; margin-top: -5px;">⚠️ تحذير: لا يمكنك تغيير اسمك إلا مرة واحدة كل 15 يوماً.</p>
             <div style="display: flex; gap: 5px;">
-                <input type="text" name="new_name" placeholder="الاسم الجديد..." required>
+                <input type="text" name="new_name" placeholder="الاسم المرعب الجديد..." required>
                 <button type="submit" class="btn-primary" style="width: 30%; background: var(--zone-2-silver);">تغيير</button>
             </div>
         </form>
