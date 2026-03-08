@@ -17,8 +17,8 @@ class User(db.Model):
 class News(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
-    content = db.Column(db.Text, nullable=False) # محتوى الخبر أو اللغز
-    puzzle_type = db.Column(db.String(50), nullable=True) # sequence, secret_word, link, trap, none
+    content = db.Column(db.Text, nullable=False)
+    puzzle_type = db.Column(db.String(50), default='none') # none, secret_word, sequence
     puzzle_answer = db.Column(db.String(200), nullable=True)
     reward_points = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
