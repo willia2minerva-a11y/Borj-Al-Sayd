@@ -1,84 +1,62 @@
 :root {
     --bg-main: #0f1115; --bg-card: #1a1d24; --text-main: #e2e8f0; --text-muted: #94a3b8;
-    /* ألوان المناطق المحسنة والمشعة */
-    --zone-0-black: #4a5568; /* رمادي بوابة فخم */
-    --zone-1-wood: #cd853f;  /* خشبي ساطع */
-    --zone-2-silver: #e2e8f0; /* فضي لامع */
-    --zone-3-gold: #ffdf00;  /* ذهبي مشع */
-    --zone-4-diamond: #00ffff; /* ألماسي نيون */
-    --zone-5-fire: #ff3300;   /* ناري متوهج */
+    --zone-0-black: #4a5568; --zone-1-wood: #cd853f; --zone-2-silver: #e2e8f0; 
+    --zone-3-gold: #ffdf00; --zone-4-diamond: #00ffff; --zone-5-fire: #ff3300;
 }
 
-/* --- الأساسيات --- */
 body { background: var(--bg-main); color: var(--text-main); font-family: sans-serif; direction: rtl; margin: 0; }
 main { padding: 20px; max-width: 800px; margin: 0 auto; }
 
-/* --- الهيدر والقائمة الجانبية --- */
-header { 
-    background: var(--bg-card); padding: 15px 20px; 
-    display: flex; justify-content: space-between; align-items: center; 
-    border-bottom: 2px solid var(--zone-0-black); 
-}
+header { background: var(--bg-card); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--zone-0-black); }
 .logo { font-size: 24px; font-weight: bold; color: var(--zone-3-gold); text-decoration: none; }
-.menu-btn {
-    background: none; border: none; color: var(--zone-3-gold);
-    font-size: 28px; cursor: pointer; transition: 0.3s;
-}
+.menu-btn { background: none; border: none; color: var(--zone-3-gold); font-size: 28px; cursor: pointer; transition: 0.3s; }
 .menu-btn:hover { color: var(--zone-4-diamond); text-shadow: 0 0 8px var(--zone-4-diamond); }
 
-#side-nav {
-    display: none; /* مخفية افتراضياً */
-    flex-direction: column; background: #111;
-    padding: 10px 0; border-bottom: 2px solid var(--zone-3-gold);
-}
-#side-nav.active { display: flex; } /* تظهر عند الضغط */
+#side-nav { display: none; flex-direction: column; background: #111; padding: 10px 0; border-bottom: 2px solid var(--zone-3-gold); }
+#side-nav.active { display: flex; }
 #side-nav a { padding: 12px 20px; color: var(--text-main); text-decoration: none; font-weight: bold; border-bottom: 1px solid #222; }
 #side-nav a:hover { color: var(--zone-3-gold); background: #1a1d24; }
 
-/* --- البطاقات والنماذج --- */
 .global-banner { text-align: center; margin-bottom: 20px; }
 .global-banner span { color: var(--zone-3-gold); }
-.hunter-card { background: var(--bg-card); border-radius: 10px; padding: 20px; margin: 15px auto; border: 2px solid var(--zone-0-black); box-shadow: 0 4px 6px rgba(0,0,0,0.3); overflow: hidden; position: relative; }
+.hunter-card { background: var(--bg-card); border-radius: 10px; padding: 20px; margin: 15px auto; border: 2px solid var(--zone-0-black); box-shadow: 0 4px 6px rgba(0,0,0,0.3); position: relative; }
+
+/* -- تحسين ألوان حقول الإدخال والأرقام (التي ظهرت مظلمة في صورتك) -- */
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; color: var(--zone-2-silver); font-size: 14px;}
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid var(--zone-0-black); background: #111; color: var(--text-main); box-sizing: border-box; }
+input[type="number"], .neon-number { color: var(--zone-4-diamond) !important; font-weight: bold !important; text-shadow: 0 0 5px rgba(0,255,255,0.3); background: #222 !important; border: 1px solid var(--zone-3-gold) !important;}
 
-/* --- الأزرار والتنبيهات --- */
 .btn-primary { background: var(--zone-3-gold); color: #000; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s ease; width: 100%; display: block; text-align: center; box-sizing: border-box; text-decoration: none;}
 .btn-primary:hover { background: var(--zone-4-diamond); box-shadow: 0 0 10px var(--zone-4-diamond); }
 .btn-danger { background: #e74c3c; color: #fff; padding: 6px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; }
-.btn-danger:hover { background: #c0392b; box-shadow: 0 0 10px #e74c3c; }
 
 .flash { padding: 12px; margin-bottom: 10px; border-radius: 5px; text-align: center; font-weight: bold; }
 .flash.success { background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; color: #2ecc71; }
 .flash.error { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; }
 
-/* --- ألوان المناطق للإطارات --- */
-.floor-0 { border-color: var(--zone-0-black); }
-.floor-1 { border-color: var(--zone-1-wood); }
-.floor-2 { border-color: var(--zone-2-silver); }
-.floor-3 { border-color: var(--zone-3-gold); }
-.floor-4 { border-color: var(--zone-4-diamond); box-shadow: 0 0 10px var(--zone-4-diamond); }
-.floor-5 { border-color: var(--zone-5-fire); box-shadow: 0 0 15px var(--zone-5-fire); }
+.floor-0 { border-color: var(--zone-0-black); } .floor-1 { border-color: var(--zone-1-wood); } .floor-2 { border-color: var(--zone-2-silver); }
+.floor-3 { border-color: var(--zone-3-gold); } .floor-4 { border-color: var(--zone-4-diamond); box-shadow: 0 0 10px var(--zone-4-diamond); } .floor-5 { border-color: var(--zone-5-fire); box-shadow: 0 0 15px var(--zone-5-fire); }
 
-/* --- إضافات الملف الشخصي --- */
 .profile-banner { width: calc(100% + 40px); height: 120px; object-fit: cover; border-bottom: 2px solid var(--zone-0-black); margin: -20px -20px 20px -20px; display: block; }
 .avatar-ring { width: 100px; height: 100px; border-radius: 50%; border: 4px solid; margin: -50px auto 15px auto; background: var(--bg-card); display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; overflow: hidden; }
-.avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
-.avatar-ring .emoji-avatar { font-size: 55px; line-height: 1; }
+.avatar-ring img { width: 100%; height: 100%; object-fit: cover; } .avatar-ring .emoji-avatar { font-size: 55px; line-height: 1; }
 .special-rank { display: inline-block; background: linear-gradient(45deg, var(--zone-3-gold), var(--zone-5-fire)); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 13px; font-weight: bold; margin-bottom: 15px; box-shadow: 0 0 8px var(--zone-5-fire); }
 .inventory-box { background: #111; border: 1px dashed var(--zone-2-silver); padding: 15px; border-radius: 5px; margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;}
 .inventory-item { background: var(--zone-0-black); padding: 6px 12px; border-radius: 4px; font-size: 13px; color: var(--zone-3-gold); border: 1px solid var(--zone-2-silver); }
 
-/* --- الألغاز والقوائم المطوية --- */
-.secret-word { cursor: pointer; transition: 0.3s; font-weight: bold; }
+.secret-word { cursor: pointer; transition: 0.3s; font-weight: bold; color: #fff; text-decoration: underline dotted var(--zone-3-gold); }
 .secret-word.glow-effect { color: var(--zone-3-gold); text-shadow: 0 0 8px var(--zone-3-gold); }
-.accordion-header { background: #222; padding: 15px; cursor: pointer; border-radius: 5px; margin-bottom: 5px; font-weight: bold; transition: 0.3s; }
-.accordion-header:hover { background: #333; }
-.accordion-content { padding: 0 15px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #111; }
+.accordion-header { background: #222; padding: 15px; cursor: pointer; border-radius: 5px; margin-bottom: 5px; font-weight: bold; transition: 0.3s; border-right: 4px solid var(--zone-3-gold); }
+.accordion-content { padding: 0 15px; max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background: #111; border-radius: 0 0 5px 5px;}
 
-/* --- جداول وشبكة الإدارة --- */
 .admin-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
 table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
 th, td { border: 1px solid var(--zone-0-black); padding: 8px; text-align: center; }
-th { background: var(--zone-0-black); color: var(--zone-3-gold); }
+th { background: #111; color: var(--zone-3-gold); }
+
+/* -- المتجر -- */
+.store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+.store-item { background: #111; border: 1px solid var(--zone-0-black); border-radius: 8px; padding: 15px; text-align: center; }
+.store-item img { width: 100%; height: 150px; object-fit: cover; border-radius: 5px; margin-bottom: 10px; border: 1px solid var(--zone-3-gold); }
+.store-price { color: var(--zone-4-diamond); font-size: 20px; font-weight: bold; margin: 10px 0; }
