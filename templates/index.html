@@ -1,15 +1,27 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="global-banner"><h2>المرحلة الحالية: <span>{{ current_zone }}</span></h2></div>
+
+{% if session.get('user_id') %}
+<div class="preview-grid">
+    <a href="/news" class="preview-card" style="border-top: 3px solid var(--zone-4-diamond);">
+        <h4 style="margin:0 0 10px 0; color:var(--zone-4-diamond);">آخر خبر/لغز</h4>
+        <p style="font-size:13px;">{{ news.title if news else 'لا يوجد أخبار' }}</p>
+    </a>
+    <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
+        <h4 style="margin:0 0 10px 0; color:var(--zone-5-fire);">أحدث تصريح</h4>
+        <p style="font-size:13px;">{{ dec.title if dec else 'لا توجد تصريحات' }}</p>
+    </a>
+    <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
+        <h4 style="margin:0 0 10px 0; color:var(--zone-3-gold);">جديد المتجر</h4>
+        <p style="font-size:13px;">{{ item.name if item else 'المتجر فارغ' }}</p>
+    </a>
+</div>
+{% else %}
 <div class="hunter-card" style="text-align: center;">
     <h3>أهلاً بك في برج الصيد</h3>
-    {% if session.get('user_id') %}
-        <p>أنت الآن داخل البرج.</p><br>
-        <a href="{{ url_for('profile') }}" class="btn-primary">🛡️ عرض رخصتي</a><br><br>
-        <a href="{{ url_for('logout') }}" style="color:var(--zone-5-fire);">تسجيل الخروج</a>
-    {% else %}
-        <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام</a><br>
-        <a href="{{ url_for('login') }}">تسجيل الدخول</a>
-    {% endif %}
+    <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام</a>
+    <a href="{{ url_for('login') }}">تسجيل الدخول</a>
 </div>
+{% endif %}
 {% endblock %}
