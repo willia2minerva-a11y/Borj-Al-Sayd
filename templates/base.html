@@ -12,27 +12,52 @@
         <a href="/" class="logo translatable" data-ar="🎣 برج الصيد" data-en="🎣 Hunting Tower">🎣 برج الصيد</a>
         <div>
             <button id="lang-toggle" style="background:#222; color:#fff; border:1px solid #444; padding:5px; border-radius:5px; font-weight:bold;">AR/EN</button>
-            {% if session.get('user_id') %}<button id="menu-toggle" class="menu-btn">☰</button>{% endif %}
+            {% if session.get('user_id') %}
+                <button id="menu-toggle" class="menu-btn">
+                    ☰
+                    {% if (un_news and un_news > 0) or (un_puz and un_puz > 0) or (un_dec and un_dec > 0) or (un_store and un_store > 0) %}
+                        <span style="position: absolute; top: 10px; right: 15px; width: 10px; height: 10px; background: red; border-radius: 50%;"></span>
+                    {% endif %}
+                </button>
+            {% endif %}
         </div>
     </header>
     
     {% if session.get('user_id') %}
     <nav id="side-nav">
         {% if session.get('role') == 'admin' %}
-        <a href="/admin" class="translatable" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);" data-ar="👑 القيادة الإمبراطورية" data-en="👑 Command">👑 القيادة الإمبراطورية</a>
+        <a href="/admin" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);">👑 القيادة الإمبراطورية</a>
         <hr style="border-color: #333; margin: 0; width: 100%;">
         {% endif %}
         
-        <a href="/" class="translatable" data-ar="🏠 الرئيسية" data-en="🏠 Home">🏠 الرئيسية</a>
-        <a href="/profile" class="translatable" data-ar="🪪 رخصتي" data-en="🪪 Profile">🪪 رخصتي</a>
-        <a href="/friends" class="translatable" data-ar="🤝 الأصدقاء" data-en="🤝 Friends">🤝 الأصدقاء</a>
-        <a href="/news" class="translatable" data-ar="📜 الأخبار" data-en="📜 News">📜 الأخبار</a>
-        <a href="/declarations" class="translatable" data-ar="📢 التصريحات" data-en="📢 Declarations">📢 التصريحات</a>
-        <a href="/store" class="translatable" data-ar="🛒 السوق" data-en="🛒 Market">🛒 السوق</a>
-        <a href="/graveyard" class="translatable" data-ar="💀 المقبرة" data-en="💀 Graveyard">💀 المقبرة</a>
+        <a href="/"><span>🏠 الرئيسية</span></a>
+        <a href="/profile"><span>🪪 رخصتي</span></a>
+        <a href="/friends"><span>🤝 الأصدقاء</span></a>
+        
+        <a href="/news">
+            <span>📜 الأخبار</span>
+            {% if un_news and un_news > 0 %}<span class="notif-badge">{{ un_news }}</span>{% endif %}
+        </a>
+        
+        <a href="/puzzles">
+            <span>🧩 الألغاز</span>
+            {% if un_puz and un_puz > 0 %}<span class="notif-badge">{{ un_puz }}</span>{% endif %}
+        </a>
+
+        <a href="/declarations">
+            <span>📢 التصريحات</span>
+            {% if un_dec and un_dec > 0 %}<span class="notif-badge">{{ un_dec }}</span>{% endif %}
+        </a>
+
+        <a href="/store">
+            <span>🛒 السوق</span>
+            {% if un_store and un_store > 0 %}<span class="notif-badge">{{ un_store }}</span>{% endif %}
+        </a>
+        
+        <a href="/graveyard" style="color: #e2e8f0;"><span>💀 المقبرة</span></a>
         
         <hr style="border-color: #333; margin: 0; width: 100%;">
-        <a href="/logout" class="translatable" style="color: #ff4444;" data-ar="🚪 تسجيل الخروج" data-en="🚪 Logout">🚪 تسجيل الخروج</a>
+        <a href="/logout" style="color: #ff4444;"><span>🚪 تسجيل الخروج</span></a>
     </nav>
     {% endif %}
     
