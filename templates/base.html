@@ -15,8 +15,14 @@
             {% if session.get('user_id') %}<button id="menu-toggle" class="menu-btn">☰</button>{% endif %}
         </div>
     </header>
+    
     {% if session.get('user_id') %}
     <nav id="side-nav">
+        {% if session.get('role') == 'admin' %}
+        <a href="/admin" class="translatable" style="background: rgba(255, 77, 0, 0.1); color: var(--zone-5-fire); font-weight: 900; border-right: 4px solid var(--zone-5-fire);" data-ar="👑 القيادة الإمبراطورية" data-en="👑 Command">👑 القيادة الإمبراطورية</a>
+        <hr style="border-color: #333; margin: 0; width: 100%;">
+        {% endif %}
+        
         <a href="/" class="translatable" data-ar="🏠 الرئيسية" data-en="🏠 Home">🏠 الرئيسية</a>
         <a href="/profile" class="translatable" data-ar="🪪 رخصتي" data-en="🪪 Profile">🪪 رخصتي</a>
         <a href="/friends" class="translatable" data-ar="🤝 الأصدقاء" data-en="🤝 Friends">🤝 الأصدقاء</a>
@@ -24,10 +30,10 @@
         <a href="/declarations" class="translatable" data-ar="📢 التصريحات" data-en="📢 Declarations">📢 التصريحات</a>
         <a href="/store" class="translatable" data-ar="🛒 السوق" data-en="🛒 Market">🛒 السوق</a>
         
-        {% if session.get('role') == 'admin' %}
-        <hr style="border-color: var(--zone-5-fire); margin: 5px 0;">
-        <a href="/admin" class="translatable" style="color: var(--zone-5-fire);" data-ar="👑 القيادة الإمبراطورية" data-en="👑 Command">👑 القيادة الإمبراطورية</a>
-        {% endif %}
+        <a href="/graveyard" class="translatable" style="color: #e74c3c;" data-ar="💀 المقبرة" data-en="💀 Graveyard">💀 المقبرة</a>
+        
+        <hr style="border-color: #333; margin: 0; width: 100%;">
+        <a href="/logout" class="translatable" style="color: #ff4444;" data-ar="🚪 تسجيل الخروج" data-en="🚪 Logout">🚪 تسجيل الخروج</a>
     </nav>
     {% endif %}
     
