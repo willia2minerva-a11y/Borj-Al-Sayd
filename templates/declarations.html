@@ -1,15 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>📢 التصريحات</h2>
-{% for n in news_list %}
-<div class="hunter-card" style="padding: 0;">
-    <div class="accordion-header">{{ n.title }}</div>
+<h2 style="color: var(--zone-5-fire);" class="translatable" data-ar="📢 التصريحات" data-en="📢 Declarations">📢 التصريحات</h2>
+
+{% for n in decs %}
+<div class="hunter-card" style="padding: 0; border-color: var(--zone-5-fire);">
+    
+    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: var(--zone-5-fire);">
+        <span>{{ n.title }} <small style="color: var(--text-muted); font-size: 11px;">(بواسطة: {{ n.author }})</small></span>
+        
+        {% if session.get('role') == 'admin' %}
+        <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد سحق هذا التصريح؟');">
+            <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
+        </form>
+        {% endif %}
+    </div>
+    
     <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-main);">{{ n.content | safe }}</p>
+        <p style="padding-top:15px; color: var(--text-main); font-style: italic; line-height: 1.6;">
+            "{{ n.content | safe | replace('<img', '<img loading="lazy" decoding="async"') }}"
+        </p>
+        <br>
     </div>
 </div>
 {% else %}
-<p>لا توجد تصريحات حالياً.</p>
+<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">الهدوء يسبق العاصفة... لا توجد تصريحات حالياً.</p>
 {% endfor %}
 {% endblock %}
-
