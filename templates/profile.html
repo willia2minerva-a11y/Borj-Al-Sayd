@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-
 <div class="hunter-card {{ zone_class }}" id="license-card" style="text-align: center; margin-top: 40px; position: relative;">
     <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
     
-    <div class="avatar-ring {{ zone_class }}">
+    <div class="avatar-ring {{ zone_class }}" style="margin-top: -60px;">
         {% if user.avatar.startswith('data:image') or user.avatar.startswith('http') %}
             <img src="{{ user.avatar }}" alt="Avatar" crossorigin="anonymous">
         {% else %}
@@ -13,98 +12,37 @@
     </div>
 
     <div class="special-rank">{{ user.special_rank }}</div>
-
     <h2 style="margin-bottom: 5px;">{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
-    
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
     
     <div style="display: flex; justify-content: space-around; align-items: center;">
-        <div>
-            <span style="color: var(--text-muted); font-size:12px;">النقاط المتراكمة</span><br>
-            <strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong>
-        </div>
-        <div>
-            <span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br>
-            <strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">
-                {{ 'مجمد 💀' if user.status != 'active' else 'نشط 🟢' }}
-            </strong>
-        </div>
+        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong></div>
+        <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد 💀' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
     </div>
-
+    
     <div class="inventory-box">
         <div style="width: 100%; color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">🎒 حقيبة المقتنيات</div>
-        {% for item in user.inventory %}
-            <span class="inventory-item">{{ item }}</span>
-        {% else %}
-            <span style="color: #555; font-size: 12px;">الحقيبة فارغة تماماً</span>
-        {% endfor %}
-    </div>
-
-    {% if user.role == 'admin' %}
-        <br>
-        <a href="/admin" class="btn-primary" style="background: var(--zone-5-fire); color: #fff; margin-top: 15px;">⚙️ دخول غرفة القيادة الإمبراطورية</a>
-    {% endif %}
-</div>
-
-<button id="export-license" class="btn-primary" style="background:var(--zone-2-silver); color: #000; margin-bottom: 25px;">📸 تصدير الرخصة (تحميل صورة للمشاركة)</button>
-
-
-<div class="hunter-card">
-    <h3 style="color: var(--zone-3-gold); margin-top: 0;">🤝 التحالفات (البحث عن صيادين)</h3>
-    
-    <form method="POST" action="/add_friend" style="display:flex; gap:5px; margin-bottom: 15px;">
-        <input type="number" name="target_id" placeholder="أدخل ID الصائد المطلوب (مثال: 1005)..." required class="form-group" style="margin-bottom: 0;">
-        <button type="submit" class="btn-primary" style="width:30%;">إرسال طلب</button>
-    </form>
-    
-    {% if friend_requests %}
-    <h4 style="color:var(--zone-4-diamond); border-bottom: 1px solid var(--zone-0-black); padding-bottom: 5px;">🔔 طلبات تحالف تنتظر ردك:</h4>
-    {% for req in friend_requests %}
-        <div style="display:flex; justify-content:space-between; align-items: center; background:#111; padding:10px; margin-bottom:5px; border-radius: 5px; border: 1px solid var(--zone-0-black);">
-            <span style="color: var(--text-main);"><strong>{{ req.username }}</strong> <small style="color: var(--text-muted);">#{{ req.hunter_id }}</small></span>
-            <a href="/accept_friend/{{ req.hunter_id }}" class="btn-primary" style="width:auto; padding:5px 15px; background:#2ecc71; color: #000;">قبول التحالف</a>
-        </div>
-    {% endfor %}
-    {% endif %}
-
-    <h4 style="color:var(--zone-2-silver); border-bottom: 1px solid var(--zone-0-black); padding-bottom: 5px; margin-top: 20px;">👥 حلفاؤك في البرج:</h4>
-    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    {% for friend in friends %}
-        <div style="background: #111; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--zone-0-black); font-size: 13px; font-weight: bold;">
-            {{ friend.username }} <small style="color: var(--zone-3-gold);">#{{ friend.hunter_id }}</small>
-        </div>
-    {% else %}
-        <p style="font-size: 13px; color: var(--text-muted);">أنت تقاتل وحيداً، ليس لديك حلفاء حتى الآن.</p>
-    {% endfor %}
+        {% for item in user.inventory %}<span class="inventory-item">{{ item }}</span>{% else %}<span style="color: #555; font-size: 12px;">الحقيبة فارغة</span>{% endfor %}
     </div>
 </div>
 
+<button id="export-license" class="btn-primary" style="background:var(--zone-2-silver); color: #000; margin-bottom: 25px;">📸 تصدير الرخصة</button>
 
 <div class="hunter-card" style="padding: 0; border-color: var(--zone-2-silver);">
-    <div class="accordion-header" style="border-right: 4px solid var(--zone-5-fire);">⚙️ إعدادات وتحديثات الصائد</div>
+    <div class="accordion-header" style="border-right: 4px solid var(--zone-5-fire);">⚙️ إعدادات الصائد</div>
     <div class="accordion-content">
         <br>
-        <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 20px; background: #111; padding: 15px; border-radius: 5px; border: 1px solid var(--zone-0-black);">
+        <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 20px;">
             <input type="hidden" name="action" value="change_avatar">
-            <label style="color: var(--zone-3-gold); font-size:14px; font-weight: bold; display: block; margin-bottom: 10px;">📸 تحديث صورة الهوية:</label>
-            <p style="font-size: 11px; color: var(--text-muted); margin-top: -5px;">ارفع صورة من جهازك لتظهر في رخصتك (يفضل أن تكون مربعة)</p>
-            <div style="display: flex; gap: 5px;">
-                <input type="file" name="avatar_file" accept="image/*" style="background: var(--bg-card); color: #fff; width: 100%;" required>
-                <button type="submit" class="btn-primary" style="width: 30%;">رفع الصورة</button>
-            </div>
+            <label style="color: var(--zone-3-gold);">📸 رفع صورة (مربعة):</label>
+            <div style="display: flex; gap: 5px;"><input type="file" name="avatar_file" accept="image/*" required><button type="submit" class="btn-primary" style="width: 30%;">رفع</button></div>
         </form>
-
-        <form method="POST" action="/settings" id="name-change-form" style="background: #111; padding: 15px; border-radius: 5px; border: 1px solid var(--zone-0-black);">
+        <form method="POST" action="/settings" id="name-change-form">
             <input type="hidden" name="action" value="change_name">
-            <label style="color: var(--zone-3-gold); font-size:14px; font-weight: bold; display: block; margin-bottom: 10px;">✍️ تغيير لقب الصائد:</label>
-            <p style="font-size: 11px; color: #e74c3c; margin-top: -5px;">⚠️ تحذير صارم: يُسمح لك بتغيير اسمك مرة واحدة فقط كل 15 يوماً.</p>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" name="new_name" placeholder="الاسم المرعب الجديد..." required style="margin-bottom: 0;">
-                <button type="submit" class="btn-primary" style="width: 30%; background: var(--zone-2-silver);">اعتماد التغيير</button>
-            </div>
-        </form>
-        <br>
+            <label style="color: var(--zone-3-gold);">✍️ تغيير الاسم (مرة كل 15 يوم):</label>
+            <div style="display: flex; gap: 5px;"><input type="text" name="new_name" placeholder="الاسم الجديد..." required><button type="submit" class="btn-primary" style="width: 30%;">تغيير</button></div>
+        </form><br>
     </div>
 </div>
-
 {% endblock %}
+
