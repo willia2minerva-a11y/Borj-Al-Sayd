@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-4-diamond);">🤝 قائمة التحالفات</h2>
+<h2 style="color: var(--zone-4-diamond);" class="translatable" data-ar="🤝 قائمة التحالفات" data-en="🤝 Alliances">🤝 قائمة التحالفات</h2>
 
-<!-- محرك البحث -->
 <div class="hunter-card">
     <form method="GET" action="/friends" style="display:flex; gap:5px; margin-bottom: 10px;">
         <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID..." required>
@@ -12,28 +11,36 @@
     {% if search_result %}
         {% if search_result.id|string != user.id|string %}
         <div style="background:#111; padding:15px; border-radius:8px; border:1px solid var(--zone-3-gold); text-align:center; margin-top:15px;">
-            <div style="font-size:40px; margin-bottom:10px;">{{ search_result.avatar if not search_result.avatar.startswith('data:') else '👤' }}</div>
-            <h3 style="margin:0;">{{ search_result.username }} <small>#{{ search_result.hunter_id }}</small></h3>
-            <p style="color:var(--zone-3-gold); font-size:12px;">{{ search_result.special_rank }}</p>
+            <a href="/hunter/{{ search_result.hunter_id }}" style="text-decoration: none; color: inherit; display: block; margin-bottom: 15px;">
+                <div style="font-size:40px; margin-bottom:10px;">
+                    {% if search_result.avatar.startswith('data:') or search_result.avatar.startswith('http') %}
+                        <img src="{{ search_result.avatar }}" loading="lazy" decoding="async" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--zone-3-gold);">
+                    {% else %}
+                        {{ search_result.avatar }}
+                    {% endif %}
+                </div>
+                <h3 style="margin:0; transition: 0.2s;" onmouseover="this.style.color='var(--zone-4-diamond)'" onmouseout="this.style.color='var(--text-main)'">{{ search_result.username }} <small style="color:var(--text-muted);">#{{ search_result.hunter_id }}</small></h3>
+                <p style="color:var(--zone-3-gold); font-size:12px; margin-top: 5px;">{{ search_result.special_rank }}</p>
+            </a>
+            
             <form method="POST" action="/add_friend">
                 <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
                 <button type="submit" class="btn-primary" style="margin-top:10px;">إرسال طلب تحالف</button>
             </form>
         </div>
         {% else %}
-        <p style="color:#e74c3c; text-align:center;">لا يمكنك إضافة نفسك!</p>
+        <p style="color:#e74c3c; text-align:center;">لا يمكنك إضافة أو تفقد نفسك من هنا!</p>
         {% endif %}
     {% endif %}
 </div>
 
-<!-- الطلبات والأصدقاء -->
 <div class="hunter-card">
     {% if friend_requests %}
     <h4 style="color:var(--zone-3-gold);">🔔 طلبات تنتظر ردك:</h4>
     {% for req in friend_requests %}
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; margin-bottom:5px; border:1px solid #333;">
-            <span>{{ req.username }} <small>#{{ req.hunter_id }}</small></span>
-            <a href="/accept_friend/{{ req.hunter_id }}" class="btn-primary" style="width:auto; padding:5px 15px; background:#2ecc71;">قبول</a>
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; margin-bottom:5px; border:1px solid #333; border-radius: 5px;">
+            <a href="/hunter/{{ req.hunter_id }}" style="text-decoration: none; color: var(--text-main); font-weight: bold;">{{ req.username }} <small style="color:var(--text-muted);">#{{ req.hunter_id }}</small></a>
+            <a href="/accept_friend/{{ req.hunter_id }}" class="btn-primary" style="width:auto; padding:5px 15px; background:linear-gradient(45deg, #2ecc71, #27ae60);">قبول</a>
         </div>
     {% endfor %}
     <hr style="border-color:#333; margin:20px 0;">
@@ -42,9 +49,9 @@
     <h4 style="color:var(--zone-2-silver);">👥 حلفاؤك:</h4>
     <div style="display: flex; flex-wrap: wrap; gap: 10px;">
     {% for friend in friends %}
-        <div style="background:#111; padding:8px 15px; border-radius:20px; border:1px solid #444; font-size:13px;">
+        <a href="/hunter/{{ friend.hunter_id }}" style="text-decoration: none; background:#111; padding:8px 15px; border-radius:20px; border:1px solid #444; font-size:13px; color: var(--text-main); transition: 0.3s;" onmouseover="this.style.borderColor='var(--zone-4-diamond)'" onmouseout="this.style.borderColor='#444'">
             {{ friend.username }} <small style="color:var(--zone-3-gold);">#{{ friend.hunter_id }}</small>
-        </div>
+        </a>
     {% else %}
         <p style="color:var(--text-muted); font-size:13px;">ليس لديك حلفاء حتى الآن.</p>
     {% endfor %}
