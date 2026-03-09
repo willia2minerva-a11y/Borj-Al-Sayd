@@ -11,23 +11,30 @@ class User(db.Document):
     avatar = db.StringField(default='👤')
     points = db.IntField(default=0)
     zone = db.IntField(default=0)
-    special_rank = db.StringField(default='صائد مبتدئ')
     status = db.StringField(default='pending') 
     freeze_reason = db.StringField(default='') 
-    role = db.StringField(default='hunter')
+    role = db.StringField(default='hunter') # hunter, admin, ghost
     inventory = db.ListField(db.StringField())
     last_name_change = db.DateTimeField(default=None)
     ip_address = db.StringField()
     friends = db.ListField(db.IntField())
     friend_requests = db.ListField(db.IntField())
-    last_guess_time = db.DateTimeField(default=None) # توقيت آخر إجابة على لغز
+    last_guess_time = db.DateTimeField(default=None) 
+    
+    # --- توقيتات الإشعارات (Last Seen) ---
+    last_seen_news = db.DateTimeField(default=datetime.utcnow)
+    last_seen_puzzles = db.DateTimeField(default=datetime.utcnow)
+    last_seen_decs = db.DateTimeField(default=datetime.utcnow)
+    last_seen_store = db.DateTimeField(default=datetime.utcnow)
+    
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='news') 
+    category = db.StringField(default='news') # news, puzzle, declaration, hidden
     author = db.StringField(default='الإدارة')
+    status = db.StringField(default='approved') # approved, pending (للتصريحات)
     puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
@@ -41,7 +48,10 @@ class StoreItem(db.Document):
     description = db.StringField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(default='')
+    created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
     setting_name = db.StringField(unique=True, default='main_config')
     banner_url = db.StringField(default='https://via.placeholder.com/800x200/111/FFD700?text=Borj+Al-Sayd')
+    home_title = db.StringField(default='البوابة')
+    home_color = db.StringField(default='var(--zone-0-black)')
