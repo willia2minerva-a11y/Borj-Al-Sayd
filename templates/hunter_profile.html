@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hunter-card {{ zone_class }}" style="text-align: center; margin-top: 40px; position: relative;">
+    <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
+    
+    <div class="avatar-ring {{ zone_class }}" style="margin-top: -60px;">
+        {% if target_user.avatar.startswith('data:image') or target_user.avatar.startswith('http') %}
+            <img src="{{ target_user.avatar }}" alt="Avatar" crossorigin="anonymous" loading="lazy" decoding="async">
+        {% else %}
+            <div class="emoji-avatar">{{ target_user.avatar }}</div>
+        {% endif %}
+    </div>
+
+    <div class="special-rank">{{ target_user.special_rank }}</div>
+    <h2 style="margin-bottom: 5px;">{{ target_user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ target_user.hunter_id }}</span></h2>
+    <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
+    
+    <div style="display: flex; justify-content: space-around; align-items: center;">
+        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ target_user.points }}</strong></div>
+        <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if target_user.status == 'active' else '#e74c3c' }};">{{ 'مجمد 💀' if target_user.status != 'active' else 'نشط 🟢' }}</strong></div>
+    </div>
+    
+    {% if target_user.status == 'frozen' and target_user.freeze_reason %}
+    <div style="margin-top: 20px; padding: 10px; background: rgba(231, 76, 60, 0.1); border: 1px dashed #e74c3c; border-radius: 8px;">
+        <span style="color: #e74c3c; font-size: 12px;">سبب الإقصاء:</span><br>
+        <i style="color: #ff9999; font-size: 14px;">"{{ target_user.freeze_reason }}"</i>
+    </div>
+    {% endif %}
+    
+    {% if target_user.status != 'frozen' and session.get('user_id') != target_user.id|string %}
+    <div style="margin-top: 25px;">
+        <form method="POST" action="/add_friend" style="margin: 0;">
+            <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
+            <button type="submit" class="btn-primary" style="width: auto; padding: 10px 40px; background: linear-gradient(45deg, var(--zone-4-diamond), #0099cc); color: #000;">إرسال طلب تحالف 🤝</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
