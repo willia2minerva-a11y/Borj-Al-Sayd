@@ -13,19 +13,20 @@ class User(db.Document):
     zone = db.IntField(default=0)
     special_rank = db.StringField(default='صائد مبتدئ')
     status = db.StringField(default='pending') # pending, active, frozen
+    freeze_reason = db.StringField(default='') # سبب الإقصاء للمقبرة
     role = db.StringField(default='hunter')
     inventory = db.ListField(db.StringField())
     last_name_change = db.DateTimeField(default=None)
-    ip_address = db.StringField() # لحظر الحسابات المتعددة
-    friends = db.ListField(db.IntField()) # قائمة ID الأصدقاء
-    friend_requests = db.ListField(db.IntField()) # طلبات الصداقة المعلقة
+    ip_address = db.StringField()
+    friends = db.ListField(db.IntField())
+    friend_requests = db.ListField(db.IntField())
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     category = db.StringField(default='news') # news, declaration
-    author = db.StringField(default='الإدارة') # اسم صاحب التصريح
+    author = db.StringField(default='الإدارة')
     puzzle_type = db.StringField(default='none') # none, secret_word, sequence, secret_link, fake_account
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
