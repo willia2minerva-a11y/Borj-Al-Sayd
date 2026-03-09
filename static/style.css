@@ -59,7 +59,7 @@ body {
 .ltr-mode { direction: ltr; font-family: Arial, sans-serif; }
 main { padding: 20px; max-width: 800px; margin: 0 auto; }
 
-/* --- الهيدر الزجاجي (Glassmorphism) --- */
+/* --- الهيدر الزجاجي --- */
 header { 
     background: rgba(22, 25, 32, 0.85); 
     backdrop-filter: blur(10px); 
@@ -78,7 +78,26 @@ header {
 .menu-btn { background: none; border: none; color: var(--zone-3-gold); font-size: 28px; cursor: pointer; transition: 0.3s; }
 .menu-btn:hover { color: var(--zone-4-diamond); transform: scale(1.1); text-shadow: 0 0 10px var(--zone-4-diamond); }
 
-#side-nav { display: none; flex-direction: column; background: rgba(17, 17, 17, 0.95); backdrop-filter: blur(5px); padding: 10px 0; border-bottom: 2px solid var(--zone-3-gold); box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
+/* =========================================================
+   إصلاح القائمة المنسدلة (السحر الذي يبقيها على الشاشة)
+   ========================================================= */
+#side-nav { 
+    display: none; 
+    flex-direction: column; 
+    background: rgba(17, 17, 17, 0.98); 
+    backdrop-filter: blur(10px); 
+    padding: 10px 0; 
+    border-bottom: 2px solid var(--zone-3-gold); 
+    box-shadow: 0 10px 20px rgba(0,0,0,0.8); 
+    
+    position: fixed; /* هذا التعديل يمنعها من الهروب لأعلى الصفحة */
+    top: 65px; /* تفتح أسفل الهيدر مباشرة */
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    max-height: calc(100vh - 65px); /* حتى لا تتجاوز الشاشة */
+    overflow-y: auto; /* إضافة شريط تمرير إذا كانت الشاشة صغيرة */
+}
 #side-nav.active { display: flex; animation: fadeInSlide 0.3s ease-out; }
 #side-nav a { padding: 12px 20px; color: var(--text-main); text-decoration: none; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
 #side-nav a:hover { color: var(--zone-3-gold); background: rgba(255,207,51,0.1); padding-right: 30px; }
