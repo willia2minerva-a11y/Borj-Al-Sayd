@@ -27,17 +27,27 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- نظام حساب الإشعارات (متوفر في كل الصفحات) ---
+# --- نظام حساب الإشعارات (المصحح والآمن) ---
 @app.context_processor
 def inject_notifications():
     if 'user_id' in session:
-        user = User.objects(id=session['user_id']).first()
-        if user:
-            un_news = News.objects(category='news', status='approved', created_at__gt=user.last_seen_news).count()
-            un_puz = News.objects(category='puzzle', status='approved', created_at__gt=user.last_seen_puzzles).count()
-            un_dec = News.objects(category='declaration', status='approved', created_at__gt=user.last_seen_decs).count()
-            un_store = StoreItem.objects(created_at__gt=user.last_seen_store).count()
-            return dict(un_news=un_news, un_puz=un_puz, un_dec=un_dec, un_store=un_store, current_user=user)
+        try:
+            user = User.objects(id=session['user_id']).first()
+            if user:
+                now = datetime.utcnow()
+                # حماية للحسابات القديمة التي لا تملك توقيتات مسجلة
+                ls_news = user.last_seen_news or now
+                ls_puz = user.last_seen_puzzles or now
+                ls_dec = user.last_seen_decs or now
+                ls_store = user.last_seen_store or now
+                
+                un_news = News.objects(category='news', status='approved', created_at__gt=ls_news).count()
+                un_puz = News.objects(category='puzzle', status='approved', created_at__gt=ls_puz).count()
+                un_dec = News.objects(category='declaration', status='approved', created_at__gt=ls_dec).count()
+                un_store = StoreItem.objects(created_at__gt=ls_store).count()
+                return dict(un_news=un_news, un_puz=un_puz, un_dec=un_dec, un_store=un_store, current_user=user)
+        except Exception as e:
+            pass # منع انهيار الموقع في حال وجود خطأ في البيانات
     return dict()
 
 @app.route('/')
@@ -81,7 +91,8 @@ def logout(): session.pop('user_id', None); session.pop('role', None); return re
 def profile():
     user = User.objects(id=session['user_id']).first()
     settings = GlobalSettings.objects(setting_name='main_config').first()
-    return render_template('profile.html', user=user, banner_url=settings.banner_url if settings else '')
+    zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
+    return render_template('profile.html', user=user, zone_class=zones.get(user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '')
 
 @app.route('/hunter/<int:target_id>')
 @login_required
@@ -90,7 +101,8 @@ def hunter_profile(target_id):
     if not target_user or target_user.role == 'ghost':
         flash('هذا الصائد غير موجود!', 'error'); return redirect(request.referrer or url_for('home'))
     settings = GlobalSettings.objects(setting_name='main_config').first()
-    return render_template('hunter_profile.html', target_user=target_user, banner_url=settings.banner_url if settings else '')
+    zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
+    return render_template('hunter_profile.html', target_user=target_user, zone_class=zones.get(target_user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '')
 
 @app.route('/settings', methods=['POST'])
 @login_required
@@ -100,10 +112,13 @@ def update_settings():
     if action == 'change_avatar':
         file = request.files.get('avatar_file')
         if file: user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+        flash('تم تحديث الصورة!', 'success')
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         if not User.objects(username=new_name).first() and (not user.last_name_change or (datetime.utcnow() - user.last_name_change).days >= 15):
             user.username = new_name; user.last_name_change = datetime.utcnow()
+            flash('تم تغيير الاسم بنجاح!', 'success')
+        else: flash('لا يمكنك تغيير الاسم الآن أو الاسم محجوز.', 'error')
     user.save(); return redirect(url_for('profile'))
 
 @app.route('/friends', methods=['GET'])
@@ -124,18 +139,17 @@ def add_friend():
     target_id = int(request.form.get('target_id'))
     target = User.objects(hunter_id=target_id).first()
     
-    # فخ الشبح
     if target and target.role == 'ghost':
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target_id)).first()
         if trap and str(user.id) not in trap.winners_list and trap.current_winners < trap.max_winners:
             user.points += trap.reward_points; trap.current_winners += 1; trap.winners_list.append(str(user.id))
             user.save(); trap.save(); flash('وقعـت فـي فـخ الشـبح! كسبت النقاط ببراعة.', 'success')
         else: flash('هذا الشبح لم يعد يمتلك جوائز.', 'error')
-        return redirect(request.referrer)
+        return redirect(request.referrer or url_for('friends'))
         
     if target and target.status != 'frozen' and target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
         target.friend_requests.append(user.hunter_id); target.save(); flash('تم إرسال الطلب.', 'success')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for('friends'))
 
 @app.route('/cancel_friend/<int:target_id>', methods=['POST'])
 @login_required
@@ -144,7 +158,7 @@ def cancel_friend(target_id):
     target = User.objects(hunter_id=target_id).first()
     if target and user.hunter_id in target.friend_requests:
         target.friend_requests.remove(user.hunter_id); target.save(); flash('تم إلغاء الطلب.', 'success')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for('friends'))
 
 @app.route('/accept_friend/<int:friend_id>')
 @login_required
@@ -155,17 +169,15 @@ def accept_friend(friend_id):
         friend = User.objects(hunter_id=friend_id).first()
         if friend: friend.friends.append(user.hunter_id); friend.save()
         user.save(); flash('تم قبول التحالف!', 'success')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for('friends'))
 
-# --- الأخبار (مفصولة) ---
 @app.route('/news')
 @login_required
 def news():
     user = User.objects(id=session['user_id']).first()
-    user.last_seen_news = datetime.utcnow(); user.save() # تصفير إشعار الأخبار
+    user.last_seen_news = datetime.utcnow(); user.save()
     return render_template('news.html', news_list=News.objects(category='news', status='approved').order_by('-created_at'))
 
-# --- الألغاز (مفصولة) ---
 @app.route('/puzzles', methods=['GET', 'POST'])
 @login_required
 def puzzles():
@@ -175,20 +187,21 @@ def puzzles():
         if user.role != 'admin' and user.last_guess_time:
             time_passed = (now - user.last_guess_time).total_seconds()
             if time_passed < 300:
-                flash(f'انتظر {int((300 - time_passed) // 60)} دقيقة لمنع السبام.', 'error'); return redirect(url_for('puzzles'))
+                flash(f'انتظر {int((300 - time_passed) // 60)} دقيقة لمنع التخمين العشوائي.', 'error'); return redirect(url_for('puzzles'))
+        
         guess = request.form.get('guess'); puzzle_id = request.form.get('puzzle_id')
         puzzle = News.objects(id=puzzle_id).first()
         user.last_guess_time = now 
+        
         if puzzle and puzzle.current_winners < puzzle.max_winners and guess == puzzle.puzzle_answer and str(user.id) not in puzzle.winners_list:
             user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
             puzzle.save(); flash('إجابة صحيحة!', 'success')
         else: flash('إجابة خاطئة أو نفدت الجوائز!', 'error')
         user.save(); return redirect(url_for('puzzles'))
         
-    user.last_seen_puzzles = datetime.utcnow(); user.save() # تصفير إشعار الألغاز
+    user.last_seen_puzzles = datetime.utcnow(); user.save()
     return render_template('puzzles.html', puzzles_list=News.objects(category='puzzle', status='approved').order_by('-created_at'))
 
-# --- التصريحات والموافقة ---
 @app.route('/declarations', methods=['GET', 'POST'])
 @login_required
 def declarations():
@@ -201,14 +214,14 @@ def declarations():
             flash('تم إرسال تصريحك للقيادة بانتظار الموافقة!', 'success')
         return redirect(url_for('declarations'))
         
-    user.last_seen_decs = datetime.utcnow(); user.save() # تصفير
+    user.last_seen_decs = datetime.utcnow(); user.save()
     return render_template('declarations.html', decs=News.objects(category='declaration', status='approved').order_by('-created_at'))
 
 @app.route('/store')
 @login_required
 def store():
     user = User.objects(id=session['user_id']).first()
-    user.last_seen_store = datetime.utcnow(); user.save() # تصفير
+    user.last_seen_store = datetime.utcnow(); user.save()
     return render_template('store.html', items=StoreItem.objects())
 
 @app.route('/buy/<item_id>', methods=['POST'])
@@ -222,13 +235,12 @@ def buy_item(item_id):
         else: flash('نقاطك لا تكفي!', 'error')
     return redirect(url_for('store'))
 
-# -- اختصارات الإدارة والحذف --
 @app.route('/delete_news/<news_id>', methods=['POST'])
 @admin_required
 def delete_news(news_id):
     n = News.objects(id=news_id).first()
     if n: n.delete(); flash('تم السحق 🗑️', 'success')
-    return redirect(request.referrer)
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/approve_dec/<news_id>', methods=['POST'])
 @admin_required
@@ -237,13 +249,59 @@ def approve_dec(news_id):
     if n: n.status = 'approved'; n.created_at = datetime.utcnow(); n.save(); flash('تمت الموافقة وتم النشر!', 'success')
     return redirect(url_for('admin_panel'))
 
+@app.route('/secret_link/<puzzle_id>')
+@login_required
+def secret_link(puzzle_id):
+    user = User.objects(id=session['user_id']).first()
+    try:
+        puzzle = News.objects(id=puzzle_id, puzzle_type='secret_link').first()
+        if puzzle and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
+            user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
+            user.save(); puzzle.save(); flash('اكتشفت الرابط السري!', 'success')
+    except: pass
+    return redirect(url_for('puzzles'))
+
+@app.route('/multi_click/<puzzle_id>')
+@login_required
+def multi_click(puzzle_id):
+    user = User.objects(id=session['user_id']).first()
+    try:
+        puzzle = News.objects(id=puzzle_id, puzzle_type='multi_click').first()
+        if puzzle and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
+            user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
+            user.save(); puzzle.save(); flash('إصرارك أثمر! حصلت على النقطة.', 'success')
+    except: pass
+    return redirect(request.referrer or url_for('home'))
+
+@app.route('/delete_store_item/<item_id>', methods=['POST'])
+@admin_required
+def delete_store_item(item_id):
+    item = StoreItem.objects(id=item_id).first()
+    if item: item.delete(); flash('تم سحب الأداة من السوق نهائياً! 🗑️', 'success')
+    return redirect(url_for('store'))
+
+@app.route('/edit_store_item/<item_id>', methods=['POST'])
+@admin_required
+def edit_store_item(item_id):
+    item = StoreItem.objects(id=item_id).first()
+    if item:
+        item.name = request.form.get('item_name', item.name)
+        item.description = request.form.get('item_desc', item.description)
+        item.price = int(request.form.get('item_price', item.price))
+        file = request.files.get('item_image')
+        if file and file.filename != '': item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+        item.save(); flash('تم تحديث بيانات الأداة بنجاح! 🛠️', 'success')
+    return redirect(url_for('store'))
+
+@app.route('/graveyard')
+def graveyard(): return render_template('graveyard.html', users=User.objects(status='frozen').order_by('-id'))
+
 @app.route('/admin', methods=['GET', 'POST'])
 @admin_required
 def admin_panel():
     if request.method == 'POST':
         action = request.form.get('action')
         
-        # إدارة شاملة للمستخدمين
         if action == 'bulk_action':
             selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
             for uid in selected:
@@ -254,7 +312,6 @@ def admin_panel():
                     u.save()
             flash('تم تنفيذ الأمر الجماعي!', 'success')
             
-        # إعدادات الرئيسية
         elif action == 'update_home_settings':
             settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config')
             settings.home_title = request.form.get('home_title', 'البوابة')
@@ -263,29 +320,36 @@ def admin_panel():
             if file and file.filename != '': settings.banner_url = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
             settings.save(); flash('تم تحديث الرئيسية', 'success')
             
-        # نشر الأخبار والألغاز
         elif action == 'add_news':
             cat = 'puzzle' if request.form.get('puzzle_type') != 'none' else 'news'
             News(title=request.form.get('title'), content=request.form.get('content'), category=cat, puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
             flash('تم النشر!', 'success')
             
-        # الفخاخ وتوليد الشبح
         elif action == 'add_standalone_puzzle':
             ptype = request.form.get('puzzle_type'); panswer = request.form.get('puzzle_answer')
             News(title="لغز مخفي", content="لغز خفي", category='hidden', puzzle_type=ptype, puzzle_answer=panswer, reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
-            
-            # توليد حساب الشبح إذا كان الفخ طلب صداقة
             if ptype == 'fake_account' and panswer.isdigit():
                 if not User.objects(hunter_id=int(panswer)).first():
                     User(hunter_id=int(panswer), username=f"Ghost_{panswer}", password_hash="dummy", role='ghost', status='active', avatar='👻').save()
             flash('تم توليد الفخ', 'success')
             
-        # إضافة للمتجر
         elif action == 'add_store_item':
             item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')))
             file = request.files.get('item_image')
             if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
             item.save(); flash('تم الإضافة', 'success')
+            
+        elif action in ['activate', 'freeze', 'add_points', 'change_zone', 'change_rank', 'make_admin', 'remove_admin']:
+            user = User.objects(id=request.form.get('user_id')).first()
+            if user:
+                if action == 'freeze' and user.hunter_id != 1000: user.status = 'frozen'; user.freeze_reason = request.form.get('freeze_reason', '')
+                elif action == 'activate': user.status = 'active'
+                elif action == 'add_points': user.points = int(request.form.get('points_amount', 0))
+                elif action == 'change_zone': user.zone = int(request.form.get('zone_num', 0))
+                elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
+                elif action == 'make_admin': user.role = 'admin'
+                elif action == 'remove_admin' and user.hunter_id != 1000: user.role = 'hunter'
+                user.save(); flash('تم حفظ التعديلات', 'success')
 
         return redirect(url_for('admin_panel'))
         
@@ -295,4 +359,3 @@ def admin_panel():
     return render_template('admin.html', users=User.objects(role__ne='ghost'), pending_decs=pending_decs, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
-
