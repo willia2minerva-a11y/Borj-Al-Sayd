@@ -9,24 +9,24 @@
 </head>
 <body>
     <header>
-        <a href="/" class="logo">🎣 برج الصيد</a>
+        <a href="/" class="logo translatable" data-ar="🎣 برج الصيد" data-en="🏹 Hunting Tower">🏹 برج الصيد</a>
         <div>
-            <button id="lang-toggle" class="lang-btn">EN/AR</button>
+            <button id="lang-toggle" style="background:#222; color:#fff; border:1px solid #444; padding:5px; border-radius:5px;">AR/EN</button>
             {% if session.get('user_id') %}<button id="menu-toggle" class="menu-btn">☰</button>{% endif %}
         </div>
     </header>
     {% if session.get('user_id') %}
     <nav id="side-nav">
-        <a href="/">🏠 الرئيسية</a>
-        <a href="/news">📜 الأخبار والألغاز</a>
-        <a href="/declarations">📢 التصريحات</a>
-        <a href="/store">🛒 المتجر</a>
-        <a href="/graveyard">💀 المقبرة</a>
-        <a href="/profile">🪪 رخصتي</a>
+        <a href="/" class="translatable" data-ar="🏠 الرئيسية" data-en="🏠 Home">🏠 الرئيسية</a>
+        <a href="/profile" class="translatable" data-ar="🪪 رخصتي" data-en="🪪 Profile">🪪 رخصتي</a>
+        <a href="/friends" class="translatable" data-ar="🤝 الأصدقاء" data-en="🤝 Friends">🤝 الأصدقاء</a>
+        <a href="/news" class="translatable" data-ar="📜 الأخبار" data-en="📜 News">📜 الأخبار</a>
+        <a href="/declarations" class="translatable" data-ar="📢 التصريحات" data-en="📢 Declarations">📢 التصريحات</a>
+        <a href="/store" class="translatable" data-ar="🛒 المتجر" data-en="🛒 Store">🛒 المتجر</a>
     </nav>
     {% endif %}
     <main>
-        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}{% endif %}{% endwith %}
+        {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}{% endwith %}
         {% block content %}{% endblock %}
     </main>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
