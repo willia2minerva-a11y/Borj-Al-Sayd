@@ -1,6 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="global-banner"><h2 class="translatable" data-ar="المرحلة الحالية: {{ current_zone }}" data-en="Current Zone: {{ current_zone }}">المرحلة الحالية: <span>{{ current_zone }}</span></h2></div>
+
+<!-- الغلاف المخصص من الإدارة -->
+<div class="global-banner" style="background-image: url('{{ settings.banner_url if settings and settings.banner_url else '' }}'); background-size: cover; background-position: center; border-radius: 10px; padding: 40px 20px; text-align: center; border-bottom: 4px solid {{ settings.home_color if settings else 'var(--zone-0-black)' }}; margin-bottom: 25px; position: relative; overflow: hidden;">
+    <div style="background: rgba(0,0,0,0.7); position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
+    <h2 style="color: {{ settings.home_color if settings else 'var(--text-main)' }}; text-shadow: 0 0 10px {{ settings.home_color if settings else 'var(--zone-0-black)' }}; position: relative; z-index: 1; font-size: 28px; font-weight: 900; margin: 0;">
+        {{ settings.home_title if settings else 'البوابة' }}
+    </h2>
+</div>
 
 {% if session.get('user_id') %}
 <div class="top-squares">
@@ -15,20 +22,20 @@
 <div class="preview-grid">
     <a href="/news" class="preview-card" style="border-top: 3px solid #8B5A2B;">
         <h4 style="margin:0 0 5px 0; color:#8B5A2B;" class="translatable" data-ar="آخر خبر" data-en="Latest News">آخر خبر</h4>
-        <p style="font-size:12px; margin:0;">{{ news.title if news else 'لا يوجد' }}</p>
+        <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ news.title if news else 'لا يوجد' }}</p>
     </a>
     <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
         <h4 style="margin:0 0 5px 0; color:var(--zone-5-fire);" class="translatable" data-ar="أحدث تصريح" data-en="Latest Declaration">أحدث تصريح</h4>
-        <p style="font-size:12px; margin:0;">{{ dec.title if dec else 'لا يوجد' }}</p>
+        <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ dec.title if dec else 'لا يوجد' }}</p>
     </a>
     <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
         <h4 style="margin:0 0 5px 0; color:var(--zone-3-gold);" class="translatable" data-ar="السوق" data-en="Market">السوق</h4>
-        <p style="font-size:12px; margin:0;">اضغط للدخول</p>
+        <p style="font-size:12px; margin:0; color: var(--text-muted);">اضغط للدخول والتسوق</p>
     </a>
 </div>
 
 {% if last_frozen %}
-<a href="/graveyard" class="preview-card" style="display: block; text-align:center; padding: 20px; border-top: 3px solid #e74c3c; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); margin-top: 20px; text-decoration: none;">
+<a href="/graveyard" class="preview-card ghost-card" style="display: block; text-align:center; padding: 20px; border-top: 3px solid #e74c3c; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); margin-top: 20px; text-decoration: none;">
     <h4 style="margin:0 0 10px 0; color:#e74c3c; font-size: 16px; text-shadow: 0 0 8px rgba(231,76,60,0.5);">💀 بوابة المقبرة (آخر الضحايا)</h4>
     <strong style="color: #e2e8f0; font-size: 18px;">{{ last_frozen.username }}</strong>
     <p style="font-size:13px; color:#aaa; margin-top:5px; font-style: italic;">"{{ last_frozen.freeze_reason }}"</p>
@@ -39,8 +46,8 @@
 {% else %}
 <div class="hunter-card" style="text-align: center;">
     <h3>أهلاً بك في برج الصيد</h3>
-    <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام</a>
-    <a href="{{ url_for('login') }}">تسجيل الدخول</a>
+    <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام (تسجيل)</a>
+    <a href="{{ url_for('login') }}" class="btn-primary" style="background: #222; color: #fff; border: 1px solid var(--zone-3-gold);">تسجيل الدخول</a>
 </div>
 {% endif %}
 {% endblock %}
