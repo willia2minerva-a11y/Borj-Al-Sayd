@@ -1,22 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="global-banner"><h2>المرحلة الحالية: <span>{{ current_zone }}</span></h2></div>
+<div class="global-banner"><h2 class="translatable" data-ar="المرحلة الحالية: {{ current_zone }}" data-en="Current Zone: {{ current_zone }}">المرحلة الحالية: <span>{{ current_zone }}</span></h2></div>
 
 {% if session.get('user_id') %}
-<div class="preview-grid">
-    <a href="/news" class="preview-card" style="border-top: 3px solid var(--zone-4-diamond);">
-        <h4 style="margin:0 0 10px 0; color:var(--zone-4-diamond);">آخر خبر/لغز</h4>
-        <p style="font-size:13px;">{{ news.title if news else 'لا يوجد أخبار' }}</p>
+<!-- المربعات العلوية -->
+<div class="top-squares">
+    <a href="/profile" class="square-card" style="border-color: var(--zone-3-gold);">
+        <div class="square-icon">🛡️</div><strong class="translatable" data-ar="الرخصة" data-en="License">الرخصة</strong>
     </a>
-    <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
-        <h4 style="margin:0 0 10px 0; color:var(--zone-5-fire);">أحدث تصريح</h4>
-        <p style="font-size:13px;">{{ dec.title if dec else 'لا توجد تصريحات' }}</p>
-    </a>
-    <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
-        <h4 style="margin:0 0 10px 0; color:var(--zone-3-gold);">جديد المتجر</h4>
-        <p style="font-size:13px;">{{ item.name if item else 'المتجر فارغ' }}</p>
+    <a href="/friends" class="square-card" style="border-color: var(--zone-4-diamond);">
+        <div class="square-icon">🤝</div><strong class="translatable" data-ar="الأصدقاء" data-en="Friends">الأصدقاء</strong>
     </a>
 </div>
+
+<!-- الواجهة الحيوية -->
+<div class="preview-grid">
+    <a href="/news" class="preview-card" style="border-top: 3px solid #8B5A2B;">
+        <h4 style="margin:0 0 5px 0; color:#8B5A2B;" class="translatable" data-ar="آخر خبر" data-en="Latest News">آخر خبر</h4>
+        <p style="font-size:12px; margin:0;">{{ news.title if news else 'لا يوجد' }}</p>
+    </a>
+    <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
+        <h4 style="margin:0 0 5px 0; color:var(--zone-5-fire);" class="translatable" data-ar="أحدث تصريح" data-en="Latest Declaration">أحدث تصريح</h4>
+        <p style="font-size:12px; margin:0;">{{ dec.title if dec else 'لا يوجد' }}</p>
+    </a>
+    <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
+        <h4 style="margin:0 0 5px 0; color:var(--zone-3-gold);" class="translatable" data-ar="المتجر" data-en="Store">المتجر</h4>
+        <p style="font-size:12px; margin:0;">اضغط للدخول</p>
+    </a>
+</div>
+
+<!-- آخر المقيدين -->
+{% if last_frozen %}
+<div class="hunter-card ghost-card" style="text-align:center; padding: 15px;">
+    <h4 style="margin:0 0 10px 0; color:#e74c3c;">💀 آخر ضحايا البرج</h4>
+    <strong>{{ last_frozen.username }}</strong>
+    <p style="font-size:12px; color:#aaa; margin-top:5px;">"{{ last_frozen.freeze_reason }}"</p>
+</div>
+{% endif %}
+
 {% else %}
 <div class="hunter-card" style="text-align: center;">
     <h3>أهلاً بك في برج الصيد</h3>
