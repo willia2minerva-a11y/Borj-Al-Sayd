@@ -1,25 +1,42 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>📜 مخطوطات البرج</h2>
+<h2 style="color: var(--zone-4-diamond);" class="translatable" data-ar="📜 الأخبار والألغاز" data-en="📜 News & Puzzles">📜 الأخبار والألغاز</h2>
+
 {% for n in news_list %}
-<div class="hunter-card" style="padding: 0;">
-    <div class="accordion-header">{{ n.title }}</div>
-    <div class="accordion-content">
-        <p style="padding-top:15px;">{{ n.content | safe }}</p>
+<div class="hunter-card" style="padding: 0; border-color: var(--zone-0-black);">
+    
+    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: var(--zone-3-gold);">{{ n.title }}</span>
         
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <span style="font-size:12px; color:var(--text-muted);">الجوائز المتبقية: {{ n.max_winners - n.current_winners }}</span>
+            
+            {% if session.get('role') == 'admin' %}
+            <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('هل أنت متأكد من سحق هذا المنشور نهائياً؟');">
+                <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="accordion-content">
+        <p style="padding-top:15px; color: var(--text-main); line-height: 1.6;">
+            {{ n.content | safe | replace('<img', '<img loading="lazy" decoding="async"') }}
+        </p>
+
         {% if n.puzzle_type == 'secret_word' %}
-        <div style="background:#222; padding:15px; border-radius:5px; margin-top:15px;">
-            <form method="POST">
+        <div style="background:#222; padding:15px; border-radius:8px; margin-top:15px; border: 1px dashed var(--zone-4-diamond);">
+            <form method="POST" style="margin: 0; display: flex; gap: 5px;">
                 <input type="hidden" name="news_id" value="{{ n.id }}">
-                <input type="text" name="guess" placeholder="اكتب الكلمة السرية هنا..." style="width:70%; padding:8px; background:#111; color:#fff; border:1px solid var(--floor-0-black);" required>
-                <button type="submit" class="btn-primary" style="width:25%; padding:8px;">إرسال</button>
+                <input type="text" name="guess" placeholder="اكتب الكلمة السرية هنا لفك اللغز..." required style="margin-bottom: 0;">
+                <button type="submit" class="btn-primary" style="width:30%;">إرسال الإجابة</button>
             </form>
         </div>
         {% endif %}
+        <br>
     </div>
 </div>
 {% else %}
-<p>لا توجد مخطوطات حالياً.</p>
+<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">لا توجد أخبار أو ألغاز في الوقت الحالي.</p>
 {% endfor %}
 {% endblock %}
-
