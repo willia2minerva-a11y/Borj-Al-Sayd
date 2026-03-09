@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-5-fire); text-align: center;">👑 لوحة الإدارة</h2>
+<h2 style="color: var(--zone-5-fire); text-align: center;">👑 القيادة الإمبراطورية</h2>
 
 <div class="admin-grid">
-    <!-- 1. غلاف الرخص -->
     <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🖼️ غلاف الرخص</h3>
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🖼️ رفع غلاف الرخص</h3>
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="update_banner">
             <input type="file" name="banner_file" accept="image/*" required>
@@ -13,14 +12,14 @@
         </form>
     </div>
 
-    <!-- 2. السوق -->
     <div class="hunter-card" style="margin:0;">
         <h3 style="color: var(--zone-3-gold); margin-top: 0;">🛒 إضافة للسوق</h3>
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="add_store_item">
-            <input type="text" name="item_name" placeholder="اسم الأداة" required>
-            <input type="text" name="item_desc" placeholder="التفاصيل" required>
-            <input type="number" name="item_price" placeholder="السعر" required>
+            <input type="text" name="item_name" placeholder="اسم الأداة/القدرة" required>
+            <input type="text" name="item_desc" placeholder="التفاصيل والتأثير" required>
+            <input type="number" name="item_price" placeholder="السعر بالنقاط" required>
+            <label style="color: var(--text-muted); font-size: 11px;">صورة الأداة:</label>
             <input type="file" name="item_image" accept="image/*">
             <button type="submit" class="btn-primary">نشر في السوق</button>
         </form>
@@ -28,45 +27,46 @@
 </div>
 
 <div class="admin-grid" style="margin-top: 20px;">
-    <!-- 3. الأخبار والألغاز -->
     <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📜 الأخبار والألغاز</h3>
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📜 نشر خبر أو لغز</h3>
         <form method="POST">
             <input type="hidden" name="action" value="add_news">
-            <input type="text" name="title" placeholder="عنوان الخبر..." required>
+            <input type="text" name="title" placeholder="عنوان الخبر/اللغز..." required>
             <textarea name="content" rows="4" placeholder="المحتوى..." required></textarea>
-            <label>هل يحتوي على لغز؟</label>
+            <label>هل يحتوي على لغز مباشر؟</label>
             <select name="puzzle_type">
-                <option value="none">بدون لغز</option>
+                <option value="none">بدون لغز (خبر عادي)</option>
                 <option value="secret_word">لغز الكلمة (مربع إدخال)</option>
-                <option value="sequence">الكلمات المتسلسلة</option>
+                <option value="sequence">الكلمات المتسلسلة (HTML)</option>
             </select>
             <input type="text" name="puzzle_answer" placeholder="إجابة الكلمة (إن وجد)">
-            <input type="number" name="reward_points" placeholder="النقاط">
-            <input type="number" name="max_winners" placeholder="عدد الفائزين" value="1">
-            <button type="submit" class="btn-primary">نشر</button>
+            <input type="number" name="reward_points" placeholder="جائزة النقاط" value="0">
+            <input type="number" name="max_winners" placeholder="عدد الفائزين المسموح" value="1">
+            <button type="submit" class="btn-primary">نشر الخبر</button>
         </form>
     </div>
 
-    <!-- 4. التصريحات -->
     <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📢 التصريحات</h3>
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📢 نشر تصريح لاعب</h3>
         <form method="POST">
             <input type="hidden" name="action" value="add_declaration">
-            <input type="text" name="title" placeholder="العنوان..." required>
+            <input type="text" name="title" placeholder="عنوان التصريح..." required>
             <input type="text" name="author" placeholder="اسم اللاعب المُصرح..." required>
-            <textarea name="content" rows="4" placeholder="التصريح..." required></textarea>
-            <button type="submit" class="btn-primary" style="background:var(--zone-5-fire); color:#fff;">نشر</button>
+            <textarea name="content" rows="4" placeholder="نص التصريح..." required></textarea>
+            <button type="submit" class="btn-primary" style="background:linear-gradient(45deg, var(--zone-5-fire), #e74c3c); color:#fff;">نشر التصريح</button>
         </form>
     </div>
 </div>
 
-<!-- 5. الألغاز المنفردة والمخفية -->
 <div class="hunter-card" style="margin-top:20px; border-color:var(--zone-4-diamond);">
     <h3 style="color: var(--zone-4-diamond); margin-top: 0;">🧩 توليد ألغاز منفردة (فخاخ وروابط)</h3>
     <form method="POST" style="display:flex; gap:10px; flex-wrap:wrap;">
         <input type="hidden" name="action" value="add_standalone_puzzle">
-        <select name="puzzle_type" style="width:48%;"><option value="fake_account">فخ طلب صداقة (اكتب ID اللاعب تحته)</option><option value="secret_link">توليد رابط سري</option><option value="multi_click">لغز الضغط المتكرر</option></select>
+        <select name="puzzle_type" style="width:48%;">
+            <option value="fake_account">فخ طلب صداقة (اكتب ID تحته)</option>
+            <option value="secret_link">توليد رابط سري</option>
+            <option value="multi_click">لغز الضغط المتكرر</option>
+        </select>
         <input type="text" name="puzzle_answer" placeholder="إجابة اللغز/ID الفخ" style="width:48%;">
         <input type="number" name="reward_points" placeholder="النقاط" style="width:30%;">
         <input type="number" name="max_winners" placeholder="عدد الفائزين" value="1" style="width:30%;">
@@ -74,13 +74,13 @@
     </form>
     
     {% if hidden_puzzles %}
-    <div style="background:#111; padding:10px; margin-top:10px; border:1px solid #444;">
-        <h4 style="margin:0 0 10px 0;">الألغاز المولدة (انسخ أكوادها وضعها في الأخبار):</h4>
+    <div style="background:#111; padding:15px; margin-top:15px; border-radius: 8px; border:1px dashed var(--zone-4-diamond);">
+        <h4 style="margin:0 0 10px 0; color: var(--zone-4-diamond);">الألغاز المولدة (انسخ الأكواد للخبر):</h4>
         {% for p in hidden_puzzles %}
             <p style="font-size:12px; border-bottom:1px solid #333; padding-bottom:5px;">
-                <strong>نوع اللغز:</strong> {{ p.puzzle_type }} | <strong>النقاط:</strong> {{ p.reward_points }}<br>
-                {% if p.puzzle_type == 'secret_link' %} الكود للخبر: <code style="color:var(--zone-4-diamond);">/secret_link/{{ p.id }}</code>
-                {% elif p.puzzle_type == 'multi_click' %} الكود للخبر: <code style="color:var(--zone-4-diamond);">&lt;span class="multi-click-word" data-id="{{ p.id }}" data-target="5"&gt;الكلمة هنا&lt;/span&gt;</code>
+                <strong>النوع:</strong> {{ p.puzzle_type }} | <strong>النقاط:</strong> {{ p.reward_points }}<br>
+                {% if p.puzzle_type == 'secret_link' %} كود الرابط المخفي: <code style="color:var(--zone-4-diamond); user-select:all;">/secret_link/{{ p.id }}</code>
+                {% elif p.puzzle_type == 'multi_click' %} كود الكلمة للضغط: <code style="color:var(--zone-4-diamond); user-select:all;">&lt;span class="multi-click-word" data-id="{{ p.id }}" data-target="5"&gt;الكلمة هنا&lt;/span&gt;</code>
                 {% else %} ID الفخ المفعل: <code style="color:#e74c3c;">{{ p.puzzle_answer }}</code> {% endif %}
             </p>
         {% endfor %}
@@ -88,24 +88,51 @@
     {% endif %}
 </div>
 
-<!-- 6. الأعضاء -->
 <div class="hunter-card" style="overflow-x: auto; margin-top: 20px;">
-    <h3>👥 الأعضاء</h3>
-    <form method="POST" style="background:#222; padding:15px; border-radius:5px; margin-bottom:15px; border:1px solid #e74c3c;">
-        <input type="hidden" name="action" value="bulk_action"><input type="hidden" name="bulk_type" value="freeze_all">
-        <button type="submit" class="btn-danger" style="padding:10px; width:100%; font-weight:bold;">إقصاء الجميع 💀</button>
+    <h3 style="color: var(--zone-3-gold); margin-top: 0;">👥 إدارة الصيادين</h3>
+    
+    <form method="POST" style="background:#222; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #e74c3c;">
+        <input type="hidden" name="action" value="bulk_action">
+        <input type="hidden" name="bulk_type" value="freeze_all">
+        <strong style="color: #e74c3c;">⚠️ خطر:</strong>
+        <button type="submit" class="btn-danger" style="padding:10px; width:100%; font-weight:bold; margin-top: 5px;" onclick="return confirm('تأكيد إقصاء جميع الصيادين العاديين؟');">إقصاء الجميع 💀</button>
     </form>
+
     <table>
-        <tr><th>الاسم</th><th>النقاط</th><th>المنطقة</th><th>إجراءات</th></tr>
+        <tr><th>الاسم (ID)</th><th>النقاط</th><th>المنطقة</th><th>الرتبة</th><th>إجراءات (تجميد/إحياء)</th></tr>
         {% for u in users %}
         <tr>
-            <td style="color:#fff;">{{ u.username }}</td>
-            <td><form method="POST"><input type="hidden" name="action" value="add_points"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="number" name="points_amount" value="{{ u.points }}" style="width:50px; padding:2px;"><button type="submit" class="btn-primary" style="padding:2px;">حفظ</button></form></td>
-            <td><form method="POST"><input type="hidden" name="action" value="change_zone"><input type="hidden" name="user_id" value="{{ u.id }}"><input type="number" name="zone_num" value="{{ u.zone }}" style="width:40px; padding:2px;"><button type="submit" class="btn-primary" style="padding:2px;">نقل</button></form></td>
+            <td style="color:#fff;">{{ u.username }} <br><small style="color: var(--text-muted);">#{{ u.hunter_id }}</small></td>
             <td>
-                <form method="POST"><input type="hidden" name="user_id" value="{{ u.id }}">
-                    {% if u.status != 'active' %}<input type="hidden" name="action" value="activate"><button type="submit" class="btn-primary" style="background:#2ecc71;">إحياء</button>
-                    {% else %}<input type="hidden" name="action" value="freeze"><input type="text" name="freeze_reason" placeholder="سبب الإقصاء..." style="width:100px; padding:4px; margin-bottom:4px;"><button type="submit" class="btn-danger" style="width:100%;">إقصاء</button>{% endif %}
+                <form method="POST" style="margin:0;"><input type="hidden" name="action" value="add_points"><input type="hidden" name="user_id" value="{{ u.id }}">
+                <input type="number" name="points_amount" value="{{ u.points }}" class="neon-number" style="width:60px; padding:4px;"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; margin-top:4px;">حفظ</button></form>
+            </td>
+            <td>
+                <form method="POST" style="margin:0;"><input type="hidden" name="action" value="change_zone"><input type="hidden" name="user_id" value="{{ u.id }}">
+                <input type="number" name="zone_num" value="{{ u.zone }}" class="neon-number" style="width:50px; padding:4px;"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; margin-top:4px;">نقل</button></form>
+            </td>
+            <td>
+                {% if u.hunter_id == 1000 %}
+                    <span style="color: var(--zone-3-gold); font-weight:bold;">👑 الإمبراطور</span>
+                {% else %}
+                    <form method="POST" style="margin:0;"><input type="hidden" name="user_id" value="{{ u.id }}">
+                    {% if u.role != 'admin' %}
+                        <input type="hidden" name="action" value="make_admin"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; background:linear-gradient(45deg, #9b59b6, #8e44ad); color:#fff;">ترقية لآدمن</button>
+                    {% else %}
+                        <input type="hidden" name="action" value="remove_admin"><button type="submit" class="btn-danger" style="padding:4px; font-size:10px; width:100%;">سحب الرتبة</button>
+                    {% endif %}
+                    </form>
+                {% endif %}
+            </td>
+            <td>
+                <form method="POST" style="margin:0;"><input type="hidden" name="user_id" value="{{ u.id }}">
+                    {% if u.status != 'active' %}
+                        <input type="hidden" name="action" value="activate"><button type="submit" class="btn-primary" style="background:linear-gradient(45deg, #2ecc71, #27ae60); color:#000; padding:6px; font-size:11px;">إحياء الصائد</button>
+                    {% else %}
+                        <input type="hidden" name="action" value="freeze">
+                        <input type="text" name="freeze_reason" placeholder="سبب الإقصاء..." style="width:100px; padding:6px; font-size:11px; margin-bottom:4px;">
+                        <button type="submit" class="btn-danger" style="width:100%; padding:6px; font-size:11px;">إقصاء للمقبرة</button>
+                    {% endif %}
                 </form>
             </td>
         </tr>
