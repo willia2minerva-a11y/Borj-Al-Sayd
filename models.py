@@ -12,22 +12,23 @@ class User(db.Document):
     points = db.IntField(default=0)
     zone = db.IntField(default=0)
     special_rank = db.StringField(default='صائد مبتدئ')
-    status = db.StringField(default='pending') # pending, active, frozen
-    freeze_reason = db.StringField(default='') # سبب الإقصاء للمقبرة
+    status = db.StringField(default='pending') 
+    freeze_reason = db.StringField(default='') 
     role = db.StringField(default='hunter')
     inventory = db.ListField(db.StringField())
     last_name_change = db.DateTimeField(default=None)
     ip_address = db.StringField()
     friends = db.ListField(db.IntField())
     friend_requests = db.ListField(db.IntField())
+    last_guess_time = db.DateTimeField(default=None) # توقيت آخر إجابة على لغز
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='news') # news, declaration
+    category = db.StringField(default='news') 
     author = db.StringField(default='الإدارة')
-    puzzle_type = db.StringField(default='none') # none, secret_word, sequence, secret_link, fake_account
+    puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
     max_winners = db.IntField(default=1)
