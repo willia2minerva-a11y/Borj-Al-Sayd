@@ -134,29 +134,24 @@ def news():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
         now = datetime.utcnow()
-        
-        # التحقق من السبام (5 دقائق = 300 ثانية) للجميع باستثناء الآدمن
         if user.role != 'admin' and user.last_guess_time:
             time_passed = (now - user.last_guess_time).total_seconds()
             if time_passed < 300:
                 mins_left = int((300 - time_passed) // 60)
                 secs_left = int((300 - time_passed) % 60)
-                flash(f'عذراً! لمنع السبام، يجب الانتظار {mins_left} دقيقة و {secs_left} ثانية قبل المحاولة مجدداً.', 'error')
+                flash(f'عذراً! لمنع التخمين العشوائي، انتظر {mins_left} دقيقة و {secs_left} ثانية.', 'error')
                 return redirect(url_for('news'))
 
         guess = request.form.get('guess'); news_id = request.form.get('news_id')
         puzzle = News.objects(id=news_id).first()
-        
-        user.last_guess_time = now # تحديث وقت المحاولة بغض النظر عن النتيجة
+        user.last_guess_time = now 
         
         if puzzle and guess == puzzle.puzzle_answer and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
             user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
             puzzle.save(); flash('إجابة صحيحة!', 'success')
         else: 
             flash('إجابة خاطئة... لقد ضيعت محاولتك!', 'error')
-            
-        user.save()
-        return redirect(url_for('news'))
+        user.save(); return redirect(url_for('news'))
     return render_template('news.html', news_list=News.objects(category='news').order_by('-created_at'), user=user)
 
 @app.route('/declarations')
@@ -167,7 +162,7 @@ def declarations(): return render_template('declarations.html', decs=News.object
 @admin_required
 def delete_news(news_id):
     news_item = News.objects(id=news_id).first()
-    if news_item: news_item.delete(); flash('تم سحق المنشور! 🗑️', 'success')
+    if news_item: news_item.delete(); flash('تم سحق المنشور/اللغز! 🗑️', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/secret_link/<puzzle_id>')
@@ -250,8 +245,9 @@ def admin_panel():
             News(title=request.form.get('title'), content=request.form.get('content'), category='declaration', author=request.form.get('author')).save()
             flash('تم نشر التصريح', 'success')
         elif action == 'add_standalone_puzzle':
-            News(title=request.form.get('title'), content="لغز خفي", category='hidden', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
-            flash('تم توليد الفخ', 'success')
+            # الحل السحري لتجاوز الخطأ (إضافة عنوان افتراضي)
+            News(title="لغز مخفي", content="لغز خفي", category='hidden', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
+            flash('تم توليد الفخ بنجاح', 'success')
         elif action == 'add_store_item':
             item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')))
             file = request.files.get('item_image')
@@ -268,4 +264,3 @@ def admin_panel():
     return render_template('admin.html', users=User.objects(), hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
-
