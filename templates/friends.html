@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 style="color: var(--zone-4-diamond);">🤝 قائمة التحالفات</h2>
+
+<!-- محرك البحث -->
+<div class="hunter-card">
+    <form method="GET" action="/friends" style="display:flex; gap:5px; margin-bottom: 10px;">
+        <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID..." required>
+        <button type="submit" class="btn-primary" style="width:30%;">بحث</button>
+    </form>
+
+    {% if search_result %}
+        {% if search_result.id|string != user.id|string %}
+        <div style="background:#111; padding:15px; border-radius:8px; border:1px solid var(--zone-3-gold); text-align:center; margin-top:15px;">
+            <div style="font-size:40px; margin-bottom:10px;">{{ search_result.avatar if not search_result.avatar.startswith('data:') else '👤' }}</div>
+            <h3 style="margin:0;">{{ search_result.username }} <small>#{{ search_result.hunter_id }}</small></h3>
+            <p style="color:var(--zone-3-gold); font-size:12px;">{{ search_result.special_rank }}</p>
+            <form method="POST" action="/add_friend">
+                <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
+                <button type="submit" class="btn-primary" style="margin-top:10px;">إرسال طلب تحالف</button>
+            </form>
+        </div>
+        {% else %}
+        <p style="color:#e74c3c; text-align:center;">لا يمكنك إضافة نفسك!</p>
+        {% endif %}
+    {% endif %}
+</div>
+
+<!-- الطلبات والأصدقاء -->
+<div class="hunter-card">
+    {% if friend_requests %}
+    <h4 style="color:var(--zone-3-gold);">🔔 طلبات تنتظر ردك:</h4>
+    {% for req in friend_requests %}
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#111; padding:10px; margin-bottom:5px; border:1px solid #333;">
+            <span>{{ req.username }} <small>#{{ req.hunter_id }}</small></span>
+            <a href="/accept_friend/{{ req.hunter_id }}" class="btn-primary" style="width:auto; padding:5px 15px; background:#2ecc71;">قبول</a>
+        </div>
+    {% endfor %}
+    <hr style="border-color:#333; margin:20px 0;">
+    {% endif %}
+
+    <h4 style="color:var(--zone-2-silver);">👥 حلفاؤك:</h4>
+    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+    {% for friend in friends %}
+        <div style="background:#111; padding:8px 15px; border-radius:20px; border:1px solid #444; font-size:13px;">
+            {{ friend.username }} <small style="color:var(--zone-3-gold);">#{{ friend.hunter_id }}</small>
+        </div>
+    {% else %}
+        <p style="color:var(--text-muted); font-size:13px;">ليس لديك حلفاء حتى الآن.</p>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}
