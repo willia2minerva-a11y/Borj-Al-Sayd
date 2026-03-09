@@ -57,7 +57,7 @@ def login():
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(user.password_hash, request.form['password']):
             session['user_id'] = str(user.id)
-            session['role'] = user.role # حفظ الرتبة في الجلسة لسرعة الوصول
+            session['role'] = user.role
             return redirect(url_for('home'))
         flash('بيانات خاطئة.', 'error')
     return render_template('login.html')
@@ -127,17 +127,35 @@ def accept_friend(friend_id):
         user.save(); flash('تم قبول التحالف!', 'success')
     return redirect(url_for('friends'))
 
+# --- نظام الـ 5 دقائق في الأخبار ---
 @app.route('/news', methods=['GET', 'POST'])
 @login_required
 def news():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
+        now = datetime.utcnow()
+        
+        # التحقق من السبام (5 دقائق = 300 ثانية) للجميع باستثناء الآدمن
+        if user.role != 'admin' and user.last_guess_time:
+            time_passed = (now - user.last_guess_time).total_seconds()
+            if time_passed < 300:
+                mins_left = int((300 - time_passed) // 60)
+                secs_left = int((300 - time_passed) % 60)
+                flash(f'عذراً! لمنع السبام، يجب الانتظار {mins_left} دقيقة و {secs_left} ثانية قبل المحاولة مجدداً.', 'error')
+                return redirect(url_for('news'))
+
         guess = request.form.get('guess'); news_id = request.form.get('news_id')
         puzzle = News.objects(id=news_id).first()
+        
+        user.last_guess_time = now # تحديث وقت المحاولة بغض النظر عن النتيجة
+        
         if puzzle and guess == puzzle.puzzle_answer and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
             user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
-            user.save(); puzzle.save(); flash('إجابة صحيحة!', 'success')
-        else: flash('إجابة خاطئة أو نفدت الجوائز!', 'error')
+            puzzle.save(); flash('إجابة صحيحة!', 'success')
+        else: 
+            flash('إجابة خاطئة... لقد ضيعت محاولتك!', 'error')
+            
+        user.save()
         return redirect(url_for('news'))
     return render_template('news.html', news_list=News.objects(category='news').order_by('-created_at'), user=user)
 
@@ -206,7 +224,7 @@ def admin_panel():
             else:
                 for uid in selected:
                     u = User.objects(id=uid).first()
-                    if u and u.hunter_id != 1000: # حماية الإمبراطور
+                    if u and u.hunter_id != 1000:
                         if bulk_type == 'activate': u.status = 'active'
                         elif bulk_type == 'freeze': u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'تم الإقصاء')
                         elif bulk_type == 'add_points': u.points += int(request.form.get('bulk_points', 0))
@@ -222,7 +240,7 @@ def admin_panel():
                 elif action == 'change_zone': user.zone = int(request.form.get('zone_num', 0))
                 elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
                 elif action == 'make_admin': user.role = 'admin'
-                elif action == 'remove_admin' and user.hunter_id != 1000: user.role = 'hunter' # حماية الإمبراطور
+                elif action == 'remove_admin' and user.hunter_id != 1000: user.role = 'hunter'
                 user.save(); flash('تم حفظ التعديلات', 'success')
                 
         elif action == 'add_news':
