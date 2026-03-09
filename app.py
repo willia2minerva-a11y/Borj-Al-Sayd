@@ -73,6 +73,21 @@ def profile():
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
     return render_template('profile.html', user=user, zone_class=zones.get(user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '')
 
+# --- مسار جديد: رؤية ملفات اللاعبين الآخرين ---
+@app.route('/hunter/<int:target_id>')
+@login_required
+def hunter_profile(target_id):
+    target_user = User.objects(hunter_id=target_id).first()
+    if not target_user:
+        flash('هذا الصائد غير موجود في سجلات البرج!', 'error')
+        return redirect(request.referrer or url_for('home'))
+        
+    settings = GlobalSettings.objects(setting_name='main_config').first()
+    zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
+    zone_class = zones.get(target_user.zone, 'floor-0')
+    
+    return render_template('hunter_profile.html', target_user=target_user, zone_class=zone_class, banner_url=settings.banner_url if settings else '')
+
 @app.route('/settings', methods=['POST'])
 @login_required
 def update_settings():
@@ -110,11 +125,11 @@ def add_friend():
     if trap and trap.current_winners < trap.max_winners and str(user.id) not in trap.winners_list:
         user.points += trap.reward_points; trap.current_winners += 1; trap.winners_list.append(str(user.id))
         user.save(); trap.save(); flash('وقعت في الفخ! وكسبت نقاط الذكاء!', 'success')
-        return redirect(url_for('friends'))
+        return redirect(request.referrer or url_for('friends'))
     target = User.objects(hunter_id=target_id).first()
     if target and target.status != 'frozen' and target.hunter_id not in user.friends:
         target.friend_requests.append(user.hunter_id); target.save(); flash('تم إرسال الطلب.', 'success')
-    return redirect(url_for('friends'))
+    return redirect(request.referrer or url_for('friends'))
 
 @app.route('/accept_friend/<int:friend_id>')
 @login_required
@@ -136,8 +151,7 @@ def news():
         if user.role != 'admin' and user.last_guess_time:
             time_passed = (now - user.last_guess_time).total_seconds()
             if time_passed < 300:
-                mins_left = int((300 - time_passed) // 60)
-                secs_left = int((300 - time_passed) % 60)
+                mins_left = int((300 - time_passed) // 60); secs_left = int((300 - time_passed) % 60)
                 flash(f'عذراً! لمنع التخمين العشوائي، انتظر {mins_left} دقيقة و {secs_left} ثانية.', 'error')
                 return redirect(url_for('news'))
 
@@ -192,24 +206,29 @@ def multi_click(puzzle_id):
 @login_required
 def store(): return render_template('store.html', items=StoreItem.objects())
 
+# --- تحديث مسار الشراء (منع تكرار الشراء) ---
 @app.route('/buy/<item_id>', methods=['POST'])
 @login_required
 def buy_item(item_id):
     user = User.objects(id=session['user_id']).first()
     item = StoreItem.objects(id=item_id).first()
-    if user and item and user.points >= item.price:
-        user.points -= item.price; user.inventory.append(item.name); user.save(); flash(f'تم شراء {item.name}!', 'success')
-    else: flash('نقاطك لا تكفي!', 'error')
+    if user and item:
+        if item.name in user.inventory:
+            flash('لقد اشتريت هذه الأداة مسبقاً! لا يُسمح بتكديس نفس الأداة.', 'error')
+        elif user.points >= item.price:
+            user.points -= item.price
+            user.inventory.append(item.name)
+            user.save()
+            flash(f'تم شراء {item.name} بنجاح!', 'success')
+        else:
+            flash('نقاطك لا تكفي!', 'error')
     return redirect(url_for('store'))
 
-# --- مسارات إدارة السوق (الحذف والتعديل) ---
 @app.route('/delete_store_item/<item_id>', methods=['POST'])
 @admin_required
 def delete_store_item(item_id):
     item = StoreItem.objects(id=item_id).first()
-    if item:
-        item.delete()
-        flash('تم سحب الأداة من السوق نهائياً! 🗑️', 'success')
+    if item: item.delete(); flash('تم سحب الأداة من السوق نهائياً! 🗑️', 'success')
     return redirect(url_for('store'))
 
 @app.route('/edit_store_item/<item_id>', methods=['POST'])
@@ -221,10 +240,8 @@ def edit_store_item(item_id):
         item.description = request.form.get('item_desc', item.description)
         item.price = int(request.form.get('item_price', item.price))
         file = request.files.get('item_image')
-        if file and file.filename != '':
-            item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
-        item.save()
-        flash('تم تحديث بيانات الأداة بنجاح! 🛠️', 'success')
+        if file and file.filename != '': item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+        item.save(); flash('تم تحديث بيانات الأداة بنجاح! 🛠️', 'success')
     return redirect(url_for('store'))
 
 @app.route('/graveyard')
