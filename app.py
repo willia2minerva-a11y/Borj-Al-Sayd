@@ -127,7 +127,6 @@ def accept_friend(friend_id):
         user.save(); flash('تم قبول التحالف!', 'success')
     return redirect(url_for('friends'))
 
-# --- نظام الـ 5 دقائق في الأخبار ---
 @app.route('/news', methods=['GET', 'POST'])
 @login_required
 def news():
@@ -203,6 +202,31 @@ def buy_item(item_id):
     else: flash('نقاطك لا تكفي!', 'error')
     return redirect(url_for('store'))
 
+# --- مسارات إدارة السوق (الحذف والتعديل) ---
+@app.route('/delete_store_item/<item_id>', methods=['POST'])
+@admin_required
+def delete_store_item(item_id):
+    item = StoreItem.objects(id=item_id).first()
+    if item:
+        item.delete()
+        flash('تم سحب الأداة من السوق نهائياً! 🗑️', 'success')
+    return redirect(url_for('store'))
+
+@app.route('/edit_store_item/<item_id>', methods=['POST'])
+@admin_required
+def edit_store_item(item_id):
+    item = StoreItem.objects(id=item_id).first()
+    if item:
+        item.name = request.form.get('item_name', item.name)
+        item.description = request.form.get('item_desc', item.description)
+        item.price = int(request.form.get('item_price', item.price))
+        file = request.files.get('item_image')
+        if file and file.filename != '':
+            item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+        item.save()
+        flash('تم تحديث بيانات الأداة بنجاح! 🛠️', 'success')
+    return redirect(url_for('store'))
+
 @app.route('/graveyard')
 def graveyard(): return render_template('graveyard.html', users=User.objects(status='frozen').order_by('-id'))
 
@@ -245,7 +269,6 @@ def admin_panel():
             News(title=request.form.get('title'), content=request.form.get('content'), category='declaration', author=request.form.get('author')).save()
             flash('تم نشر التصريح', 'success')
         elif action == 'add_standalone_puzzle':
-            # الحل السحري لتجاوز الخطأ (إضافة عنوان افتراضي)
             News(title="لغز مخفي", content="لغز خفي", category='hidden', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
             flash('تم توليد الفخ بنجاح', 'success')
         elif action == 'add_store_item':
@@ -264,3 +287,4 @@ def admin_panel():
     return render_template('admin.html', users=User.objects(), hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
+
