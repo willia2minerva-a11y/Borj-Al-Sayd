@@ -1,40 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-4-diamond);" class="translatable" data-ar="📜 الأخبار والألغاز" data-en="📜 News & Puzzles">📜 الأخبار والألغاز</h2>
+<h2 style="color: #8B5A2B;" class="translatable" data-ar="📜 الأخبار" data-en="📜 News">📜 الأخبار</h2>
 
 {% for n in news_list %}
-<div class="hunter-card" style="padding: 0; border-color: var(--zone-0-black);">
+<div class="hunter-card" style="padding: 0; border-color: #8B5A2B;">
     
-    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="color: var(--zone-3-gold);">{{ n.title }}</span>
+    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: #8B5A2B;">
+        <span style="color: var(--text-main);">{{ n.title }}</span>
         
-        <div style="display: flex; gap: 10px; align-items: center;">
-            {% if session.get('role') == 'admin' %}
-            <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('هل أنت متأكد من سحق هذا المنشور نهائياً؟');">
-                <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
-            </form>
-            {% endif %}
-        </div>
+        {% if session.get('role') == 'admin' %}
+        <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد السحق؟');">
+            <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
+        </form>
+        {% endif %}
     </div>
     
     <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-main); line-height: 1.6;">
+        <p style="padding-top:15px; color: var(--text-muted); line-height: 1.6;">
             {{ n.content | safe | replace('<img', '<img loading="lazy" decoding="async"') }}
         </p>
-
-        {% if n.puzzle_type == 'secret_word' %}
-        <div style="background:#222; padding:15px; border-radius:8px; margin-top:15px; border: 1px dashed var(--zone-4-diamond);">
-            <form method="POST" style="margin: 0; display: flex; gap: 5px;">
-                <input type="hidden" name="news_id" value="{{ n.id }}">
-                <input type="text" name="guess" placeholder="اكتب الكلمة السرية هنا لفك اللغز..." required style="margin-bottom: 0;">
-                <button type="submit" class="btn-primary" style="width:30%;">إرسال الإجابة</button>
-            </form>
-        </div>
-        {% endif %}
         <br>
     </div>
 </div>
 {% else %}
-<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">لا توجد أخبار أو ألغاز في الوقت الحالي.</p>
+<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">لا توجد أخبار في الوقت الحالي.</p>
 {% endfor %}
 {% endblock %}
