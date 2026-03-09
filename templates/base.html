@@ -19,7 +19,7 @@
     {% if session.get('user_id') %}
     <nav id="side-nav">
         {% if session.get('role') == 'admin' %}
-        <a href="/admin" class="translatable" style="background: rgba(255, 77, 0, 0.1); color: var(--zone-5-fire); font-weight: 900; border-right: 4px solid var(--zone-5-fire);" data-ar="👑 القيادة الإمبراطورية" data-en="👑 Command">👑 القيادة الإمبراطورية</a>
+        <a href="/admin" class="translatable" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);" data-ar="👑 القيادة الإمبراطورية" data-en="👑 Command">👑 القيادة الإمبراطورية</a>
         <hr style="border-color: #333; margin: 0; width: 100%;">
         {% endif %}
         
@@ -29,8 +29,7 @@
         <a href="/news" class="translatable" data-ar="📜 الأخبار" data-en="📜 News">📜 الأخبار</a>
         <a href="/declarations" class="translatable" data-ar="📢 التصريحات" data-en="📢 Declarations">📢 التصريحات</a>
         <a href="/store" class="translatable" data-ar="🛒 السوق" data-en="🛒 Market">🛒 السوق</a>
-        
-        <a href="/graveyard" class="translatable" style="color: #e74c3c;" data-ar="💀 المقبرة" data-en="💀 Graveyard">💀 المقبرة</a>
+        <a href="/graveyard" class="translatable" data-ar="💀 المقبرة" data-en="💀 Graveyard">💀 المقبرة</a>
         
         <hr style="border-color: #333; margin: 0; width: 100%;">
         <a href="/logout" class="translatable" style="color: #ff4444;" data-ar="🚪 تسجيل الخروج" data-en="🚪 Logout">🚪 تسجيل الخروج</a>
