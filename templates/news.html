@@ -9,8 +9,6 @@
         <span style="color: var(--zone-3-gold);">{{ n.title }}</span>
         
         <div style="display: flex; gap: 10px; align-items: center;">
-            <span style="font-size:12px; color:var(--text-muted);">الجوائز المتبقية: {{ n.max_winners - n.current_winners }}</span>
-            
             {% if session.get('role') == 'admin' %}
             <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('هل أنت متأكد من سحق هذا المنشور نهائياً؟');">
                 <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
