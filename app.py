@@ -34,13 +34,14 @@ def home():
     zones = {0: 'البوابة', 1: 'المنطقة الأولى', 2: 'المنطقة الثانية', 3: 'المنطقة الثالثة', 4: 'المنطقة الرابعة', 5: 'القمة'}
     latest_news = News.objects(category='news').order_by('-created_at').first()
     latest_dec = News.objects(category='declaration').order_by('-created_at').first()
-    last_frozen = User.objects(status='frozen').order_by('-id').first() # آخر صائد سقط
+    last_frozen = User.objects(status='frozen').order_by('-id').first()
     return render_template('index.html', current_zone=zones.get(current_zone, 'البوابة'), news=latest_news, dec=latest_dec, last_frozen=last_frozen)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0]
+        ip = request.headers.get('X-Forwarded-For', request.remote_addr) or ''
+        ip = ip.split(',')[0]
         if User.objects(username=request.form['username']).first():
             flash('الاسم مستخدم.', 'error'); return redirect(url_for('register'))
         is_first = User.objects.count() == 0
@@ -84,7 +85,6 @@ def update_settings():
             user.username = new_name; user.last_name_change = datetime.utcnow()
     user.save(); return redirect(url_for('profile'))
 
-# --- نظام الأصدقاء الجديد ---
 @app.route('/friends', methods=['GET'])
 @login_required
 def friends():
@@ -122,7 +122,6 @@ def accept_friend(friend_id):
         user.save()
     return redirect(url_for('friends'))
 
-# --- الأخبار والألغاز ---
 @app.route('/news', methods=['GET', 'POST'])
 @login_required
 def news():
@@ -153,7 +152,19 @@ def secret_link(puzzle_id):
     except: pass
     return redirect(url_for('news'))
 
-# --- المتجر والشراء المباشر ---
+# -- مسار لغز الضغط المتكرر --
+@app.route('/multi_click/<puzzle_id>')
+@login_required
+def multi_click(puzzle_id):
+    user = User.objects(id=session['user_id']).first()
+    try:
+        puzzle = News.objects(id=puzzle_id, puzzle_type='multi_click').first()
+        if puzzle and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
+            user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
+            user.save(); puzzle.save(); flash('إصرارك أثمر! حصلت على النقطة من الضغط المتكرر.', 'success')
+    except: pass
+    return redirect(url_for('news'))
+
 @app.route('/store')
 @login_required
 def store(): return render_template('store.html', items=StoreItem.objects())
@@ -163,17 +174,15 @@ def store(): return render_template('store.html', items=StoreItem.objects())
 def buy_item(item_id):
     user = User.objects(id=session['user_id']).first()
     item = StoreItem.objects(id=item_id).first()
-    if user and item:
-        if user.points >= item.price:
-            user.points -= item.price; user.inventory.append(item.name); user.save()
-            flash(f'تم شراء {item.name}!', 'success')
-        else: flash('نقاطك لا تكفي!', 'error')
+    if user and item and user.points >= item.price:
+        user.points -= item.price; user.inventory.append(item.name); user.save()
+        flash(f'تم شراء {item.name}!', 'success')
+    else: flash('نقاطك لا تكفي!', 'error')
     return redirect(url_for('store'))
 
 @app.route('/graveyard')
 def graveyard(): return render_template('graveyard.html', users=User.objects(status='frozen').order_by('-id'))
 
-# --- الإدارة ---
 @app.route('/admin', methods=['GET', 'POST'])
 @admin_required
 def admin_panel():
@@ -182,9 +191,8 @@ def admin_panel():
         if action == 'bulk_action':
             selected = request.form.getlist('selected_users')
             bulk_type = request.form.get('bulk_type')
-            if bulk_type == 'freeze_all': # إقصاء الجميع
-                users_to_freeze = User.objects(role='hunter')
-                for u in users_to_freeze: u.status = 'frozen'; u.freeze_reason = 'إبادة جماعية!'; u.save()
+            if bulk_type == 'freeze_all':
+                for u in User.objects(role='hunter'): u.status = 'frozen'; u.freeze_reason = 'إبادة جماعية!'; u.save()
             else:
                 for uid in selected:
                     u = User.objects(id=uid).first()
@@ -193,21 +201,36 @@ def admin_panel():
                         elif bulk_type == 'freeze': u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'تم الإقصاء')
                         elif bulk_type == 'add_points': u.points += int(request.form.get('bulk_points', 0))
                         u.save()
-            flash('تم تنفيذ الأمر!', 'success')
+            flash('تم التنفيذ!', 'success')
         elif action in ['activate', 'freeze', 'add_points', 'change_zone', 'change_rank']:
             user = User.objects(id=request.form.get('user_id')).first()
             if action == 'freeze': user.status = 'frozen'; user.freeze_reason = request.form.get('freeze_reason', '')
             elif action == 'activate': user.status = 'active'
             elif action == 'add_points': user.points = int(request.form.get('points_amount', 0))
+            elif action == 'change_zone': user.zone = int(request.form.get('zone_num', 0))
+            elif action == 'change_rank': user.special_rank = request.form.get('special_rank')
             user.save()
         elif action == 'add_news':
-            News(title=request.form.get('title'), content=request.form.get('content'), category=request.form.get('category'), author=request.form.get('author', 'الإدارة'), puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
+            News(title=request.form.get('title'), content=request.form.get('content'), category='news', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
+        elif action == 'add_declaration':
+            News(title=request.form.get('title'), content=request.form.get('content'), category='declaration', author=request.form.get('author')).save()
+        elif action == 'add_standalone_puzzle':
+            News(title=request.form.get('title'), content="لغز خفي", category='hidden', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
         elif action == 'add_store_item':
             item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')))
             file = request.files.get('item_image')
             if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
             item.save()
+        elif action == 'update_banner':
+            settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config')
+            file = request.files.get('banner_file')
+            if file: settings.banner_url = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+            settings.save()
         return redirect(url_for('admin_panel'))
-    return render_template('admin.html', users=User.objects())
+    
+    # جلب الألغاز المخفية لعرض روابطها للمدير
+    hidden_puzzles = News.objects(category='hidden')
+    return render_template('admin.html', users=User.objects(), hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
+
