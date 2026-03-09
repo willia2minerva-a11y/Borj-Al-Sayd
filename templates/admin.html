@@ -2,36 +2,59 @@
 {% block content %}
 <h2 style="color: var(--zone-5-fire); text-align: center;">👑 القيادة الإمبراطورية</h2>
 
-<div class="admin-grid">
-    <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🖼️ رفع غلاف الرخص</h3>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="action" value="update_banner">
-            <input type="file" name="banner_file" accept="image/*" required>
-            <button type="submit" class="btn-primary">رفع التطبيق للجميع</button>
-        </form>
-    </div>
-
-    <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🛒 إضافة للسوق</h3>
-        <form method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="action" value="add_store_item">
-            <input type="text" name="item_name" placeholder="اسم الأداة/القدرة" required>
-            <input type="text" name="item_desc" placeholder="التفاصيل والتأثير" required>
-            <input type="number" name="item_price" placeholder="السعر بالنقاط" required>
-            <label style="color: var(--text-muted); font-size: 11px;">صورة الأداة:</label>
-            <input type="file" name="item_image" accept="image/*">
-            <button type="submit" class="btn-primary">نشر في السوق</button>
-        </form>
-    </div>
+<div class="hunter-card" style="border-color: var(--zone-4-diamond);">
+    <h3 style="color: var(--zone-4-diamond); margin-top: 0;">🏰 تخصيص البوابة (الرئيسية)</h3>
+    <form method="POST" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <input type="hidden" name="action" value="update_home_settings">
+        
+        <div style="width: 100%;">
+            <label style="font-size: 12px; color: var(--text-muted);">نص المرحلة الحالية:</label>
+            <input type="text" name="home_title" value="{{ settings.home_title if settings else 'البوابة' }}" required>
+        </div>
+        
+        <div style="width: 48%;">
+            <label style="font-size: 12px; color: var(--text-muted);">لون النص:</label>
+            <select name="home_color">
+                <option value="var(--zone-0-black)">الأساسي (رمادي)</option>
+                <option value="var(--zone-1-wood)">الطابق 1 (خشبي)</option>
+                <option value="var(--zone-2-silver)">الطابق 2 (فضي)</option>
+                <option value="var(--zone-3-gold)">الطابق 3 (ذهبي)</option>
+                <option value="var(--zone-4-diamond)">الطابق 4 (ألماسي)</option>
+                <option value="var(--zone-5-fire)">الطابق 5 (ناري)</option>
+            </select>
+        </div>
+        
+        <div style="width: 48%;">
+            <label style="font-size: 12px; color: var(--text-muted);">تغيير الغلاف (صورة):</label>
+            <input type="file" name="banner_file" accept="image/*">
+        </div>
+        
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">حفظ وتطبيق للجميع</button>
+    </form>
 </div>
+
+{% if pending_decs %}
+<div class="hunter-card" style="border-color: var(--zone-3-gold); background: rgba(255,207,51,0.05);">
+    <h3 style="color: var(--zone-3-gold); margin-top: 0;">🔔 تصريحات قيد المراجعة ({{ pending_decs.count() }})</h3>
+    {% for pd in pending_decs %}
+        <div style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--zone-3-gold);">
+            <strong style="color: #fff;">{{ pd.title }}</strong> <small style="color: var(--text-muted);">بواسطة: {{ pd.author }}</small>
+            <p style="font-style: italic; color: #ccc; font-size: 13px;">"{{ pd.content }}"</p>
+            <div style="display: flex; gap: 10px;">
+                <form method="POST" action="/approve_dec/{{ pd.id }}" style="margin:0;"><button type="submit" class="btn-primary" style="padding: 5px 15px; font-size: 11px; background: #2ecc71;">موافقة ونشر ✔️</button></form>
+                <form method="POST" action="/delete_news/{{ pd.id }}" style="margin:0;"><button type="submit" class="btn-danger" style="padding: 5px 15px; font-size: 11px;">رفض وحذف ❌</button></form>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <div class="admin-grid" style="margin-top: 20px;">
     <div class="hunter-card" style="margin:0;">
         <h3 style="color: var(--zone-3-gold); margin-top: 0;">📜 نشر خبر أو لغز</h3>
         <form method="POST">
             <input type="hidden" name="action" value="add_news">
-            <input type="text" name="title" placeholder="عنوان الخبر/اللغز..." required>
+            <input type="text" name="title" placeholder="العنوان..." required>
             <textarea name="content" rows="4" placeholder="المحتوى..." required></textarea>
             <label>هل يحتوي على لغز مباشر؟</label>
             <select name="puzzle_type">
@@ -42,52 +65,50 @@
             <input type="text" name="puzzle_answer" placeholder="إجابة الكلمة (إن وجد)">
             <input type="number" name="reward_points" placeholder="جائزة النقاط" value="0">
             <input type="number" name="max_winners" placeholder="عدد الفائزين المسموح" value="1">
-            <button type="submit" class="btn-primary">نشر الخبر</button>
+            <button type="submit" class="btn-primary">نشر</button>
         </form>
     </div>
 
     <div class="hunter-card" style="margin:0;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📢 نشر تصريح لاعب</h3>
-        <form method="POST">
-            <input type="hidden" name="action" value="add_declaration">
-            <input type="text" name="title" placeholder="عنوان التصريح..." required>
-            <input type="text" name="author" placeholder="اسم اللاعب المُصرح..." required>
-            <textarea name="content" rows="4" placeholder="نص التصريح..." required></textarea>
-            <button type="submit" class="btn-primary" style="background:linear-gradient(45deg, var(--zone-5-fire), #e74c3c); color:#fff;">نشر التصريح</button>
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🛒 إضافة للسوق</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="add_store_item">
+            <input type="text" name="item_name" placeholder="اسم الأداة" required>
+            <input type="text" name="item_desc" placeholder="التفاصيل" required>
+            <input type="number" name="item_price" placeholder="السعر" required>
+            <input type="file" name="item_image" accept="image/*">
+            <button type="submit" class="btn-primary">نشر في السوق</button>
         </form>
     </div>
 </div>
 
-<div class="hunter-card" style="margin-top:20px; border-color:var(--zone-4-diamond);">
-    <h3 style="color: var(--zone-4-diamond); margin-top: 0;">🧩 توليد ألغاز منفردة (فخاخ وروابط)</h3>
+<div class="hunter-card" style="margin-top:20px;">
+    <h3 style="color: var(--zone-4-diamond); margin-top: 0;">🧩 توليد ألغاز منفردة (فخاخ وشبح)</h3>
     <form method="POST" style="display:flex; gap:10px; flex-wrap:wrap;">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="puzzle_type" style="width:48%;">
-            <option value="fake_account">فخ طلب صداقة (اكتب ID تحته)</option>
+            <option value="fake_account">فخ طلب صداقة (سيولد حساب شبح تلقائياً)</option>
             <option value="secret_link">توليد رابط سري</option>
             <option value="multi_click">لغز الضغط المتكرر</option>
         </select>
-        <input type="text" name="puzzle_answer" placeholder="إجابة اللغز/ID الفخ" style="width:48%;">
+        <input type="text" name="puzzle_answer" placeholder="إجابة اللغز/ID الفخ (أرقام فقط)" style="width:48%;" required>
         <input type="number" name="reward_points" placeholder="النقاط" style="width:30%;">
         <input type="number" name="max_winners" placeholder="عدد الفائزين" value="1" style="width:30%;">
-        <button type="submit" class="btn-primary" style="width:30%;">توليد اللغز</button>
+        <button type="submit" class="btn-primary" style="width:30%;">توليد</button>
     </form>
     
     {% if hidden_puzzles %}
-    <div style="background:#111; padding:15px; margin-top:15px; border-radius: 8px; border:1px dashed var(--zone-4-diamond);">
-        <h4 style="margin:0 0 10px 0; color: var(--zone-4-diamond);">الألغاز والفخاخ (النشطة حالياً):</h4>
+    <div style="background:#111; padding:15px; margin-top:15px; border-radius: 8px;">
+        <h4 style="margin:0 0 10px 0; color: var(--zone-4-diamond);">الألغاز النشطة:</h4>
         {% for p in hidden_puzzles %}
-            <div style="font-size:12px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-size:12px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display: flex; justify-content: space-between;">
                 <div>
-                    <strong style="color: var(--text-muted);">النوع:</strong> {{ p.puzzle_type }} | <strong style="color: var(--text-muted);">النقاط:</strong> {{ p.reward_points }}<br>
+                    <strong>النوع:</strong> {{ p.puzzle_type }} | <strong>النقاط:</strong> {{ p.reward_points }}<br>
                     {% if p.puzzle_type == 'secret_link' %} كود الرابط: <code style="color:var(--zone-4-diamond); user-select:all;">/secret_link/{{ p.id }}</code>
                     {% elif p.puzzle_type == 'multi_click' %} كود الكلمة: <code style="color:var(--zone-4-diamond); user-select:all;">&lt;span class="multi-click-word" data-id="{{ p.id }}" data-target="5"&gt;الكلمة هنا&lt;/span&gt;</code>
-                    {% else %} ID الفخ: <code style="color:#e74c3c; user-select:all;">{{ p.puzzle_answer }}</code> {% endif %}
+                    {% else %} ID الشبح: <code style="color:#e74c3c;">{{ p.puzzle_answer }}</code> {% endif %}
                 </div>
-                
-                <form method="POST" action="/delete_news/{{ p.id }}" onsubmit="return confirm('هل أنت متأكد من إلغاء هذا اللغز/الفخ نهائياً؟');" style="margin:0;">
-                    <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">إلغاء ❌</button>
-                </form>
+                <form method="POST" action="/delete_news/{{ p.id }}" style="margin:0;"><button type="submit" class="btn-danger" style="padding: 4px; font-size: 11px;">إلغاء ❌</button></form>
             </div>
         {% endfor %}
     </div>
@@ -95,54 +116,59 @@
 </div>
 
 <div class="hunter-card" style="overflow-x: auto; margin-top: 20px;">
-    <h3 style="color: var(--zone-3-gold); margin-top: 0;">👥 إدارة الصيادين</h3>
+    <h3 style="color: var(--zone-3-gold); margin-top: 0;">👥 إدارة الصيادين (التحديد الجماعي)</h3>
     
-    <form method="POST" style="background:#222; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #e74c3c;">
+    <form method="POST">
         <input type="hidden" name="action" value="bulk_action">
-        <input type="hidden" name="bulk_type" value="freeze_all">
-        <strong style="color: #e74c3c;">⚠️ خطر:</strong>
-        <button type="submit" class="btn-danger" style="padding:10px; width:100%; font-weight:bold; margin-top: 5px;" onclick="return confirm('تأكيد إقصاء جميع الصيادين العاديين؟');">إقصاء الجميع 💀</button>
-    </form>
+        
+        <div style="display:flex; gap:10px; margin-bottom:15px; background:#111; padding:15px; border-radius:8px; align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="document.querySelectorAll('.user-cb').forEach(c => c.checked = !c.checked)" class="btn-primary" style="background:#444; width:auto; padding: 8px 15px; color:#fff;">تحديد الكل ☑️</button>
+            <select name="bulk_type" style="width: auto; padding: 8px;">
+                <option value="activate">إحياء المحدد 🟢</option>
+                <option value="freeze">تجميد المحدد 💀</option>
+            </select>
+            <input type="text" name="bulk_reason" placeholder="سبب التجميد (إن وجد)..." style="width: 200px; padding: 8px;">
+            <button type="submit" class="btn-primary" style="width: auto; padding: 8px 20px;" onclick="return confirm('تنفيذ الإجراء على جميع المحددين؟');">تنفيذ الأمر ⚡</button>
+        </div>
 
-    <table>
-        <tr><th>الاسم (ID)</th><th>النقاط</th><th>المنطقة</th><th>الرتبة</th><th>إجراءات (تجميد/إحياء)</th></tr>
-        {% for u in users %}
-        <tr>
-            <td style="color:#fff;">{{ u.username }} <br><small style="color: var(--text-muted);">#{{ u.hunter_id }}</small></td>
-            <td>
-                <form method="POST" style="margin:0;"><input type="hidden" name="action" value="add_points"><input type="hidden" name="user_id" value="{{ u.id }}">
-                <input type="number" name="points_amount" value="{{ u.points }}" class="neon-number" style="width:60px; padding:4px;"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; margin-top:4px;">حفظ</button></form>
-            </td>
-            <td>
-                <form method="POST" style="margin:0;"><input type="hidden" name="action" value="change_zone"><input type="hidden" name="user_id" value="{{ u.id }}">
-                <input type="number" name="zone_num" value="{{ u.zone }}" class="neon-number" style="width:50px; padding:4px;"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; margin-top:4px;">نقل</button></form>
-            </td>
-            <td>
-                {% if u.hunter_id == 1000 %}
-                    <span style="color: var(--zone-3-gold); font-weight:bold;">👑 الإمبراطور</span>
-                {% else %}
-                    <form method="POST" style="margin:0;"><input type="hidden" name="user_id" value="{{ u.id }}">
-                    {% if u.role != 'admin' %}
-                        <input type="hidden" name="action" value="make_admin"><button type="submit" class="btn-primary" style="padding:4px; font-size:10px; background:linear-gradient(45deg, #9b59b6, #8e44ad); color:#fff;">ترقية لآدمن</button>
-                    {% else %}
-                        <input type="hidden" name="action" value="remove_admin"><button type="submit" class="btn-danger" style="padding:4px; font-size:10px; width:100%;">سحب الرتبة</button>
+        <table>
+            <tr>
+                <th>تحديد</th>
+                <th>الاسم / فيسبوك</th>
+                <th>النقاط</th>
+                <th>المنطقة</th>
+                <th>الرتبة</th>
+            </tr>
+            {% for u in users %}
+            <tr>
+                <td>
+                    {% if u.hunter_id != 1000 %}
+                        <input type="checkbox" name="selected_users" value="{{ u.id }}" class="user-cb" style="width: 20px; height: 20px;">
                     {% endif %}
-                    </form>
-                {% endif %}
-            </td>
-            <td>
-                <form method="POST" style="margin:0;"><input type="hidden" name="user_id" value="{{ u.id }}">
-                    {% if u.status != 'active' %}
-                        <input type="hidden" name="action" value="activate"><button type="submit" class="btn-primary" style="background:linear-gradient(45deg, #2ecc71, #27ae60); color:#000; padding:6px; font-size:11px;">إحياء الصائد</button>
-                    {% else %}
-                        <input type="hidden" name="action" value="freeze">
-                        <input type="text" name="freeze_reason" placeholder="سبب الإقصاء..." style="width:100px; padding:6px; font-size:11px; margin-bottom:4px;">
-                        <button type="submit" class="btn-danger" style="width:100%; padding:6px; font-size:11px;">إقصاء للمقبرة</button>
+                </td>
+                
+                <td style="color:#fff; text-align: right;">
+                    <strong>{{ u.username }}</strong> <small style="color: var(--text-muted);">#{{ u.hunter_id }}</small>
+                    {% if u.facebook_link %}
+                        <br><a href="{{ u.facebook_link }}" target="_blank" style="color: var(--zone-4-diamond); font-size: 11px; text-decoration: underline;">🔗 رابط الفيسبوك</a>
                     {% endif %}
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+                    <br><span style="font-size: 10px; color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }};">{{ 'نشط' if u.status=='active' else 'مجمد' }}</span>
+                </td>
+                
+                <td>{{ u.points }}</td>
+                <td>{{ u.zone }}</td>
+                
+                <td>
+                    {% if u.hunter_id == 1000 %}
+                        <span style="color: var(--zone-3-gold); font-weight:bold;">👑 الإمبراطور</span>
+                    {% else %}
+                        <span style="color: var(--text-muted); font-size: 12px;">{{ u.role }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </form>
 </div>
 {% endblock %}
+
