@@ -3,14 +3,11 @@
 <div class="global-banner"><h2 style="color: #e74c3c;">💀 مقبرة الساقطين</h2></div>
 <div style="display:flex; flex-wrap:wrap; justify-content:center;">
     {% for u in users %}
-    <div class="hunter-card floor-0 frozen-card" style="width: 150px; text-align: center; margin: 10px;">
-        <div style="font-size: 40px;">👤</div>
-        <h4>{{ u.username }}</h4>
-        <p style="font-size: 12px;">سقط في الطابق: {{ u.floor }}</p>
+    <div class="hunter-card ghost-card" style="width: 150px; text-align: center; margin: 10px; padding:15px;">
+        <div style="font-size: 40px; margin-bottom:10px;">{{ u.avatar if not u.avatar.startswith('data:') else '👤' }}</div>
+        <h4 style="margin:0;">{{ u.username }}</h4>
+        <p style="font-size: 11px; color: #ff9999; margin-top:5px;">"{{ u.freeze_reason }}"</p>
     </div>
-    {% else %}
-    <p>المقبرة فارغة، جميع الصيادين أحياء... حتى الآن.</p>
     {% endfor %}
 </div>
 {% endblock %}
-
