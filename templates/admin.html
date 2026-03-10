@@ -61,15 +61,26 @@
         <h3 style="color: var(--zone-3-gold); margin-top: 0;">🐪 إضافة لقافلة التجار</h3>
         <form method="POST" enctype="multipart/form-data">
             <input type="hidden" name="action" value="add_store_item">
-            <input type="text" name="item_name" placeholder="اسم الأداة" required>
+            <input type="text" name="item_name" placeholder="اسم الأداة أو الصندوق" required>
             <input type="text" name="item_desc" placeholder="التفاصيل" required>
-            <input type="number" name="item_price" placeholder="السعر" required>
+            <input type="number" name="item_price" placeholder="سعر الشراء" required>
             <input type="file" name="item_image" accept="image/*">
             
             <div style="background: rgba(231, 76, 60, 0.1); padding: 10px; border: 1px dashed #e74c3c; border-radius: 8px; margin: 10px 0;">
-                <label style="color: #e74c3c; font-weight: bold;"><input type="checkbox" name="is_mirage"> جعل هذه الأداة "فخ سراب"؟</label>
-                <input type="text" name="mirage_message" placeholder="رسالة الخداع التي تظهر للمشتري..." style="font-size: 11px;">
+                <label style="color: #e74c3c; font-weight: bold;"><input type="checkbox" name="is_mirage"> فخ سراب؟ (يخسر السعر فقط)</label>
+                <input type="text" name="mirage_message" placeholder="رسالة الخداع..." style="font-size: 11px; margin-top: 5px;">
             </div>
+            
+            <div style="background: rgba(46, 204, 113, 0.1); padding: 10px; border: 1px dashed #2ecc71; border-radius: 8px; margin: 10px 0;">
+                <label style="color: #2ecc71; font-weight: bold;"><input type="checkbox" name="is_luck" onchange="document.getElementById('luck_options').style.display = this.checked ? 'block' : 'none'"> هل هو صندوق حظ؟ 🎲</label>
+                <div id="luck_options" style="display: none; margin-top: 10px;">
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" name="luck_min" placeholder="أقصى خسارة (مثل: -50)" style="font-size: 11px;">
+                        <input type="number" name="luck_max" placeholder="أقصى ربح (مثل: 100)" style="font-size: 11px;">
+                    </div>
+                </div>
+            </div>
+            
             <button type="submit" class="btn-primary">إرسال للقافلة</button>
         </form>
     </div>
@@ -80,17 +91,17 @@
     <form method="POST" style="display:flex; gap:10px; flex-wrap:wrap;">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="puzzle_type" style="width:100%; padding: 10px;">
-            <option value="quicksand_trap">فخ الرمال المتحركة (رابط يحظر اللاعب برمجياً)</option>
-            <option value="cursed_ghost">الشبح الملعون (يولد ID شبح يخصم النقاط عند اصطياده)</option>
-            <option value="fake_account">الشبح الطيب (يولد ID شبح يعطي نقاط)</option>
+            <option value="quicksand_trap">فخ الرمال المتحركة (رابط يحظر اللاعب)</option>
+            <option value="cursed_ghost">الشبح الملعون (يخصم النقاط)</option>
+            <option value="fake_account">الشبح الطيب (يعطي نقاط)</option>
             <option value="secret_link">الرابط السري الطيب (يعطي نقاط)</option>
             <option value="multi_click">لغز الكلمة المخفية (ضغط متكرر)</option>
         </select>
         
         <input type="text" name="puzzle_answer" placeholder="ID الشبح (أرقام فقط)" style="width:30%;" required>
         <input type="number" name="reward_points" placeholder="نقاط الجائزة" value="0" style="width:20%;">
-        <input type="number" name="trap_penalty" placeholder="نقاط الخصم (للملعون)" value="0" style="width:20%;">
-        <input type="number" name="trap_duration" placeholder="مدة الحظر بالدقائق (للرمال)" value="0" style="width:20%;">
+        <input type="number" name="trap_penalty" placeholder="نقاط الخصم" value="0" style="width:20%;">
+        <input type="number" name="trap_duration" placeholder="مدة الحظر (رمال)" value="0" style="width:20%;">
         <button type="submit" class="btn-primary" style="width:100%; background: #e74c3c;">توليد الفخ 🕷️</button>
     </form>
     
@@ -100,7 +111,7 @@
         {% for p in hidden_puzzles %}
             <div style="font-size:12px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display: flex; justify-content: space-between;">
                 <div>
-                    <strong>النوع:</strong> {{ p.puzzle_type }} | <strong>الجائزة:</strong> {{ p.reward_points }} | <strong>الخصم:</strong> {{ p.trap_penalty_points }} | <strong>الحظر:</strong> {{ p.trap_duration_minutes }}د<br>
+                    <strong>النوع:</strong> {{ p.puzzle_type }} | <strong>الجائزة:</strong> {{ p.reward_points }} | <strong>الخصم:</strong> {{ p.trap_penalty_points }}<br>
                     {% if p.puzzle_type in ['secret_link', 'quicksand_trap'] %} كود الرابط: <code style="color:var(--zone-4-diamond); user-select:all;">/secret_link/{{ p.id }}</code>
                     {% elif p.puzzle_type == 'multi_click' %} كود الكلمة: <code style="color:var(--zone-4-diamond); user-select:all;">&lt;span class="multi-click-word" data-id="{{ p.id }}" data-target="5"&gt;الكلمة هنا&lt;/span&gt;</code>
                     {% else %} ID الشبح: <code style="color:#e74c3c;">{{ p.puzzle_answer }}</code> {% endif %}
@@ -168,3 +179,4 @@
     </form>
 </div>
 {% endblock %}
+
