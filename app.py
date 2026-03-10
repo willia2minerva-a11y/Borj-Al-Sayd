@@ -27,28 +27,34 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- نظام حساب الإشعارات (المصحح والآمن) ---
+# --- نظام حساب الإشعارات (المصحح والمحصن 100%) ---
 @app.context_processor
 def inject_notifications():
+    # إرسال أصفار افتراضية دائماً لمنع انهيار التصميم (HTML)
+    notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None}
+    
     if 'user_id' in session:
         try:
             user = User.objects(id=session['user_id']).first()
             if user:
+                notifs['current_user'] = user
                 now = datetime.utcnow()
-                # حماية للحسابات القديمة التي لا تملك توقيتات مسجلة
-                ls_news = user.last_seen_news or now
-                ls_puz = user.last_seen_puzzles or now
-                ls_dec = user.last_seen_decs or now
-                ls_store = user.last_seen_store or now
                 
-                un_news = News.objects(category='news', status='approved', created_at__gt=ls_news).count()
-                un_puz = News.objects(category='puzzle', status='approved', created_at__gt=ls_puz).count()
-                un_dec = News.objects(category='declaration', status='approved', created_at__gt=ls_dec).count()
-                un_store = StoreItem.objects(created_at__gt=ls_store).count()
-                return dict(un_news=un_news, un_puz=un_puz, un_dec=un_dec, un_store=un_store, current_user=user)
+                # استخدام getattr لتجنب أي خطأ إذا كانت قاعدة البيانات لم تتحدث
+                ls_news = getattr(user, 'last_seen_news', now) or now
+                ls_puz = getattr(user, 'last_seen_puzzles', now) or now
+                ls_dec = getattr(user, 'last_seen_decs', now) or now
+                ls_store = getattr(user, 'last_seen_store', now) or now
+                
+                notifs['un_news'] = News.objects(category='news', status='approved', created_at__gt=ls_news).count()
+                notifs['un_puz'] = News.objects(category='puzzle', status='approved', created_at__gt=ls_puz).count()
+                notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=ls_dec).count()
+                notifs['un_store'] = StoreItem.objects(created_at__gt=ls_store).count()
         except Exception as e:
-            pass # منع انهيار الموقع في حال وجود خطأ في البيانات
-    return dict()
+            # إذا حدث أي خطأ غريب، سيتجاهله بهدوء وتظل القيم أصفاراً
+            pass 
+            
+    return notifs
 
 @app.route('/')
 def home():
@@ -98,7 +104,7 @@ def profile():
 @login_required
 def hunter_profile(target_id):
     target_user = User.objects(hunter_id=target_id).first()
-    if not target_user or target_user.role == 'ghost':
+    if not target_user or getattr(target_user, 'role', '') == 'ghost':
         flash('هذا الصائد غير موجود!', 'error'); return redirect(request.referrer or url_for('home'))
     settings = GlobalSettings.objects(setting_name='main_config').first()
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
@@ -139,7 +145,7 @@ def add_friend():
     target_id = int(request.form.get('target_id'))
     target = User.objects(hunter_id=target_id).first()
     
-    if target and target.role == 'ghost':
+    if target and getattr(target, 'role', '') == 'ghost':
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target_id)).first()
         if trap and str(user.id) not in trap.winners_list and trap.current_winners < trap.max_winners:
             user.points += trap.reward_points; trap.current_winners += 1; trap.winners_list.append(str(user.id))
@@ -184,7 +190,7 @@ def puzzles():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
         now = datetime.utcnow()
-        if user.role != 'admin' and user.last_guess_time:
+        if getattr(user, 'role', '') != 'admin' and user.last_guess_time:
             time_passed = (now - user.last_guess_time).total_seconds()
             if time_passed < 300:
                 flash(f'انتظر {int((300 - time_passed) // 60)} دقيقة لمنع التخمين العشوائي.', 'error'); return redirect(url_for('puzzles'))
@@ -207,7 +213,7 @@ def puzzles():
 def declarations():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
-        if user.status != 'active':
+        if getattr(user, 'status', '') != 'active':
             flash('فقط الصيادين النشطين يمكنهم التصريح!', 'error')
         else:
             News(title=request.form.get('title'), content=request.form.get('content'), category='declaration', author=user.username, status='pending').save()
