@@ -429,3 +429,4 @@ def admin_panel():
     return render_template('admin.html', users=User.objects(role__nin=['ghost', 'cursed_ghost']), pending_decs=pending_decs, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
+
