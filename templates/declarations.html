@@ -2,27 +2,27 @@
 {% block content %}
 <h2 style="color: var(--zone-5-fire);">📢 تدوينات الرحالة (التصريحات)</h2>
 
-<!-- 💡 هذا هو المربع الذي كان مفقوداً عندك! مربع النشر السحري -->
 <div class="hunter-card" style="border-color: var(--zone-4-diamond); background: rgba(0, 238, 255, 0.05);">
-    <h4 style="margin-top: 0; color: var(--zone-4-diamond);">✍️ اكتب تدوينة أو شارك مخطوطة</h4>
+    <h4 style="margin-top: 0; color: var(--zone-4-diamond);">✍️ شارك أفكارك مع المتاهة</h4>
     <form method="POST" enctype="multipart/form-data" style="margin: 0;">
-        <input type="text" name="title" placeholder="عنوان التدوينة..." required style="margin-bottom: 10px;">
-        <textarea name="content" rows="3" placeholder="ماذا رأيت في المتاهة اليوم؟..." style="margin-bottom: 10px;"></textarea>
+        <!-- حيلة برمجية: عنوان مخفي لمنع انهيار السيرفر -->
+        <input type="hidden" name="title" value="تصريح صياد">
+        
+        <textarea name="content" rows="4" placeholder="ماذا ستنشر أو بماذا ستصرح لباقي الصيادين؟" required style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #111; color: #fff;"></textarea>
         
         <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 5px;">إرفاق رسمة أو نقش (اختياري):</label>
         <input type="file" name="image_file" accept="image/*" style="margin-bottom: 15px;">
         
-        <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, var(--zone-4-diamond), #0099cc); color: #000;">إرسال للحكماء</button>
+        <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, var(--zone-4-diamond), #0099cc); color: #000; font-weight: bold;">إرسال التصريح</button>
     </form>
 </div>
 
-<!-- هنا تظهر التدوينات المنشورة -->
 <h3 style="color: var(--text-main); margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px;">📜 سجل المتاهة</h3>
 
 {% for n in decs %}
 <div class="hunter-card" style="padding: 0; border-color: var(--zone-5-fire);">
     <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: var(--zone-5-fire);">
-        <span>{{ n.title }} <small style="color: var(--text-muted); font-size: 11px;">(بواسطة: {{ n.author }})</small></span>
+        <span style="color: var(--zone-3-gold);">بواسطة: {{ n.author }}</span>
         
         {% if session.get('role') == 'admin' %}
         <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد سحق هذا التصريح؟');">
@@ -32,8 +32,8 @@
     </div>
     
     <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-main); font-style: italic; line-height: 1.6;">
-            "{{ n.content | safe }}"
+        <p style="padding-top:15px; color: var(--text-main); font-style: normal; line-height: 1.6;">
+            {{ n.content | safe }}
         </p>
         {% if n.image_data %}
             <img src="{{ n.image_data }}" style="width: 100%; border-radius: 8px; margin-top: 10px;" loading="lazy" decoding="async">
