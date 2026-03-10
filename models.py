@@ -11,6 +11,7 @@ class User(db.Document):
     avatar = db.StringField(default='👤')
     points = db.IntField(default=0)
     zone = db.IntField(default=0)
+    special_rank = db.StringField(default='صائد مبتدئ')
     status = db.StringField(default='pending') 
     freeze_reason = db.StringField(default='') 
     role = db.StringField(default='hunter') # hunter, admin, ghost
@@ -21,7 +22,7 @@ class User(db.Document):
     friend_requests = db.ListField(db.IntField())
     last_guess_time = db.DateTimeField(default=None) 
     
-    # --- توقيتات الإشعارات (Last Seen) ---
+    # --- توقيتات الإشعارات (تمت إضافتها هنا) ---
     last_seen_news = db.DateTimeField(default=datetime.utcnow)
     last_seen_puzzles = db.DateTimeField(default=datetime.utcnow)
     last_seen_decs = db.DateTimeField(default=datetime.utcnow)
@@ -34,7 +35,7 @@ class News(db.Document):
     content = db.StringField(required=True)
     category = db.StringField(default='news') # news, puzzle, declaration, hidden
     author = db.StringField(default='الإدارة')
-    status = db.StringField(default='approved') # approved, pending (للتصريحات)
+    status = db.StringField(default='approved') # approved, pending (مهم جداً للتصريحات)
     puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
