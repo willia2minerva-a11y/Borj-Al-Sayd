@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="hunter-card" style="text-align: center; border-color: #e74c3c; margin-top: 50px; background: radial-gradient(circle, #2c0b0b, #111);">
+    <h1 style="color: #e74c3c; font-size: 50px; margin-bottom: 10px;">⚠️</h1>
+    <h2 style="color: #e74c3c; margin-top: 0;">أنت مقيد!</h2>
+    <p style="color: var(--text-main); font-size: 18px; line-height: 1.6;">{{ message }}</p>
+    
+    {% if time_left %}
+        <div style="margin-top: 20px; background: rgba(231,76,60,0.2); border: 1px solid #e74c3c; padding: 15px; border-radius: 8px; display: inline-block;">
+            <strong style="color: #fff;">الوقت المتبقي لفك اللعنة:</strong><br>
+            <span class="neon-number" style="font-size: 24px; color: #ff9999 !important;">{{ time_left }}</span>
+        </div>
+        <p style="color: var(--text-muted); font-size: 12px; margin-top: 15px;">قم بتحديث الصفحة بعد انتهاء الوقت.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
