@@ -13,9 +13,9 @@ class User(db.Document):
     zone = db.IntField(default=0)
     special_rank = db.StringField(default='مستكشف مبتدئ')
     
-    status = db.StringField(default='active') # active (نشط), frozen (مجمد), eliminated (مقصي)
+    status = db.StringField(default='active') # active, frozen, eliminated
     freeze_reason = db.StringField(default='') 
-    role = db.StringField(default='hunter') # hunter, admin, ghost, cursed_ghost
+    role = db.StringField(default='hunter') 
     inventory = db.ListField(db.StringField())
     last_name_change = db.DateTimeField(default=None)
     ip_address = db.StringField()
@@ -23,43 +23,37 @@ class User(db.Document):
     friend_requests = db.ListField(db.IntField())
     last_guess_time = db.DateTimeField(default=None) 
     
-    # --- حظر فخ الرمال المتحركة ---
     quicksand_lock_until = db.DateTimeField(default=None)
     
-    # --- الإحصائيات والإنجازات التلقائية ---
     stats_ghosts_caught = db.IntField(default=0)
     stats_puzzles_solved = db.IntField(default=0)
     stats_items_bought = db.IntField(default=0)
     achievements = db.ListField(db.StringField()) 
     
-    # --- توقيتات الإشعارات ---
     last_seen_news = db.DateTimeField(default=datetime.utcnow)
     last_seen_puzzles = db.DateTimeField(default=datetime.utcnow)
     last_seen_decs = db.DateTimeField(default=datetime.utcnow)
     last_seen_store = db.DateTimeField(default=datetime.utcnow)
     
     created_at = db.DateTimeField(default=datetime.utcnow)
-
-    # --- تسريع قاعدة البيانات (الفهرسة) ---
     meta = {'indexes': ['hunter_id', 'username', 'status', 'role']}
 
 class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     image_data = db.StringField(default='') 
-    category = db.StringField(default='news') # news, puzzle, declaration, hidden
+    category = db.StringField(default='news') 
     author = db.StringField(default='الإدارة')
     status = db.StringField(default='approved') 
-    puzzle_type = db.StringField(default='none') # none, secret_word, sequence, fake_account, secret_link, multi_click, quicksand_trap
+    puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField()
     reward_points = db.IntField(default=0)
-    trap_penalty_points = db.IntField(default=0) # نقاط الخصم للفخاخ
-    trap_duration_minutes = db.IntField(default=0) # مدة حظر الرمال المتحركة
+    trap_penalty_points = db.IntField(default=0) 
+    trap_duration_minutes = db.IntField(default=0) 
     max_winners = db.IntField(default=1)
     current_winners = db.IntField(default=0)
     winners_list = db.ListField(db.StringField())
     created_at = db.DateTimeField(default=datetime.utcnow)
-    
     meta = {'indexes': ['category', 'status', 'created_at']}
 
 class StoreItem(db.Document):
@@ -67,8 +61,14 @@ class StoreItem(db.Document):
     description = db.StringField(required=True)
     price = db.IntField(required=True)
     image = db.StringField(default='')
-    is_mirage = db.BooleanField(default=False) # فخ السراب
-    mirage_message = db.StringField(default='') # رسالة السراب الخبيثة
+    is_mirage = db.BooleanField(default=False) 
+    mirage_message = db.StringField(default='') 
+    
+    # --- نظام صندوق الحظ ---
+    is_luck = db.BooleanField(default=False)
+    luck_min = db.IntField(default=-50)
+    luck_max = db.IntField(default=100)
+    
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
