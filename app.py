@@ -5,7 +5,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 import os
 import base64
-import random # تم إضافة مكتبة العشوائية
+import random
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')}
@@ -127,6 +127,28 @@ def hunter_profile(target_id):
     settings = GlobalSettings.objects(setting_name='main_config').first()
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
     return render_template('hunter_profile.html', target_user=target_user, zone_class=zones.get(target_user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '')
+
+# --- مسار التعديل السريع للآدمن من داخل ملف اللاعب ---
+@app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
+@admin_required
+def admin_update_profile(target_id):
+    target_user = User.objects(hunter_id=target_id).first()
+    if target_user:
+        action = request.form.get('action')
+        if action == 'edit_name':
+            new_name = request.form.get('new_name')
+            if not User.objects(username=new_name).first() or new_name == target_user.username:
+                target_user.username = new_name
+                target_user.save()
+                flash('تم تعديل اسم الرحالة بنجاح!', 'success')
+            else:
+                flash('هذا الاسم مستخدم بالفعل بواسطة شخص آخر!', 'error')
+        elif action == 'edit_points':
+            new_points = int(request.form.get('new_points', target_user.points))
+            target_user.points = new_points
+            target_user.save()
+            flash('تم تعديل نقاط الرحالة بنجاح!', 'success')
+    return redirect(url_for('hunter_profile', target_id=target_id))
 
 @app.route('/settings', methods=['POST'])
 @login_required
@@ -298,7 +320,6 @@ def store():
     user.last_seen_store = datetime.utcnow(); user.save()
     return render_template('store.html', items=StoreItem.objects())
 
-# --- مسار الشراء المحدث (يتضمن صندوق الحظ) ---
 @app.route('/buy/<item_id>', methods=['POST'])
 @login_required
 def buy_item(item_id):
@@ -307,13 +328,10 @@ def buy_item(item_id):
     
     item = StoreItem.objects(id=item_id).first()
     if user and item:
-        # إذا لم يكن صندوق حظ، نتحقق مما إذا كان اللاعب يملكه مسبقاً
         if not item.is_luck and item.name in user.inventory: 
             flash('تملك هذه الأداة مسبقاً في حقيبتك!', 'error')
         elif user.points >= item.price:
-            user.points -= item.price # خصم سعر الشراء
-            
-            # 1. نظام صندوق الحظ (Gacha)
+            user.points -= item.price
             if item.is_luck:
                 outcome = random.randint(item.luck_min, item.luck_max)
                 user.points += outcome
@@ -325,18 +343,12 @@ def buy_item(item_id):
                     flash('🎲 فتحت الصندوق... وجدته فارغاً تماماً. لم تخسر ولم تكسب.', 'info')
                 user.stats_items_bought += 1
                 check_achievements(user)
-                
-            # 2. نظام فخ السراب
             elif item.is_mirage:
                 flash(f'لقد طاردت سراباً في الصحراء... {item.mirage_message} (خسرت {item.price} نقطة) 💨', 'error')
-                
-            # 3. شراء أداة طبيعية
             else:
-                user.inventory.append(item.name)
-                user.stats_items_bought += 1
+                user.inventory.append(item.name); user.stats_items_bought += 1
                 check_achievements(user)
                 flash('تمت المقايضة بنجاح! أضيفت لحقيبتك. 🐪', 'success')
-                
             user.save()
         else: flash('نقاطك لا تكفي لقوافل سيفار!', 'error')
     return redirect(url_for('store'))
@@ -413,11 +425,9 @@ def admin_panel():
                     User(hunter_id=int(panswer), username=f"شبح_{panswer}", password_hash="dummy", role=role_type, status='active', avatar='👻').save()
             flash('تم زرع الفخ في المتاهة بنجاح', 'success')
             
-        # --- إضافة بضاعة عادية أو صندوق حظ أو سراب ---
         elif action == 'add_store_item':
             is_mirage = True if request.form.get('is_mirage') == 'on' else False
             is_luck = True if request.form.get('is_luck') == 'on' else False
-            
             l_min = int(request.form.get('luck_min', 0) or 0)
             l_max = int(request.form.get('luck_max', 0) or 0)
             
@@ -458,4 +468,3 @@ def admin_panel():
     return render_template('admin.html', users=User.objects(role__nin=['ghost', 'cursed_ghost']), pending_decs=pending_decs, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
-
