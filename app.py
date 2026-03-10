@@ -128,7 +128,6 @@ def hunter_profile(target_id):
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
     return render_template('hunter_profile.html', target_user=target_user, zone_class=zones.get(target_user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '')
 
-# --- مسار التعديل السريع للآدمن من داخل ملف اللاعب ---
 @app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
 @admin_required
 def admin_update_profile(target_id):
@@ -292,15 +291,21 @@ def multi_click(puzzle_id):
 def declarations():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
-        if getattr(user, 'status', '') != 'active':
+        if getattr(user, 'role', '') != 'admin' and getattr(user, 'status', '') != 'active':
             flash('الرحالة النشطون فقط يمكنهم تدوين المخطوطات!', 'error')
         else:
             img_b64 = ''
             file = request.files.get('image_file')
             if file and file.filename != '':
                 img_b64 = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
-            News(title=request.form.get('title'), content=request.form.get('content', ' '), image_data=img_b64, category='declaration', author=user.username, status='pending').save()
-            flash('تم إرسال تدوينتك لحكماء المتاهة بانتظار الموافقة!', 'success')
+            
+            content_text = request.form.get('content', '').strip()
+            if not content_text: content_text = "مخطوطة غامضة بلا كلمات..." 
+            post_status = 'approved' if getattr(user, 'role', '') == 'admin' else 'pending'
+                
+            News(title=request.form.get('title'), content=content_text, image_data=img_b64, category='declaration', author=user.username, status=post_status).save()
+            if post_status == 'approved': flash('تم نشر تدوينتك الإمبراطورية فوراً!', 'success')
+            else: flash('تم إرسال تدوينتك لحكماء المتاهة بانتظار الموافقة!', 'success')
         return redirect(url_for('declarations'))
         
     user.last_seen_decs = datetime.utcnow(); user.save()
@@ -335,19 +340,14 @@ def buy_item(item_id):
             if item.is_luck:
                 outcome = random.randint(item.luck_min, item.luck_max)
                 user.points += outcome
-                if outcome > 0:
-                    flash(f'🎲 فتحت الصندوق... حظ أسطوري! كسبت {outcome} نقطة إضافية!', 'success')
-                elif outcome < 0:
-                    flash(f'🎲 فتحت الصندوق... لعنة! خسرت {abs(outcome)} نقطة!', 'error')
-                else:
-                    flash('🎲 فتحت الصندوق... وجدته فارغاً تماماً. لم تخسر ولم تكسب.', 'info')
-                user.stats_items_bought += 1
-                check_achievements(user)
+                if outcome > 0: flash(f'🎲 فتحت الصندوق... حظ أسطوري! كسبت {outcome} نقطة إضافية!', 'success')
+                elif outcome < 0: flash(f'🎲 فتحت الصندوق... لعنة! خسرت {abs(outcome)} نقطة!', 'error')
+                else: flash('🎲 فتحت الصندوق... وجدته فارغاً تماماً. لم تخسر ولم تكسب.', 'info')
+                user.stats_items_bought += 1; check_achievements(user)
             elif item.is_mirage:
                 flash(f'لقد طاردت سراباً في الصحراء... {item.mirage_message} (خسرت {item.price} نقطة) 💨', 'error')
             else:
-                user.inventory.append(item.name); user.stats_items_bought += 1
-                check_achievements(user)
+                user.inventory.append(item.name); user.stats_items_bought += 1; check_achievements(user)
                 flash('تمت المقايضة بنجاح! أضيفت لحقيبتك. 🐪', 'success')
             user.save()
         else: flash('نقاطك لا تكفي لقوافل سيفار!', 'error')
@@ -430,11 +430,10 @@ def admin_panel():
             is_luck = True if request.form.get('is_luck') == 'on' else False
             l_min = int(request.form.get('luck_min', 0) or 0)
             l_max = int(request.form.get('luck_max', 0) or 0)
-            
             item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')), is_mirage=is_mirage, mirage_message=request.form.get('mirage_message', ''), is_luck=is_luck, luck_min=l_min, luck_max=l_max)
             file = request.files.get('item_image')
             if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
-            item.save(); flash('تم إرسال البضاعة (أو الصندوق) للقوافل', 'success')
+            item.save(); flash('تم إرسال البضاعة للقوافل', 'success')
             
         elif action == 'add_inventory':
             u = User.objects(id=request.form.get('user_id')).first()
@@ -462,9 +461,21 @@ def admin_panel():
 
         return redirect(url_for('admin_panel'))
         
-    pending_decs = News.objects(category='declaration', status='pending')
+    # --- الفلتر الآمن لمنع الانهيار ---
+    try:
+        pending_decs = News.objects(category='declaration', status='pending')
+        pending_count = pending_decs.count()
+    except Exception:
+        pending_decs = []
+        pending_count = 0
+        
     hidden_puzzles = News.objects(category='hidden')
     settings = GlobalSettings.objects(setting_name='main_config').first()
-    return render_template('admin.html', users=User.objects(role__nin=['ghost', 'cursed_ghost']), pending_decs=pending_decs, hidden_puzzles=hidden_puzzles, settings=settings)
+    
+    # فلترة آمنة 100% للمستخدمين تتجاوز مشاكل قواعد البيانات القديمة
+    all_users = User.objects()
+    safe_users = [u for u in all_users if getattr(u, 'role', 'hunter') not in ['ghost', 'cursed_ghost']]
+    
+    return render_template('admin.html', users=safe_users, pending_decs=pending_decs, pending_count=pending_count, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
