@@ -5,6 +5,7 @@ from functools import wraps
 from datetime import datetime, timedelta
 import os
 import base64
+import random # تم إضافة مكتبة العشوائية
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')}
@@ -178,7 +179,7 @@ def add_friend():
         return redirect(request.referrer or url_for('friends'))
         
     if target and target.status != 'eliminated' and target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
-        target.friend_requests.append(user.hunter_id); target.save(); flash('تم إرسال طلب التحالف للقافلة.', 'success')
+        target.friend_requests.append(user.hunter_id); target.save(); flash('تم إرسال طلب التحالف.', 'success')
     return redirect(request.referrer or url_for('friends'))
 
 @app.route('/cancel_friend/<int:target_id>', methods=['POST'])
@@ -297,6 +298,7 @@ def store():
     user.last_seen_store = datetime.utcnow(); user.save()
     return render_template('store.html', items=StoreItem.objects())
 
+# --- مسار الشراء المحدث (يتضمن صندوق الحظ) ---
 @app.route('/buy/<item_id>', methods=['POST'])
 @login_required
 def buy_item(item_id):
@@ -305,14 +307,36 @@ def buy_item(item_id):
     
     item = StoreItem.objects(id=item_id).first()
     if user and item:
-        if item.name in user.inventory: flash('تملك هذه الأداة مسبقاً في حقيبتك!', 'error')
+        # إذا لم يكن صندوق حظ، نتحقق مما إذا كان اللاعب يملكه مسبقاً
+        if not item.is_luck and item.name in user.inventory: 
+            flash('تملك هذه الأداة مسبقاً في حقيبتك!', 'error')
         elif user.points >= item.price:
-            user.points -= item.price
-            if item.is_mirage:
+            user.points -= item.price # خصم سعر الشراء
+            
+            # 1. نظام صندوق الحظ (Gacha)
+            if item.is_luck:
+                outcome = random.randint(item.luck_min, item.luck_max)
+                user.points += outcome
+                if outcome > 0:
+                    flash(f'🎲 فتحت الصندوق... حظ أسطوري! كسبت {outcome} نقطة إضافية!', 'success')
+                elif outcome < 0:
+                    flash(f'🎲 فتحت الصندوق... لعنة! خسرت {abs(outcome)} نقطة!', 'error')
+                else:
+                    flash('🎲 فتحت الصندوق... وجدته فارغاً تماماً. لم تخسر ولم تكسب.', 'info')
+                user.stats_items_bought += 1
+                check_achievements(user)
+                
+            # 2. نظام فخ السراب
+            elif item.is_mirage:
                 flash(f'لقد طاردت سراباً في الصحراء... {item.mirage_message} (خسرت {item.price} نقطة) 💨', 'error')
+                
+            # 3. شراء أداة طبيعية
             else:
-                user.inventory.append(item.name); user.stats_items_bought += 1; check_achievements(user)
-                flash('تمت المقايضة بنجاح! 🐪', 'success')
+                user.inventory.append(item.name)
+                user.stats_items_bought += 1
+                check_achievements(user)
+                flash('تمت المقايضة بنجاح! أضيفت لحقيبتك. 🐪', 'success')
+                
             user.save()
         else: flash('نقاطك لا تكفي لقوافل سيفار!', 'error')
     return redirect(url_for('store'))
@@ -353,7 +377,6 @@ def admin_panel():
     if request.method == 'POST':
         action = request.form.get('action')
         
-        # التحديد الجماعي والإقصاء
         if action == 'bulk_action':
             selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
             for uid in selected:
@@ -381,8 +404,8 @@ def admin_panel():
         elif action == 'add_standalone_puzzle':
             ptype = request.form.get('puzzle_type')
             panswer = request.form.get('puzzle_answer', '')
-            trap_dur = int(request.form.get('trap_duration', 0))
-            trap_pen = int(request.form.get('trap_penalty', 0))
+            trap_dur = int(request.form.get('trap_duration', 0) or 0)
+            trap_pen = int(request.form.get('trap_penalty', 0) or 0)
             News(title="لغز مخفي", content="لغز خفي", category='hidden', puzzle_type=ptype, puzzle_answer=panswer, reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1)), trap_duration_minutes=trap_dur, trap_penalty_points=trap_pen).save()
             if ptype in ['fake_account', 'cursed_ghost'] and panswer.isdigit():
                 role_type = 'ghost' if ptype == 'fake_account' else 'cursed_ghost'
@@ -390,20 +413,26 @@ def admin_panel():
                     User(hunter_id=int(panswer), username=f"شبح_{panswer}", password_hash="dummy", role=role_type, status='active', avatar='👻').save()
             flash('تم زرع الفخ في المتاهة بنجاح', 'success')
             
+        # --- إضافة بضاعة عادية أو صندوق حظ أو سراب ---
         elif action == 'add_store_item':
             is_mirage = True if request.form.get('is_mirage') == 'on' else False
-            item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')), is_mirage=is_mirage, mirage_message=request.form.get('mirage_message', ''))
+            is_luck = True if request.form.get('is_luck') == 'on' else False
+            
+            l_min = int(request.form.get('luck_min', 0) or 0)
+            l_max = int(request.form.get('luck_max', 0) or 0)
+            
+            item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')), is_mirage=is_mirage, mirage_message=request.form.get('mirage_message', ''), is_luck=is_luck, luck_min=l_min, luck_max=l_max)
             file = request.files.get('item_image')
             if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
-            item.save(); flash('تم إرسال البضاعة للقوافل', 'success')
+            item.save(); flash('تم إرسال البضاعة (أو الصندوق) للقوافل', 'success')
             
-        # -- إضافة/إزالة أدوات من حقيبة اللاعب --
         elif action == 'add_inventory':
             u = User.objects(id=request.form.get('user_id')).first()
             item_name = request.form.get('item_name')
             if u and item_name:
                 if item_name not in u.inventory: u.inventory.append(item_name); u.save(); flash(f'تمت إضافة {item_name} لحقيبة {u.username}', 'success')
                 else: flash('يملك هذه الأداة مسبقاً!', 'error')
+                
         elif action == 'remove_inventory':
             u = User.objects(id=request.form.get('user_id')).first()
             item_name = request.form.get('item_name')
