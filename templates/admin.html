@@ -55,7 +55,7 @@
     </details>
 
     <details class="admin-panel">
-        <summary>🏰 تخصيص أسماء البوابة والصفحات</summary>
+        <summary>🏷️ تخصيص أسماء الصفحات (القائمة الجانبية)</summary>
         <form method="POST">
             <input type="hidden" name="action" value="update_nav_names">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -70,41 +70,106 @@
             </div>
             <button type="submit" class="btn-primary" style="margin-top: 10px;">حفظ الأسماء الجديدة</button>
         </form>
-        <form method="POST" enctype="multipart/form-data">
+    </details>
+
+    <details class="admin-panel" open>
+        <summary>🏰 تخصيص الغلاف والمرحلة (الرئيسية)</summary>
+        <form method="POST" enctype="multipart/form-data" style="display: flex; flex-wrap: wrap; gap: 10px;">
             <input type="hidden" name="action" value="update_home_settings">
-            <label style="font-size:11px;">عنوان المرحلة الحالية (في الرئيسية):</label>
-            <input type="text" name="home_title" value="{{ settings.home_title if settings else 'البوابة' }}">
-            <label style="font-size:11px;">تغيير غلاف المتاهة:</label>
-            <input type="file" name="banner_file" accept="image/*">
-            <button type="submit" class="btn-primary" style="margin-top: 10px;">حفظ وتطبيق</button>
+            <div style="width: 100%;"><label>نص المرحلة الحالية:</label><input type="text" name="home_title" value="{{ settings.home_title if settings else 'البوابة' }}" required></div>
+            <div style="width: 48%;">
+                <label>لون النص:</label>
+                <select name="home_color" style="width: 100%; padding: 8px; background: #222; color: #fff; border: 1px solid #444;">
+                    <option value="var(--zone-0-black)" {% if settings.home_color == 'var(--zone-0-black)' %}selected{% endif %}>الأساسي (رمادي)</option>
+                    <option value="var(--zone-1-wood)" {% if settings.home_color == 'var(--zone-1-wood)' %}selected{% endif %}>كهف 1 (خشبي)</option>
+                    <option value="var(--zone-2-silver)" {% if settings.home_color == 'var(--zone-2-silver)' %}selected{% endif %}>كهف 2 (فضي)</option>
+                    <option value="var(--zone-3-gold)" {% if settings.home_color == 'var(--zone-3-gold)' %}selected{% endif %}>كهف 3 (ذهبي)</option>
+                    <option value="var(--zone-4-diamond)" {% if settings.home_color == 'var(--zone-4-diamond)' %}selected{% endif %}>كهف 4 (ألماسي)</option>
+                    <option value="var(--zone-5-fire)" {% if settings.home_color == 'var(--zone-5-fire)' %}selected{% endif %}>نار سيفار (أحمر)</option>
+                </select>
+            </div>
+            <div style="width: 48%;"><label>تغيير الغلاف (صورة):</label><input type="file" name="banner_file" accept="image/*" style="width: 100%;"></div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px; width: 100%;">حفظ وتطبيق الديكور</button>
         </form>
     </details>
 </div>
 
-<!-- باقي الأقسام العادية للإدارة كما هي -->
-<div class="hunter-card" style="margin:0; margin-top:20px;">
-    <h3 style="color: var(--zone-3-gold); margin-top: 0;">🐪 قافلة التجار (صناعة أدوات الظلام)</h3>
-    <form method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="add_store_item">
-        <input type="text" name="item_name" placeholder="اسم الأداة أو الصندوق" required>
-        <input type="text" name="item_desc" placeholder="التفاصيل" required>
-        <input type="number" name="item_price" placeholder="سعر الشراء" required>
-        <input type="file" name="item_image" accept="image/*">
-        
-        <div style="display: flex; gap: 5px; margin: 10px 0;">
-            <select name="item_type" style="width: 50%; padding: 8px;">
-                <option value="normal">بضاعة عادية 📦</option>
-                <option value="weapon">سلاح (هجومي) 🗡️</option>
-                <option value="heal">جرعة علاج 🧪</option>
-                <option value="spy" style="color:#3498db; font-weight:bold;">عين تاجيس (تجسس) 👁️</option>
-                <option value="steal" style="color:#9b59b6; font-weight:bold;">يد الشبح (سرقة) 🖐️</option>
-                <option value="shield" style="color:#2ecc71; font-weight:bold;">حجاب سيفار (حماية) 🛡️</option>
-                <option value="seal" style="color:#e74c3c; font-weight:bold;">ختم ملعون (لتدميره) 🏺</option>
-            </select>
-            <input type="number" name="effect_amount" placeholder="قوة الضرر/العلاج (إن وجد)" style="width: 50%;" value="0">
+{% if pending_count > 0 %}
+<div class="hunter-card" style="border-color: var(--zone-3-gold); background: rgba(255,207,51,0.05);">
+    <h3 style="color: var(--zone-3-gold); margin-top: 0;">🔔 تدوينات قيد المراجعة ({{ pending_count }})</h3>
+    {% for pd in pending_decs %}
+        <div style="background: #111; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--zone-3-gold);">
+            <strong style="color: #fff;">{{ pd.title }}</strong> <small style="color: var(--text-muted);">بواسطة: {{ pd.author }}</small>
+            {% if pd.image_data %}<br><img src="{{ pd.image_data }}" style="max-height: 100px; border-radius: 5px; margin-top: 5px;">{% endif %}
+            <p style="font-style: italic; color: #ccc; font-size: 13px;">"{{ pd.content }}"</p>
+            <div style="display: flex; gap: 10px;">
+                <form method="POST" action="/approve_dec/{{ pd.id }}" style="margin:0;"><button type="submit" class="btn-primary" style="padding: 5px 15px; font-size: 11px; background: #2ecc71;">موافقة ونشر ✔️</button></form>
+                <form method="POST" action="/delete_news/{{ pd.id }}" style="margin:0;"><button type="submit" class="btn-danger" style="padding: 5px 15px; font-size: 11px;">رفض وحذف ❌</button></form>
+            </div>
         </div>
-        <button type="submit" class="btn-primary">إرسال للقافلة</button>
-    </form>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="admin-grid" style="margin-top: 20px;">
+    <div class="hunter-card" style="margin:0;">
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">📜 نشر خبر أو مخطوطة</h3>
+        <form method="POST">
+            <input type="hidden" name="action" value="add_news">
+            <input type="text" name="title" placeholder="العنوان..." required>
+            <textarea name="content" rows="4" placeholder="المحتوى..." required></textarea>
+            <select name="puzzle_type">
+                <option value="none">خبر عادي</option>
+                <option value="secret_word">لغز الكلمة (مربع إدخال)</option>
+            </select>
+            <input type="text" name="puzzle_answer" placeholder="إجابة اللغز (إن وجد)">
+            <div style="display: flex; gap: 5px; margin-top: 5px;">
+                <input type="number" name="reward_points" placeholder="النقاط" value="0" style="width: 50%;">
+                <input type="number" name="max_winners" placeholder="عدد الفائزين" value="1" style="width: 50%;">
+            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">نشر</button>
+        </form>
+    </div>
+
+    <div class="hunter-card" style="margin:0;">
+        <h3 style="color: var(--zone-3-gold); margin-top: 0;">🐪 قافلة التجار (صناعة أدوات الظلام)</h3>
+        <form method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="add_store_item">
+            <input type="text" name="item_name" placeholder="اسم الأداة أو الصندوق" required>
+            <input type="text" name="item_desc" placeholder="التفاصيل" required>
+            <input type="number" name="item_price" placeholder="سعر الشراء" required>
+            <input type="file" name="item_image" accept="image/*">
+            
+            <div style="display: flex; gap: 5px; margin: 10px 0;">
+                <select name="item_type" style="width: 50%; padding: 8px;">
+                    <option value="normal">بضاعة عادية 📦</option>
+                    <option value="weapon">سلاح (هجومي) 🗡️</option>
+                    <option value="heal">جرعة علاج 🧪</option>
+                    <option value="spy" style="color:#3498db; font-weight:bold;">عين تاجيس (تجسس) 👁️</option>
+                    <option value="steal" style="color:#9b59b6; font-weight:bold;">يد الشبح (سرقة) 🖐️</option>
+                    <option value="shield" style="color:#2ecc71; font-weight:bold;">حجاب سيفار (حماية) 🛡️</option>
+                    <option value="seal" style="color:#e74c3c; font-weight:bold;">ختم ملعون (لتدميره) 🏺</option>
+                </select>
+                <input type="number" name="effect_amount" placeholder="قوة الضرر/العلاج (إن وجد)" style="width: 50%;" value="0">
+            </div>
+            
+            <div style="background: rgba(231, 76, 60, 0.1); padding: 10px; border: 1px dashed #e74c3c; border-radius: 8px; margin: 10px 0;">
+                <label style="color: #e74c3c; font-weight: bold;"><input type="checkbox" name="is_mirage"> فخ سراب؟ (يخسر السعر فقط)</label>
+                <input type="text" name="mirage_message" placeholder="رسالة الخداع..." style="font-size: 11px; margin-top: 5px;">
+            </div>
+            
+            <div style="background: rgba(46, 204, 113, 0.1); padding: 10px; border: 1px dashed #2ecc71; border-radius: 8px; margin: 10px 0;">
+                <label style="color: #2ecc71; font-weight: bold;"><input type="checkbox" name="is_luck" onchange="document.getElementById('luck_options').style.display = this.checked ? 'block' : 'none'"> هل هو صندوق حظ؟ 🎲</label>
+                <div id="luck_options" style="display: none; margin-top: 10px;">
+                    <div style="display: flex; gap: 5px;">
+                        <input type="number" name="luck_min" placeholder="أقصى خسارة (مثل: -50)" style="font-size: 11px;">
+                        <input type="number" name="luck_max" placeholder="أقصى ربح (مثل: 100)" style="font-size: 11px;">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn-primary">إرسال للقافلة</button>
+        </form>
+    </div>
 </div>
 
 <div class="hunter-card" style="margin-top:20px;">
@@ -114,7 +179,7 @@
         <select name="puzzle_type" style="width:100%; padding: 10px;">
             <option value="quicksand_trap">فخ الرمال المتحركة (رابط يحظر اللاعب)</option>
             <option value="cursed_ghost">الشبح الملعون (يخصم النقاط)</option>
-            <option value="fake_account">الشبح الطيب (يعطي نقاط)</option>
+            <option value="fake_account">الشبح الطيب (يعطي نقاط أو أغراض)</option>
             <option value="secret_link">الرابط السري الطيب (يعطي نقاط)</option>
             <option value="multi_click">لغز الكلمة المخفية (ضغط متكرر)</option>
         </select>
@@ -124,6 +189,23 @@
         <input type="number" name="trap_duration" placeholder="مدة الحظر (رمال)" value="0" style="width:20%;">
         <button type="submit" class="btn-primary" style="width:100%; background: #e74c3c;">توليد الفخ 🕷️</button>
     </form>
+    
+    {% if hidden_puzzles %}
+    <div style="background:#111; padding:15px; margin-top:15px; border-radius: 8px;">
+        <h4 style="margin:0 0 10px 0; color: var(--zone-4-diamond);">الفخاخ النشطة:</h4>
+        {% for p in hidden_puzzles %}
+            <div style="font-size:12px; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; display: flex; justify-content: space-between;">
+                <div>
+                    <strong>النوع:</strong> {{ p.puzzle_type }} | <strong>الجائزة:</strong> {{ p.reward_points }} | <strong>الخصم:</strong> {{ p.trap_penalty_points }}<br>
+                    {% if p.puzzle_type in ['secret_link', 'quicksand_trap'] %} كود الرابط: <code style="color:var(--zone-4-diamond); user-select:all;">/secret_link/{{ p.id }}</code>
+                    {% elif p.puzzle_type == 'multi_click' %} كود الكلمة: <code style="color:var(--zone-4-diamond); user-select:all;">&lt;span class="multi-click-word" data-id="{{ p.id }}" data-target="5"&gt;الكلمة هنا&lt;/span&gt;</code>
+                    {% else %} ID الشبح: <code style="color:#e74c3c;">{{ p.puzzle_answer }}</code> {% endif %}
+                </div>
+                <form method="POST" action="/delete_news/{{ p.id }}" style="margin:0;"><button type="submit" class="btn-danger" style="padding: 4px; font-size: 11px;">إلغاء ❌</button></form>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 </div>
 
 <div class="hunter-card" style="overflow-x: auto; margin-top: 20px;">
