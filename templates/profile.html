@@ -23,39 +23,35 @@
     </div>
     {% endif %}
 
-    <h2 style="margin-top: 15px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 10px;">
-        {{ user.username }} 
-        <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span>
-        <button onclick="document.getElementById('edit-name-form').style.display='block'" class="btn-primary" style="padding: 2px 8px; font-size: 12px; width: auto; background: #3498db;">✏️</button>
-    </h2>
-
-    <form id="edit-name-form" method="POST" action="/settings" style="display: none; margin-bottom: 15px;">
-        <input type="hidden" name="action" value="change_name">
-        <input type="text" name="new_name" placeholder="الاسم الجديد" required style="width: 150px; padding: 5px; font-size: 12px;">
-        <button type="submit" class="btn-primary" style="padding: 5px; font-size: 12px; width: auto;">حفظ</button>
-    </form>
+    <h2 style="margin-top: 15px; margin-bottom: 5px;">{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
     
-    <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 15px;">
-        <input type="hidden" name="action" value="change_avatar">
-        <input type="file" name="avatar_file" accept="image/*" style="font-size: 10px;">
-        <button type="submit" class="btn-primary" style="padding: 4px 10px; font-size: 10px;">تغيير الصورة</button>
-    </form>
-
-    <div style="margin-bottom: 15px;">
-        {% for ach in user.achievements %}
-            <span style="background: rgba(255,215,0,0.1); border: 1px solid var(--zone-3-gold); color: var(--zone-3-gold); padding: 3px 8px; border-radius: 12px; font-size: 10px; margin: 2px; display: inline-block;">{{ ach }}</span>
+    <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
+    <div style="display: flex; justify-content: space-around; align-items: flex-start;">
+        <div>
+            <span style="color: var(--text-muted); font-size:12px;">النقاط</span><br>
+            <strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong>
+        </div>
+        <div>
+            <span style="color: var(--text-muted); font-size:12px;">الحالة</span><br>
+            <strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد/مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong>
+        </div>
+    </div>
+    
+    {% if my_seals %}
+    <div style="margin-top: 20px; background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #e74c3c;">
+        <h4 style="margin-top: 0; color: #e74c3c;">🏺 أختام سيفار המلعونة ({{ user.destroyed_seals }}/4 دُمرت)</h4>
+        <p style="font-size: 12px; color: #ff9999;">لديك أختام ملكية! دمرها قبل أن يسرقها أحد لفك اللعنة.</p>
+        {% for seal in my_seals %}
+            <form action="/use_item/{{ user.hunter_id }}" method="POST" style="margin-bottom: 5px;">
+                <input type="hidden" name="item_name" value="{{ seal.name }}">
+                <button type="submit" class="btn-danger" style="width: 100%; background: #8b0000; padding: 10px;">تدمير ({{ seal.name }}) 🔨</button>
+            </form>
         {% endfor %}
     </div>
+    {% endif %}
 
-    <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
-    
-    <div style="display: flex; justify-content: space-around; align-items: flex-start;">
-        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong></div>
-        <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد/مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
-    </div>
-    
     <div style="margin-top: 20px; text-align: right; background: #111; padding: 15px; border-radius: 8px;">
-        <h4 style="margin-top: 0; color: var(--zone-4-diamond);">🎒 حقيبتي (المقتنيات)</h4>
+        <h4 style="margin-top: 0; color: var(--zone-4-diamond);">🎒 حقيبتي</h4>
         {% if user.inventory %}
             <ul style="margin: 0; padding-right: 20px; color: var(--text-main); font-size: 13px;">
                 {% for item in user.inventory %}<li>{{ item }}</li>{% endfor %}
