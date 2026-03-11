@@ -35,6 +35,7 @@
     </form>
     {% endif %}
 
+    {% if war_settings and war_settings.war_mode %}
     <div style="margin-top: 15px; width: 80%; margin-left: auto; margin-right: auto;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
             <span>الصحة (HP)</span>
@@ -53,6 +54,7 @@
             </form>
         {% endif %}
     </div>
+    {% endif %}
 
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
     
@@ -74,27 +76,43 @@
         <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if target_user.status == 'active' else '#e74c3c' }};">{{ 'مجمد/مقصي 💀' if target_user.status != 'active' else 'نشط 🟢' }}</strong></div>
     </div>
     
+    {% if target_user.status == 'frozen' and target_user.freeze_reason %}
+    <div style="margin-top: 20px; padding: 10px; background: rgba(231, 76, 60, 0.1); border: 1px dashed #e74c3c; border-radius: 8px;">
+        <span style="color: #e74c3c; font-size: 12px;">سبب الإقصاء:</span><br>
+        <i style="color: #ff9999; font-size: 14px;">"{{ target_user.freeze_reason }}"</i>
+    </div>
+    {% endif %}
+    
     {% if target_user.status != 'eliminated' and current_user.id|string != target_user.id|string %}
     <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #333;">
         
         {% if target_user.hunter_id in current_user.friends %}
             <div style="padding: 10px; background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 8px; color: #2ecc71; font-weight: bold; margin-bottom: 10px;">أنتما حلفاء 🤝</div>
             
-            {% if war_settings and war_settings.war_mode and my_heals %}
-                <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px; display: flex; gap: 5px;">
-                    <select name="item_name" style="width: 70%; padding: 8px;">
-                        {% for h in my_heals %}<option value="{{ h.name }}">{{ h.name }} (علاج +{{ h.effect_amount }})</option>{% endfor %}
-                    </select>
-                    <button type="submit" class="btn-primary" style="background: #2ecc71; width: 30%;">علاج 🧪</button>
+            {% if war_settings and war_settings.war_mode %}
+                {% if my_heals %}
+                    <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px; display: flex; gap: 5px;">
+                        <select name="item_name" style="width: 70%; padding: 8px;">
+                            {% for h in my_heals %}<option value="{{ h.name }}">{{ h.name }} (علاج +{{ h.effect_amount }})</option>{% endfor %}
+                        </select>
+                        <button type="submit" class="btn-primary" style="background: #2ecc71; width: 30%;">علاج 🧪</button>
+                    </form>
+                {% endif %}
+                
+                <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}" style="margin: 0;" onsubmit="return confirm('هل أنت متأكد من خيانة هذا الحليف لكي تتمكن من مهاجمته؟');">
+                    <button type="submit" class="btn-danger" style="width: 100%; padding: 10px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c;">إلغاء التحالف (غدر 💔)</button>
+                </form>
+            {% else %}
+                <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}" style="margin: 0;">
+                    <button type="submit" class="btn-danger" style="width: 100%; padding: 10px;">إلغاء التحالف ❌</button>
                 </form>
             {% endif %}
-            
-            <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}" style="margin: 0;" onsubmit="return confirm('هل أنت متأكد من خيانة هذا الحليف لكي تتمكن من مهاجمته؟');">
-                <button type="submit" class="btn-danger" style="width: 100%; padding: 10px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c;">إلغاء التحالف (غدر 💔)</button>
-            </form>
 
         {% elif current_user.hunter_id in target_user.friend_requests %}
             <div style="margin-bottom: 10px; color: var(--zone-3-gold); font-weight: bold;">في انتظار موافقته للتحالف ⏳</div>
+            <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}" style="margin: 0;">
+                <button type="submit" class="btn-danger" style="width: 100%; padding: 10px;">إلغاء الطلب ❌</button>
+            </form>
             
         {% elif target_user.hunter_id in current_user.friend_requests %}
             <a href="/friends" class="btn-primary" style="background: var(--zone-4-diamond); color: #000;">أرسل لك طلباً (راجع الأصدقاء) 🔔</a>
@@ -122,3 +140,4 @@
     {% endif %}
 </div>
 {% endblock %}
+
