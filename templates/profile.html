@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-
-{% set ranks = {0: 'صياد مبتدئ', 1: 'متمرس', 2: 'خبير', 3: 'محترف', 4: 'داهية', 5: 'نيتيرو 👑'} %}
-{% set zone_names = {0: 'البوابة', 1: 'المنطقة الأولى', 2: 'المنطقة الثانية', 3: 'المنطقة الثالثة', 4: 'المنطقة الرابعة', 5: 'القمة النارية'} %}
-
-<div class="hunter-card {{ zone_class }}" id="license-card" style="text-align: center; margin-top: 40px; position: relative;">
+<div class="hunter-card {{ zone_class }}" style="text-align: center; margin-top: 40px; position: relative;">
     <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
     
     <div class="avatar-ring {{ zone_class }}" style="margin-top: -60px;">
@@ -15,40 +11,32 @@
         {% endif %}
     </div>
 
-    <div style="background: #111; display: inline-block; padding: 5px 15px; border-radius: 20px; border: 1px solid currentColor; margin-bottom: 15px;" class="rank-{{ user.zone }}">
-        <strong style="font-size: 14px;">{{ ranks[user.zone] }}</strong> | <small>{{ zone_names[user.zone] }}</small>
+    <div style="margin-top: 5px; width: 80%; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
+            <span>صحتي (HP)</span>
+            <span class="neon-number" style="color: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">{{ user.health }}/100</span>
+        </div>
+        <div style="width: 100%; background: #222; border-radius: 10px; height: 12px; overflow: hidden; border: 1px solid #111;">
+            <div style="height: 100%; width: {{ user.health }}%; background: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s;"></div>
+        </div>
     </div>
 
-    <h2 style="margin-bottom: 5px;">{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
+    <h2 style="margin-top: 15px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+        {{ user.username }} 
+        <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span>
+        <button onclick="document.getElementById('edit-name-form').style.display='block'" class="btn-primary" style="padding: 2px 8px; font-size: 12px; width: auto; background: #3498db;">✏️</button>
+    </h2>
+
+    <form id="edit-name-form" method="POST" action="/settings" style="display: none; margin-bottom: 15px;">
+        <input type="hidden" name="action" value="change_name">
+        <input type="text" name="new_name" placeholder="الاسم الجديد" required style="width: 150px; padding: 5px; font-size: 12px;">
+        <button type="submit" class="btn-primary" style="padding: 5px; font-size: 12px; width: auto;">حفظ</button>
+    </form>
+    
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
-    
-    <div style="display: flex; justify-content: space-around; align-items: center;">
+    <div style="display: flex; justify-content: space-around; align-items: flex-start;">
         <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong></div>
-        <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد 💀' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
-    </div>
-    
-    <div class="inventory-box">
-        <div style="width: 100%; color: var(--text-muted); font-size: 12px; margin-bottom: 5px;">🎒 حقيبة المقتنيات</div>
-        {% for item in user.inventory %}<span class="inventory-item">{{ item }}</span>{% else %}<span style="color: #555; font-size: 12px;">الحقيبة فارغة</span>{% endfor %}
-    </div>
-</div>
-
-<button id="export-license" class="btn-primary" style="background:var(--zone-2-silver); color: #000; margin-bottom: 25px;">📸 تصدير الرخصة</button>
-
-<div class="hunter-card" style="padding: 0; border-color: var(--zone-2-silver);">
-    <div class="accordion-header" style="border-right: 4px solid var(--zone-5-fire);">⚙️ إعدادات الصائد</div>
-    <div class="accordion-content">
-        <br>
-        <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 20px;">
-            <input type="hidden" name="action" value="change_avatar">
-            <label style="color: var(--zone-3-gold);">📸 رفع صورة (مربعة):</label>
-            <div style="display: flex; gap: 5px;"><input type="file" name="avatar_file" accept="image/*" required><button type="submit" class="btn-primary" style="width: 30%;">رفع</button></div>
-        </form>
-        <form method="POST" action="/settings" id="name-change-form">
-            <input type="hidden" name="action" value="change_name">
-            <label style="color: var(--zone-3-gold);">✍️ تغيير الاسم (مرة كل 15 يوم):</label>
-            <div style="display: flex; gap: 5px;"><input type="text" name="new_name" placeholder="الاسم الجديد..." required><button type="submit" class="btn-primary" style="width: 30%;">تغيير</button></div>
-        </form><br>
+        <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد/مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
     </div>
 </div>
 {% endblock %}
