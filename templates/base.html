@@ -12,7 +12,7 @@
         <a href="/" class="logo translatable" data-ar="🏜️ متاهة سيفار" data-en="🏜️ Sephar Maze">🏜️ متاهة سيفار</a>
         
         <div style="display: flex; align-items: center; gap: 15px;">
-            {% if session.get('user_id') and current_user %}
+            {% if session.get('user_id') and current_user and war_settings and war_settings.war_mode %}
             <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 8px; border: 1px solid #333;">
                 <span style="font-size: 10px; color: var(--text-muted); display: block; line-height: 1;">الدم</span>
                 <strong style="font-size: 14px; color: {% if current_user.health > 50 %}#2ecc71{% elif current_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">
@@ -73,8 +73,3 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
         {% endwith %}
-    </div>
-    <main>{% block content %}{% endblock %}</main>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
