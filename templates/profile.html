@@ -11,6 +11,7 @@
         {% endif %}
     </div>
 
+    {% if war_settings and war_settings.war_mode %}
     <div style="margin-top: 5px; width: 80%; margin-left: auto; margin-right: auto;">
         <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
             <span>صحتي (HP)</span>
@@ -20,6 +21,7 @@
             <div style="height: 100%; width: {{ user.health }}%; background: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s;"></div>
         </div>
     </div>
+    {% endif %}
 
     <h2 style="margin-top: 15px; margin-bottom: 5px; display: flex; justify-content: center; align-items: center; gap: 10px;">
         {{ user.username }} 
@@ -33,10 +35,34 @@
         <button type="submit" class="btn-primary" style="padding: 5px; font-size: 12px; width: auto;">حفظ</button>
     </form>
     
+    <form method="POST" action="/settings" enctype="multipart/form-data" style="margin-bottom: 15px;">
+        <input type="hidden" name="action" value="change_avatar">
+        <input type="file" name="avatar_file" accept="image/*" style="font-size: 10px;">
+        <button type="submit" class="btn-primary" style="padding: 4px 10px; font-size: 10px;">تغيير الصورة</button>
+    </form>
+
+    <div style="margin-bottom: 15px;">
+        {% for ach in user.achievements %}
+            <span style="background: rgba(255,215,0,0.1); border: 1px solid var(--zone-3-gold); color: var(--zone-3-gold); padding: 3px 8px; border-radius: 12px; font-size: 10px; margin: 2px; display: inline-block;">{{ ach }}</span>
+        {% endfor %}
+    </div>
+
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
+    
     <div style="display: flex; justify-content: space-around; align-items: flex-start;">
         <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong></div>
         <div><span style="color: var(--text-muted); font-size:12px;">حالة الرخصة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مجمد/مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: right; background: #111; padding: 15px; border-radius: 8px;">
+        <h4 style="margin-top: 0; color: var(--zone-4-diamond);">🎒 حقيبتي (المقتنيات)</h4>
+        {% if user.inventory %}
+            <ul style="margin: 0; padding-right: 20px; color: var(--text-main); font-size: 13px;">
+                {% for item in user.inventory %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: var(--text-muted); font-size: 12px; margin: 0;">الحقيبة فارغة.</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
