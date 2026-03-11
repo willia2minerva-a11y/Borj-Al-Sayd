@@ -168,6 +168,11 @@
 
 <div class="hunter-card" style="overflow-x: auto; margin-top: 20px;">
     <h3 style="color: var(--zone-3-gold); margin-top: 0;">👥 سجل الرحالة والتحكم بالحقائب</h3>
+    
+    <div style="margin-bottom: 15px;">
+        <input type="text" id="adminSearch" onkeyup="filterUsers()" placeholder="🔍 ابحث عن رحالة بالاسم أو بـ ID..." style="width: 100%; padding: 10px; background: #111; color: #fff; border: 1px solid var(--zone-3-gold); border-radius: 5px;">
+    </div>
+
     <form method="POST">
         <input type="hidden" name="action" value="bulk_action">
         <div style="display:flex; gap:10px; margin-bottom:15px; background:#111; padding:15px; border-radius:8px; align-items: center; flex-wrap: wrap;">
@@ -189,7 +194,7 @@
                 <th>إدارة الحقيبة (إضافة / مصادرة)</th>
             </tr>
             {% for u in users %}
-            <tr>
+            <tr class="user-row">
                 <td>{% if u.hunter_id != 1000 %}<input type="checkbox" name="selected_users" value="{{ u.id }}" class="user-cb">{% endif %}</td>
                 <td style="text-align: right;">
                     <strong>{{ u.username }}</strong> <small>#{{ u.hunter_id }}</small>
@@ -228,4 +233,16 @@
         </table>
     </form>
 </div>
+
+<script>
+function filterUsers() {
+    let input = document.getElementById('adminSearch').value.toLowerCase();
+    let rows = document.querySelectorAll('.user-row');
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? '' : 'none';
+    });
+}
+</script>
 {% endblock %}
+
