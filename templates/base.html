@@ -25,7 +25,7 @@
     
     {% if session.get('user_id') %}
     <nav id="side-nav">
-        {% if session.get('role') == 'admin' %}
+        {% if current_user and current_user.role == 'admin' %}
         <a href="/admin" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);">👑 كهف القيادة (الإدارة)</a>
         <hr style="border-color: #333; margin: 0; width: 100%;">
         {% endif %}
