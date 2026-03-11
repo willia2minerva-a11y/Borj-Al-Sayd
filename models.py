@@ -25,10 +25,13 @@ class User(db.Document):
     
     quicksand_lock_until = db.DateTimeField(default=None)
     
-    # --- نظام الحرب والـ HP ---
-    health = db.IntField(default=100) # الصحة من 100
-    last_health_check = db.DateTimeField(default=datetime.utcnow) # لخصم النزيف بذكاء
-    last_action_time = db.DateTimeField(default=datetime.utcnow) # لتفعيل فترة الأمان من النزيف
+    # --- نظام الحرب والمعركة الأخيرة ---
+    health = db.IntField(default=100) 
+    last_health_check = db.DateTimeField(default=datetime.utcnow) 
+    last_action_time = db.DateTimeField(default=datetime.utcnow)
+    last_active = db.DateTimeField(default=datetime.utcnow) # لنظام الموت 72 ساعة
+    tajis_eye_until = db.DateTimeField(default=None) # وقت انتهاء مفعول عين تاجيس
+    destroyed_seals = db.IntField(default=0) # عداد الأختام الأربعة المدمرة
     
     stats_ghosts_caught = db.IntField(default=0)
     stats_puzzles_solved = db.IntField(default=0)
@@ -41,7 +44,7 @@ class User(db.Document):
     last_seen_store = db.DateTimeField(default=datetime.utcnow)
     
     created_at = db.DateTimeField(default=datetime.utcnow)
-    meta = {'indexes': ['hunter_id', 'username', 'status', 'role', 'health']}
+    meta = {'indexes': ['hunter_id', 'username', 'status', 'role', 'health', 'last_active']}
 
 class News(db.Document):
     title = db.StringField(required=True)
@@ -67,8 +70,9 @@ class StoreItem(db.Document):
     price = db.IntField(required=True)
     image = db.StringField(default='')
     
-    item_type = db.StringField(default='normal') # normal, weapon, heal, revive
-    effect_amount = db.IntField(default=0) # قوة الضرر أو العلاج
+    # أنواع الأغراض الجديدة (سلاح، علاج، تجسس، سرقة، درع، ختم)
+    item_type = db.StringField(default='normal') 
+    effect_amount = db.IntField(default=0) 
     
     is_mirage = db.BooleanField(default=False) 
     mirage_message = db.StringField(default='') 
@@ -78,7 +82,6 @@ class StoreItem(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class BattleLog(db.Document):
-    # سجل الهجمات (بدون اسم الفاعل)
     victim_name = db.StringField(required=True)
     weapon_name = db.StringField(required=True)
     remaining_hp = db.IntField(required=True)
@@ -91,12 +94,22 @@ class GlobalSettings(db.Document):
     home_title = db.StringField(default='بوابة سيفار')
     home_color = db.StringField(default='var(--zone-1-wood)')
     
-    maintenance_mode = db.BooleanField(default=False) # وضع الصيانة
-    
-    # إعدادات الحرب
+    maintenance_mode = db.BooleanField(default=False) 
     war_mode = db.BooleanField(default=False) 
-    bleed_rate_minutes = db.IntField(default=60) # النزيف كل كم دقيقة؟
-    bleed_amount = db.IntField(default=1) # كم نقطة صحة يفقد؟
-    safe_time_minutes = db.IntField(default=120) # فترة الأمان بعد الهجوم
-    dead_count = db.IntField(default=0) # عداد الموتى
-    max_dead_to_end = db.IntField(default=15) # الموتى لإنهاء الحرب
+    final_battle_mode = db.BooleanField(default=False) # مود المعركة الأخيرة (إخفاء النقاط)
+    
+    bleed_rate_minutes = db.IntField(default=60) 
+    bleed_amount = db.IntField(default=1) 
+    safe_time_minutes = db.IntField(default=120) 
+    dead_count = db.IntField(default=0) 
+    max_dead_to_end = db.IntField(default=15) 
+    
+    # أسماء الصفحات القابلة للتغيير ديناميكياً
+    nav_home = db.StringField(default='🏠 بوابة سيفار (الرئيسية)')
+    nav_profile = db.StringField(default='📜 مخطوطتي (الملف الشخصي)')
+    nav_friends = db.StringField(default='🤝 التحالفات (الأصدقاء)')
+    nav_news = db.StringField(default='📜 أخبار المتاهة (الأخبار)')
+    nav_puzzles = db.StringField(default='🧩 مخطوطات سيفار (الألغاز)')
+    nav_decs = db.StringField(default='📢 تدوينات الرحالة (التصريحات)')
+    nav_store = db.StringField(default='🐪 قافلة التجار (السوق)')
+    nav_grave = db.StringField(default='💀 المقبرة المنسية')
