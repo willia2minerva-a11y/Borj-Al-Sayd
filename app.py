@@ -27,63 +27,57 @@ def check_achievements(user):
         flash(f'🏆 إنجاز جديد يضاف لمخطوطتك! لقد حصلت على وسام: {", ".join(new_ach)}', 'success')
     user.save()
 
-def check_war_and_bleed(user, settings):
-    if not settings or not getattr(settings, 'war_mode', False) or getattr(user, 'status', '') != 'active' or getattr(user, 'role', '') == 'admin':
-        return
-        
+def check_lazy_death_and_bleed(user, settings):
+    if not user or user.role == 'admin' or user.status != 'active': return
     now = datetime.utcnow()
-    safe_until = getattr(user, 'last_action_time', now) + timedelta(minutes=settings.safe_time_minutes)
     
-    if now > safe_until:
-        start_bleed_time = max(getattr(user, 'last_health_check', safe_until), safe_until)
-        minutes_passed = (now - start_bleed_time).total_seconds() / 60.0
-        
-        if minutes_passed >= settings.bleed_rate_minutes and settings.bleed_rate_minutes > 0:
-            cycles = math.floor(minutes_passed / settings.bleed_rate_minutes)
-            total_damage = cycles * settings.bleed_amount
-            
-            user.health -= total_damage
-            user.last_health_check = now
-            
-            if user.health <= 0:
-                user.health = 0
-                user.status = 'eliminated'
-                user.freeze_reason = 'نزف حتى الموت في حرب المتاهة'
-                settings.dead_count += 1
-                settings.save()
-            user.save()
+    # 1. نظام الإعدام بالرمال (72 ساعة)
+    hours_passed = (now - getattr(user, 'last_active', user.created_at)).total_seconds() / 3600.0
+    if hours_passed > 72:
+        user.health = 0; user.status = 'eliminated'; user.freeze_reason = 'ابتلعته الرمال المتحركة لغيابه أكثر من 72 ساعة'
+        user.save(); return
+
+    # 2. نظام النزيف في الحرب
+    if settings and getattr(settings, 'war_mode', False):
+        safe_until = getattr(user, 'last_action_time', now) + timedelta(minutes=settings.safe_time_minutes)
+        if now > safe_until:
+            start_bleed_time = max(getattr(user, 'last_health_check', safe_until), safe_until)
+            minutes_passed = (now - start_bleed_time).total_seconds() / 60.0
+            if minutes_passed >= settings.bleed_rate_minutes and settings.bleed_rate_minutes > 0:
+                cycles = math.floor(minutes_passed / settings.bleed_rate_minutes)
+                user.health -= cycles * settings.bleed_amount
+                user.last_health_check = now
+                if user.health <= 0:
+                    user.health = 0; user.status = 'eliminated'; user.freeze_reason = 'نزف حتى الموت في حرب المتاهة'
+                    settings.dead_count += 1; settings.save()
+                user.save()
 
 @app.before_request
 def check_locks_and_status():
-    # 1. السماح دائماً بمسارات الدخول، التسجيل، والخروج
-    if request.endpoint in ['static', 'login', 'logout', 'register']: 
-        return
-        
+    if request.endpoint in ['static', 'login', 'logout', 'register']: return
     settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     
     user = None
     if 'user_id' in session:
         user = User.objects(id=session['user_id']).first()
-        if not user:
-            session.pop('user_id', None); session.pop('role', None)
+        if not user: session.pop('user_id', None); session.pop('role', None)
+        else:
+            # تحديث نشاط اللاعب الحي
+            user.last_active = datetime.utcnow()
+            user.save()
 
-    # 2. نظام الصيانة الذكي (العاصفة الرملية)
+    # نظام الصيانة
     if settings.maintenance_mode:
-        if not user:
-            # الزائر نتركه يرى الرئيسية فقط لكي يضغط على تسجيل الدخول
-            if request.endpoint != 'home':
-                return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش. ⏳', time_left=None)
-        elif user.role != 'admin':
-            # اللاعب المسجل يُحجز في صفحة الصيانة أينما ذهب
+        if not user and request.endpoint != 'home':
+            return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش. ⏳', time_left=None)
+        elif user and getattr(user, 'role', '') != 'admin':
             return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش. ⏳', time_left=None)
 
-    # 3. نظام الحرب والفخاخ
     if user:
-        check_war_and_bleed(user, settings)
+        check_lazy_death_and_bleed(user, settings)
         if user.status == 'eliminated':
             session.pop('user_id', None); session.pop('role', None)
             return render_template('locked.html', message='لقد هلكت في متاهة سيفار... جسدك أصبح مجرد أثر في المقبرة المنسية. 💀', time_left=None)
-            
         if user.quicksand_lock_until and datetime.utcnow() < user.quicksand_lock_until:
             time_left = user.quicksand_lock_until - datetime.utcnow()
             mins, secs = divmod(time_left.seconds, 60)
@@ -167,26 +161,61 @@ def profile():
     user = User.objects(id=session['user_id']).first()
     settings = GlobalSettings.objects(setting_name='main_config').first()
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
-    my_items = []
-    if user.inventory: my_items = StoreItem.objects(name__in=user.inventory)
-    return render_template('profile.html', user=user, zone_class=zones.get(user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '', my_items=my_items)
+    my_items = StoreItem.objects(name__in=user.inventory) if user.inventory else []
+    my_seals = [i for i in my_items if i.item_type == 'seal']
+    return render_template('profile.html', user=user, zone_class=zones.get(user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '', my_items=my_items, my_seals=my_seals)
 
 @app.route('/hunter/<int:target_id>')
 @login_required
 def hunter_profile(target_id):
     target_user = User.objects(hunter_id=target_id).first()
+    settings = GlobalSettings.objects(setting_name='main_config').first()
     if not target_user or getattr(target_user, 'role', '') in ['ghost', 'cursed_ghost']:
         flash('هذا الرحالة غير موجود!', 'error'); return redirect(request.referrer or url_for('home'))
-    settings = GlobalSettings.objects(setting_name='main_config').first()
+    
+    # تحديث وتطبيق إعدام الـ 72 ساعة على الشخص المُزار
+    check_lazy_death_and_bleed(target_user, settings)
+    
     zones = {0: 'floor-0', 1: 'floor-1', 2: 'floor-2', 3: 'floor-3', 4: 'floor-4', 5: 'floor-5'}
     current_user = User.objects(id=session['user_id']).first()
-    my_weapons = []; my_heals = []
+    my_weapons = []; my_heals = []; my_spies = []; my_steals = []
+    
     if current_user.inventory:
         items = StoreItem.objects(name__in=current_user.inventory)
         my_weapons = [i for i in items if i.item_type == 'weapon']
         my_heals = [i for i in items if i.item_type == 'heal']
-    return render_template('hunter_profile.html', target_user=target_user, zone_class=zones.get(target_user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '', my_weapons=my_weapons, my_heals=my_heals)
+        my_spies = [i for i in items if i.item_type == 'spy']
+        my_steals = [i for i in items if i.item_type == 'steal']
+        
+    return render_template('hunter_profile.html', target_user=target_user, zone_class=zones.get(target_user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '', my_weapons=my_weapons, my_heals=my_heals, my_spies=my_spies, my_steals=my_steals)
 
+# --- نظام السوق السوداء (التبادل السريع) ---
+@app.route('/transfer/<int:target_id>', methods=['POST'])
+@login_required
+def transfer(target_id):
+    sender = User.objects(id=session['user_id']).first()
+    receiver = User.objects(hunter_id=target_id).first()
+    
+    if not receiver or receiver.status != 'active': flash('الطرف الآخر غير متاح!', 'error'); return redirect(request.referrer)
+    if receiver.hunter_id not in sender.friends: flash('التبادل مسموح للحلفاء فقط!', 'error'); return redirect(request.referrer)
+    
+    transfer_type = request.form.get('transfer_type')
+    
+    if transfer_type == 'points':
+        amount = int(request.form.get('amount', 0))
+        if amount <= 0 or amount > sender.points: flash('رصيدك لا يكفي للتحويل!', 'error'); return redirect(request.referrer)
+        sender.points -= amount; receiver.points += amount
+        sender.save(); receiver.save(); flash(f'تم تهريب {amount} نقطة إلى حليفك بنجاح!', 'success')
+        
+    elif transfer_type == 'item':
+        item_name = request.form.get('item_name')
+        if item_name not in sender.inventory: flash('لا تملك هذا الغرض!', 'error'); return redirect(request.referrer)
+        sender.inventory.remove(item_name); receiver.inventory.append(item_name)
+        sender.save(); receiver.save(); flash(f'تم إرسال {item_name} إلى حليفك بصمت!', 'success')
+        
+    return redirect(request.referrer)
+
+# --- نظام استخدام الأدوات (الأسلحة، العلاج، التجسس، السرقة، تدمير الأختام) ---
 @app.route('/use_item/<int:target_id>', methods=['POST'])
 @login_required
 def use_item(target_id):
@@ -196,39 +225,79 @@ def use_item(target_id):
     item_name = request.form.get('item_name')
     item = StoreItem.objects(name=item_name).first()
     
-    if not target or not item or item_name not in attacker.inventory:
-        flash('عملية غير صالحة.', 'error'); return redirect(request.referrer)
-    if not settings.war_mode and item.item_type in ['weapon', 'heal']:
-        flash('المتاهة في حالة سلام حالياً.', 'error'); return redirect(request.referrer)
+    if not item or item_name not in attacker.inventory: flash('عملية غير صالحة.', 'error'); return redirect(request.referrer)
 
     now = datetime.utcnow()
+    
+    # 1. تدمير الأختام (يدمرها اللاعب من ملفه الخاص)
+    if item.item_type == 'seal':
+        if target.id != attacker.id: flash('يمكنك تدمير الأختام من حقيبتك فقط!', 'error'); return redirect(request.referrer)
+        attacker.destroyed_seals += 1
+        attacker.inventory.remove(item_name)
+        if attacker.destroyed_seals >= 4:
+            flash('🌟 لقد دمرت الأختام الأربعة وفككت اللعنة! أنت الفائز في متاهة سيفار!', 'success')
+            settings.war_mode = False; settings.final_battle_mode = False; settings.save()
+            User.objects(status='active').update(health=100) # إعادة صحة الناجين
+        else:
+            flash(f'🔨 تم تدمير הختم! لقد دمرت ({attacker.destroyed_seals}/4) أختام!', 'success')
+        attacker.save(); return redirect(request.referrer)
+
+    # التحقق من هدف خارجي (سلاح، سرقة، تجسس)
+    if not target or target.status != 'active': flash('الهدف غير متاح!', 'error'); return redirect(request.referrer)
+    
+    # 2. سلاح
     if item.item_type == 'weapon':
+        if not getattr(settings, 'war_mode', False): flash('المتاهة في حالة سلام!', 'error'); return redirect(request.referrer)
         if target.hunter_id in attacker.friends: flash('لا يمكنك طعن حليفك! الغِ التحالف أولاً.', 'error'); return redirect(request.referrer)
-        if target.status != 'active': flash('لا يمكنك طعن جثة!', 'error'); return redirect(request.referrer)
             
         target.health -= item.effect_amount
         if target.health <= 0:
             target.health = 0; target.status = 'eliminated'; target.freeze_reason = 'تمت تصفيته في حرب المتاهة'
             settings.dead_count += 1; settings.save()
             flash(f'💀 ضربة قاتلة! تم القضاء على {target.username}!', 'success')
-            if settings.dead_count >= settings.max_dead_to_end:
-                settings.war_mode = False; settings.dead_count = 0; settings.save()
-                User.objects(status='active').update(health=100)
-                flash('🔥 سقط العدد المطلوب... توقفت الحرب وعادت صحة الناجين 100%!', 'success')
         else: flash(f'🗡️ تمت الضربة! فقد {item.effect_amount} من صحته.', 'success')
             
         BattleLog(victim_name=target.username, weapon_name=item.name, remaining_hp=target.health).save()
         target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save()
         
+    # 3. علاج
     elif item.item_type == 'heal':
-        if target.id != attacker.id and target.hunter_id not in attacker.friends:
-            flash('عالج نفسك أو حلفائك فقط!', 'error'); return redirect(request.referrer)
-        if target.status != 'active': flash('لا يمكن علاج الأموات!', 'error'); return redirect(request.referrer)
-            
+        if target.id != attacker.id and target.hunter_id not in attacker.friends: flash('عالج نفسك أو حلفائك فقط!', 'error'); return redirect(request.referrer)
         target.health = min(100, target.health + item.effect_amount)
         target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save()
-        flash(f'🧪 تم العلاج! صحة {target.username} أصبحت {target.health}', 'success')
+        flash(f'🧪 تم العلاج! صحة الهدف أصبحت {target.health}', 'success')
+
+    # 4. تجسس (عين تاجيس)
+    elif item.item_type == 'spy':
+        if any('حجاب' in i or 'درع' in i for i in target.inventory): # إذا كان الخصم يملك أداة حماية
+            attacker.inventory.remove(item_name); attacker.save()
+            flash('👁️ الهدف محمي بتعويذة (حجاب سيفار)! احترقت عين التجسس الخاصة بك ولم ترَ شيئاً.', 'error')
+        else:
+            attacker.tajis_eye_until = now + timedelta(hours=1) # التجسس يمتد لساعة
+            attacker.inventory.remove(item_name); attacker.save()
+            flash('👁️ فُتحت عين تاجيس! يمكنك الآن رؤية حقيبة ونقاط هذا اللاعب لمدة ساعة.', 'success')
+
+    # 5. سرقة (يد الشبح)
+    elif item.item_type == 'steal':
+        stolen_item = request.form.get('target_item')
+        if not stolen_item or stolen_item not in target.inventory: flash('الغرض غير موجود!', 'error'); return redirect(request.referrer)
         
+        # التحقق من وجود درع الحماية
+        has_shield = False
+        shield_name = ""
+        for i in target.inventory:
+            if 'حجاب' in i or 'درع' in i or 'عباءة' in i:
+                has_shield = True; shield_name = i; break
+                
+        if has_shield:
+            target.inventory.remove(shield_name); target.save()
+            attacker.inventory.remove(item_name); attacker.save()
+            flash(f'🖐️ حاولت السرقة، لكن الخصم كان يرتدي ({shield_name})! تم تدمير الدرع واحترقت يدك!', 'error')
+        else:
+            target.inventory.remove(stolen_item); target.save()
+            attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save()
+            flash(f'🖐️ تمت سرقة ({stolen_item}) من الخصم بنجاح!', 'success')
+
     return redirect(request.referrer)
 
 @app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
@@ -286,10 +355,12 @@ def add_friend():
     if target and getattr(target, 'role', '') in ['ghost', 'cursed_ghost']:
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target_id)).first()
         if getattr(target, 'role', '') == 'cursed_ghost' and trap:
-            user.points -= trap.trap_penalty_points; user.save(); flash(f'لقد أيقظت شبحاً ملعوناً! خصم منك {trap.trap_penalty_points} نقطة. 💀', 'error')
+            user.points -= trap.trap_penalty_points; user.save(); flash(f'أيقظت شبحاً ملعوناً! خصم {trap.trap_penalty_points} نقطة.', 'error')
         elif trap and str(user.id) not in trap.winners_list and trap.current_winners < trap.max_winners:
-            user.points += trap.reward_points; user.stats_ghosts_caught += 1; trap.current_winners += 1; trap.winners_list.append(str(user.id))
-            user.save(); trap.save(); check_achievements(user); flash(f'اصطدت شبحاً! +{trap.reward_points} نقطة 👻', 'success')
+            # تحديث جديد: الشبح قد يعطي أداة نادرة (مثل الختم) بدلاً من النقاط فقط!
+            if trap.reward_points > 0: user.points += trap.reward_points
+            user.stats_ghosts_caught += 1; trap.current_winners += 1; trap.winners_list.append(str(user.id))
+            user.save(); trap.save(); check_achievements(user); flash('اصطدت الشبح بنجاح! 👻', 'success')
         else: flash('الشبح هرب.', 'error')
         return redirect(request.referrer)
         
@@ -304,10 +375,10 @@ def cancel_friend(target_id):
     target = User.objects(hunter_id=target_id).first()
     if target:
         if user.hunter_id in target.friend_requests:
-            target.friend_requests.remove(user.hunter_id); target.save(); flash('تم إلغاء الطلب.', 'success')
+            target.friend_requests.remove(user.hunter_id); target.save(); flash('تم الإلغاء.', 'success')
         elif target.hunter_id in user.friends:
             user.friends.remove(target.hunter_id); target.friends.remove(user.hunter_id)
-            user.save(); target.save(); flash('تم خرق التحالف! 💔 يمكنكم الآن مهاجمة بعضكم.', 'success')
+            user.save(); target.save(); flash('تم خرق التحالف! 💔', 'success')
     return redirect(request.referrer)
 
 @app.route('/accept_friend/<int:friend_id>')
@@ -318,7 +389,7 @@ def accept_friend(friend_id):
         user.friend_requests.remove(friend_id); user.friends.append(friend_id)
         friend = User.objects(hunter_id=friend_id).first()
         if friend: friend.friends.append(user.hunter_id); friend.save()
-        user.save(); check_achievements(user); flash('تم قبول التحالف! 🤝', 'success')
+        user.save(); check_achievements(user); flash('تم القبول! 🤝', 'success')
     return redirect(request.referrer)
 
 @app.route('/news')
@@ -346,6 +417,8 @@ def puzzles():
         if puzzle and puzzle.current_winners < puzzle.max_winners and guess == puzzle.puzzle_answer and str(user.id) not in puzzle.winners_list:
             user.points += puzzle.reward_points; user.stats_puzzles_solved += 1; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
             puzzle.save(); user.save(); check_achievements(user); flash('صحيح!', 'success')
+            # لغز التعويذة النهائي
+            if "تعويذة" in puzzle.title: flash('🌟 كتبت التعويذة! لقد فككت اللعنة وهزمت الملك!', 'success')
         else: flash('خطأ!', 'error')
         return redirect(url_for('puzzles'))
         
@@ -421,7 +494,7 @@ def buy_item(item_id):
     item = StoreItem.objects(id=item_id).first()
     if user and item:
         if not item.is_luck and item.name in user.inventory: 
-            flash('تملك هذه الأداة/السلاح في حقيبتك مسبقاً! استخدمها أولاً.', 'error')
+            flash('تملك هذه الأداة في حقيبتك مسبقاً! استخدمها أولاً.', 'error')
         elif user.points >= item.price:
             user.points -= item.price
             if item.is_luck:
@@ -477,20 +550,38 @@ def admin_panel():
     
     if request.method == 'POST':
         action = request.form.get('action')
+        
         if action == 'toggle_maintenance':
             settings.maintenance_mode = not settings.maintenance_mode; settings.save(); flash('تم تبديل وضع الصيانة!', 'success')
+            
         elif action == 'toggle_war':
             settings.war_mode = not settings.war_mode
             if not settings.war_mode:
                 User.objects(status='active').update(health=100); settings.dead_count = 0; flash('تم إنهاء الحرب! عادة الصحة للناجين.', 'success')
             else: flash('🔥 دقت طبول الحرب! النزيف بدأ.', 'success')
             settings.save()
+            
+        elif action == 'toggle_final_battle':
+            settings.final_battle_mode = not settings.final_battle_mode
+            settings.save(); flash('👑 تم التبديل لمود المعركة الأخيرة (النقاط مخفية)!', 'success')
+            
         elif action == 'update_war_settings':
             settings.bleed_rate_minutes = int(request.form.get('bleed_rate_minutes', 60))
             settings.bleed_amount = int(request.form.get('bleed_amount', 1))
             settings.safe_time_minutes = int(request.form.get('safe_time_minutes', 120))
             settings.max_dead_to_end = int(request.form.get('max_dead_to_end', 15))
             settings.save(); flash('تم حفظ إعدادات الحرب', 'success')
+            
+        elif action == 'update_nav_names':
+            settings.nav_home = request.form.get('nav_home', settings.nav_home)
+            settings.nav_profile = request.form.get('nav_profile', settings.nav_profile)
+            settings.nav_friends = request.form.get('nav_friends', settings.nav_friends)
+            settings.nav_news = request.form.get('nav_news', settings.nav_news)
+            settings.nav_puzzles = request.form.get('nav_puzzles', settings.nav_puzzles)
+            settings.nav_decs = request.form.get('nav_decs', settings.nav_decs)
+            settings.nav_store = request.form.get('nav_store', settings.nav_store)
+            settings.nav_grave = request.form.get('nav_grave', settings.nav_grave)
+            settings.save(); flash('تم تغيير أسماء الصفحات!', 'success')
             
         elif action == 'bulk_action':
             selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
@@ -566,4 +657,3 @@ def admin_panel():
     return render_template('admin.html', users=safe_users, pending_decs=pending_decs, pending_count=pending_count, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
-
