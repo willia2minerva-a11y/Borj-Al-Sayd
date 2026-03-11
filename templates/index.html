@@ -5,9 +5,11 @@
 <div style="background: #8b0000; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; overflow: hidden; white-space: nowrap; border: 1px solid #ff4d4d; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);">
     <marquee scrollamount="6" style="font-size: 14px;">
         🚨 <span style="color: #ff9999;">تنبيه المتاهة:</span> حرب الإبادة مشتعلة! النزيف التلقائي مفعل. احمِ ظهرك! 🚨
-        {% for log in battle_logs %}
-            &nbsp;&nbsp;&nbsp; ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة <span style="color:#ffcc00;">[{{ log.victim_name }}]</span> بـ <span style="color:#ff9999;">({{ log.weapon_name }})</span>! صحته الحالية: {{ log.remaining_hp }}%
-        {% endfor %}
+        {% if battle_logs %}
+            {% for log in battle_logs %}
+                &nbsp;&nbsp;&nbsp; ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة <span style="color:#ffcc00;">[{{ log.victim_name }}]</span> بـ <span style="color:#ff9999;">({{ log.weapon_name }})</span>! صحته الحالية: {{ log.remaining_hp }}%
+            {% endfor %}
+        {% endif %}
     </marquee>
 </div>
 {% endif %}
