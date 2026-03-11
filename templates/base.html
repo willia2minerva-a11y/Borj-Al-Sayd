@@ -73,3 +73,8 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
         {% endwith %}
+    </div>
+    <main>{% block content %}{% endblock %}</main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
