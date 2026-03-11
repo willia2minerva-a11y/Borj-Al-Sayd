@@ -1,7 +1,17 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- الغلاف المخصص من الإدارة -->
+{% if war_settings and war_settings.war_mode %}
+<div style="background: #8b0000; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; overflow: hidden; white-space: nowrap; border: 1px solid #ff4d4d; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);">
+    <marquee scrollamount="6" style="font-size: 14px;">
+        🚨 <span style="color: #ff9999;">تنبيه المتاهة:</span> حرب الإبادة مشتعلة! النزيف التلقائي مفعل. احمِ ظهرك! 🚨
+        {% for log in battle_logs %}
+            &nbsp;&nbsp;&nbsp; ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة <span style="color:#ffcc00;">[{{ log.victim_name }}]</span> بـ <span style="color:#ff9999;">({{ log.weapon_name }})</span>! صحته الحالية: {{ log.remaining_hp }}%
+        {% endfor %}
+    </marquee>
+</div>
+{% endif %}
+
 <div class="global-banner" style="background-image: url('{{ settings.banner_url if settings and settings.banner_url else '' }}'); background-size: cover; background-position: center; border-radius: 10px; padding: 40px 20px; text-align: center; border-bottom: 4px solid {{ settings.home_color if settings else 'var(--zone-0-black)' }}; margin-bottom: 25px; position: relative; overflow: hidden;">
     <div style="background: rgba(0,0,0,0.7); position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
     <h2 style="color: {{ settings.home_color if settings else 'var(--text-main)' }}; text-shadow: 0 0 10px {{ settings.home_color if settings else 'var(--zone-0-black)' }}; position: relative; z-index: 1; font-size: 28px; font-weight: 900; margin: 0;">
@@ -36,16 +46,15 @@
 
 {% if last_frozen %}
 <a href="/graveyard" class="preview-card ghost-card" style="display: block; text-align:center; padding: 20px; border-top: 3px solid #e74c3c; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); margin-top: 20px; text-decoration: none;">
-    <h4 style="margin:0 0 10px 0; color:#e74c3c; font-size: 16px; text-shadow: 0 0 8px rgba(231,76,60,0.5);">💀 بوابة المقبرة (آخر الضحايا)</h4>
+    <h4 style="margin:0 0 10px 0; color:#e74c3c; font-size: 16px; text-shadow: 0 0 8px rgba(231,76,60,0.5);">💀 المقبرة المنسية (آخر الضحايا)</h4>
     <strong style="color: #e2e8f0; font-size: 18px;">{{ last_frozen.username }}</strong>
     <p style="font-size:13px; color:#aaa; margin-top:5px; font-style: italic;">"{{ last_frozen.freeze_reason }}"</p>
-    <span style="font-size: 11px; color: #e74c3c; text-decoration: underline; display: block; margin-top: 15px;">اضغط لزيارة المقبرة كاملة</span>
 </a>
 {% endif %}
 
 {% else %}
 <div class="hunter-card" style="text-align: center;">
-    <h3>أهلاً بك في برج الصيد</h3>
+    <h3>أهلاً بك في متاهة سيفار</h3>
     <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام (تسجيل)</a>
     <a href="{{ url_for('login') }}" class="btn-primary" style="background: #222; color: #fff; border: 1px solid var(--zone-3-gold);">تسجيل الدخول</a>
 </div>
