@@ -55,19 +55,24 @@ def check_war_and_bleed(user, settings):
 
 @app.before_request
 def check_locks_and_status():
-    if request.endpoint in ['login', 'register', 'logout', 'static']: return
+    if request.endpoint in ['static']: return
     
     settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     
+    user = None
     if 'user_id' in session:
         user = User.objects(id=session['user_id']).first()
-        if not user: return redirect(url_for('logout'))
-        
-        if settings.maintenance_mode and user.role != 'admin':
-            return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش، عد لاحقاً. ⏳', time_left=None)
-            
+        if not user:
+            session.pop('user_id', None); session.pop('role', None)
+
+    # الصيانة: تمنع الجميع ما عدا الآدمن
+    if settings.maintenance_mode:
+        if not user or user.role != 'admin':
+            if request.endpoint not in ['login', 'logout']:
+                return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش، عد لاحقاً. ⏳', time_left=None)
+
+    if user:
         check_war_and_bleed(user, settings)
-        
         if user.status == 'eliminated':
             session.pop('user_id', None); session.pop('role', None)
             return render_template('locked.html', message='لقد هلكت في متاهة سيفار... جسدك أصبح مجرد أثر في المقبرة المنسية. 💀', time_left=None)
@@ -76,6 +81,28 @@ def check_locks_and_status():
             time_left = user.quicksand_lock_until - datetime.utcnow()
             mins, secs = divmod(time_left.seconds, 60)
             return render_template('locked.html', message='لقد ابتلعتك الرمال المتحركة! 🏜️ أطرافك مشلولة.', time_left=f"{mins} دقيقة و {secs} ثانية")
+
+@app.context_processor
+def inject_notifications():
+    notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'battle_logs': []}
+    
+    try:
+        notifs['war_settings'] = GlobalSettings.objects(setting_name='main_config').first()
+        if getattr(notifs['war_settings'], 'war_mode', False):
+            notifs['battle_logs'] = BattleLog.objects().order_by('-created_at')[:5]
+    except Exception: pass
+
+    if 'user_id' in session:
+        try:
+            user = User.objects(id=session['user_id']).first()
+            if user:
+                notifs['current_user'] = user; now = datetime.utcnow()
+                notifs['un_news'] = News.objects(category='news', status='approved', created_at__gt=getattr(user, 'last_seen_news', now) or now).count()
+                notifs['un_puz'] = News.objects(category='puzzle', status='approved', created_at__gt=getattr(user, 'last_seen_puzzles', now) or now).count()
+                notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=getattr(user, 'last_seen_decs', now) or now).count()
+                notifs['un_store'] = StoreItem.objects(created_at__gt=getattr(user, 'last_seen_store', now) or now).count()
+        except Exception: pass 
+    return notifs
 
 def login_required(f):
     @wraps(f)
@@ -92,37 +119,6 @@ def admin_required(f):
         if not user or user.role != 'admin': return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated
-
-# 🚀 الحل الجذري تم تطبيقه هنا لمنع انهيار الصفحة للزوار 🚀
-@app.context_processor
-def inject_notifications():
-    notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'battle_logs': []}
-    
-    # 1. جلب إعدادات الحرب للجميع (الزوار والمسجلين)
-    try:
-        notifs['war_settings'] = GlobalSettings.objects(setting_name='main_config').first()
-        if notifs['war_settings'] and getattr(notifs['war_settings'], 'war_mode', False):
-            notifs['battle_logs'] = BattleLog.objects().order_by('-created_at')[:5]
-    except Exception:
-        pass
-
-    # 2. جلب إشعارات المستخدم إذا كان مسجلاً
-    if 'user_id' in session:
-        try:
-            user = User.objects(id=session['user_id']).first()
-            if user:
-                notifs['current_user'] = user; now = datetime.utcnow()
-                ls_news = getattr(user, 'last_seen_news', now) or now
-                ls_puz = getattr(user, 'last_seen_puzzles', now) or now
-                ls_dec = getattr(user, 'last_seen_decs', now) or now
-                ls_store = getattr(user, 'last_seen_store', now) or now
-                notifs['un_news'] = News.objects(category='news', status='approved', created_at__gt=ls_news).count()
-                notifs['un_puz'] = News.objects(category='puzzle', status='approved', created_at__gt=ls_puz).count()
-                notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=ls_dec).count()
-                notifs['un_store'] = StoreItem.objects(created_at__gt=ls_store).count()
-        except Exception: pass 
-        
-    return notifs
 
 @app.route('/')
 def home():
@@ -564,3 +560,4 @@ def admin_panel():
     return render_template('admin.html', users=safe_users, pending_decs=pending_decs, pending_count=pending_count, hidden_puzzles=hidden_puzzles, settings=settings)
 
 if __name__ == '__main__': app.run(debug=True)
+
