@@ -55,8 +55,10 @@ def check_war_and_bleed(user, settings):
 
 @app.before_request
 def check_locks_and_status():
-    if request.endpoint in ['static']: return
-    
+    # 1. السماح دائماً بمسارات الدخول، التسجيل، والخروج
+    if request.endpoint in ['static', 'login', 'logout', 'register']: 
+        return
+        
     settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     
     user = None
@@ -65,12 +67,17 @@ def check_locks_and_status():
         if not user:
             session.pop('user_id', None); session.pop('role', None)
 
-    # الصيانة: تمنع الجميع ما عدا الآدمن
+    # 2. نظام الصيانة الذكي (العاصفة الرملية)
     if settings.maintenance_mode:
-        if not user or user.role != 'admin':
-            if request.endpoint not in ['login', 'logout']:
-                return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش، عد لاحقاً. ⏳', time_left=None)
+        if not user:
+            # الزائر نتركه يرى الرئيسية فقط لكي يضغط على تسجيل الدخول
+            if request.endpoint != 'home':
+                return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش. ⏳', time_left=None)
+        elif user.role != 'admin':
+            # اللاعب المسجل يُحجز في صفحة الصيانة أينما ذهب
+            return render_template('locked.html', message='تهب عاصفة رملية شديدة في المتاهة، الرؤية معدومة... جاري ترميم النقوش. ⏳', time_left=None)
 
+    # 3. نظام الحرب والفخاخ
     if user:
         check_war_and_bleed(user, settings)
         if user.status == 'eliminated':
@@ -85,7 +92,6 @@ def check_locks_and_status():
 @app.context_processor
 def inject_notifications():
     notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'battle_logs': []}
-    
     try:
         notifs['war_settings'] = GlobalSettings.objects(setting_name='main_config').first()
         if getattr(notifs['war_settings'], 'war_mode', False):
