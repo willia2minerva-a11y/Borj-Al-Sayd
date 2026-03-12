@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* 🛠️ إصلاح حجم الغلاف للهواتف */
-    .home-banner-container { position: relative; margin-top: 10px; margin-bottom: 20px; text-align: center; }
+    /* 🛠️ إصلاح حجم الغلاف للهواتف وعودة النص لشكله الكلاسيكي */
+    .home-banner-container { margin-top: 10px; margin-bottom: 20px; text-align: center; }
     .home-banner { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-    .home-title { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 5px 20px; border-radius: 8px; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px #000; margin: 0; white-space: nowrap; }
+    .home-title { font-size: 26px; font-weight: bold; text-shadow: 2px 2px 4px #000; margin-top: 15px; margin-bottom: 0; }
 
     /* ستايلات البوابات */
     .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
@@ -28,7 +28,7 @@
 <div class="home-banner-container">
     {% if settings.banner_url %}<img src="{{ settings.banner_url }}" class="home-banner" alt="Maze Banner" crossorigin="anonymous">{% endif %}
     <h1 class="translatable home-title" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }};">
-        {{ settings.home_title if settings else 'بوابة سيفار' }}
+        {{ settings.home_title if settings else 'البوابة' }}
     </h1>
 </div>
 
@@ -161,4 +161,3 @@
 </div>
 {% endif %}
 {% endblock %}
-
