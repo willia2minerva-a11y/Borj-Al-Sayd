@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غرفة الحكماء - الاختبار</title>
+    <style>
+        body { background-color: #0a0a0a; color: #e2e8f0; font-family: 'Courier New', Courier, monospace; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; }
+        .test-container { background: #111; border: 2px solid var(--zone-3-gold); border-radius: 12px; padding: 30px; box-shadow: 0 0 30px rgba(255, 215, 0, 0.2); max-width: 500px; width: 90%; }
+        h1 { color: var(--zone-3-gold); font-size: 2em; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); margin-top: 0; }
+        p.message { font-size: 16px; line-height: 1.6; color: #fff; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px dashed #444; }
+        textarea { width: 100%; padding: 10px; background: #000; color: #2ecc71; border: 1px solid #333; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 14px; margin-top: 20px; resize: none; box-sizing: border-box; }
+        textarea:focus { outline: none; border-color: #2ecc71; }
+        .btn { display: inline-block; margin-top: 20px; padding: 10px 25px; background: var(--zone-3-gold); color: #000; text-decoration: none; border-radius: 5px; font-weight: bold; border: none; cursor: pointer; font-size: 16px; }
+        .btn:hover { background: #fff; }
+        .waiting-msg { color: #aaa; font-size: 14px; margin-top: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+    
+    <div class="test-container">
+        <h1>👁️ غرفة الحكماء 👁️</h1>
+        
+        <p class="message">{{ message }}</p>
+        
+        {% if not user.gate_test_answer %}
+            <form action="/submit_gate_test" method="POST">
+                <textarea name="test_answer" rows="5" placeholder="اكتب إجابتك هنا... المتاهة تستمع." required></textarea>
+                <button type="submit" class="btn">نقش الإجابة على الحجر 🔥</button>
+            </form>
+        {% else %}
+            <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 10px;">
+                <span style="color: #aaa; font-size: 12px;">إجابتك التي نُقشت:</span>
+                <p style="color: #2ecc71; font-size: 14px; font-style: italic;">"{{ user.gate_test_answer }}"</p>
+            </div>
+            <p class="waiting-msg">لقد كتبت جوابك. أنت الآن روح معلقة... انتظر قرار الملك إما العبور لبر الأمان أو الطرد للمقبرة.</p>
+        {% endif %}
+        
+    </div>
+
+</body>
+</html>
+
