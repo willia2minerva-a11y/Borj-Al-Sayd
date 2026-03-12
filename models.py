@@ -13,7 +13,7 @@ class User(db.Document):
     zone = db.IntField(default=0)
     special_rank = db.StringField(default='مستكشف مبتدئ')
     
-    status = db.StringField(default='active')
+    status = db.StringField(default='active') # active, frozen, eliminated
     freeze_reason = db.StringField(default='') 
     role = db.StringField(default='hunter') 
     inventory = db.ListField(db.StringField())
@@ -24,12 +24,22 @@ class User(db.Document):
     last_guess_time = db.DateTimeField(default=None) 
     quicksand_lock_until = db.DateTimeField(default=None)
     
+    # --- نظام الحرب والمعركة الأخيرة ---
     health = db.IntField(default=100) 
     last_health_check = db.DateTimeField(default=datetime.utcnow) 
     last_action_time = db.DateTimeField(default=datetime.utcnow)
     last_active = db.DateTimeField(default=datetime.utcnow) 
     tajis_eye_until = db.DateTimeField(default=None) 
     destroyed_seals = db.IntField(default=0) 
+
+    # --- 🚪 إضافات مود البوابات ---
+    chosen_gate = db.IntField(default=0) # 0=لم يختار, 1=البوابة الأولى، إلخ
+    gate_status = db.StringField(default='none') # none, waiting, testing, passed
+    gate_test_answer = db.StringField(default='') # إجابته على اختبار الملك
+
+    # --- 🗳️ إضافات الطابق الثالث (لعبة التوزيع) ---
+    survival_votes = db.IntField(default=0) # أصوات النجاة التي حصل عليها من الآخرين
+    has_voted = db.BooleanField(default=False) # هل قام بتوزيع الـ 100 صوت؟
     
     stats_ghosts_caught = db.IntField(default=0)
     stats_puzzles_solved = db.IntField(default=0)
@@ -40,6 +50,7 @@ class User(db.Document):
     last_seen_puzzles = db.DateTimeField(default=datetime.utcnow)
     last_seen_decs = db.DateTimeField(default=datetime.utcnow)
     last_seen_store = db.DateTimeField(default=datetime.utcnow)
+    
     created_at = db.DateTimeField(default=datetime.utcnow)
     meta = {'indexes': ['hunter_id', 'username', 'status', 'role', 'health', 'last_active']}
 
@@ -88,21 +99,33 @@ class GlobalSettings(db.Document):
     home_title = db.StringField(default='بوابة سيفار')
     home_color = db.StringField(default='var(--zone-1-wood)')
     
-    # الصيانة المخصصة
+    # --- الشريط الإخباري العام ---
+    global_news_active = db.BooleanField(default=False)
+    global_news_text = db.StringField(default='رسالة من ملك المتاهة...')
+
+    # --- إعدادات المودات ---
     maintenance_mode = db.BooleanField(default=False) 
-    maint_store = db.BooleanField(default=False)
-    maint_news = db.BooleanField(default=False)
-    maint_puzzles = db.BooleanField(default=False)
-    maint_decs = db.BooleanField(default=False)
-    
     war_mode = db.BooleanField(default=False) 
-    final_battle_mode = db.BooleanField(default=False) 
+    final_battle_mode = db.BooleanField(default=False)
+    floor3_mode_active = db.BooleanField(default=False)
+    
+    # --- 🚪 إعدادات مود البوابات ---
+    gates_mode_active = db.BooleanField(default=False)
+    gates_selection_locked = db.BooleanField(default=True) # تفعيل/إيقاف القفل المبدئي
+    gates_description = db.StringField(default='أمامك ثلاث بوابات، واحدة للمرور، وواحدة للموت، وواحدة لغرفة الحكماء. اختر مسارك بعناية...')
+    gate_1_name = db.StringField(default='بوابة الظلام')
+    gate_2_name = db.StringField(default='بوابة النور')
+    gate_3_name = db.StringField(default='بوابة الدماء')
+    gates_test_message = db.StringField(default='لقد اخترت البوابة المجهولة. الآن أثبت استحقاقك للعبور: ضحِّ بـ 50 قطرة من دمك واكتب (أوافق) في الأسفل.')
+
+    # --- قوانين الحرب ---
     bleed_rate_minutes = db.IntField(default=60) 
     bleed_amount = db.IntField(default=1) 
     safe_time_minutes = db.IntField(default=120) 
     dead_count = db.IntField(default=0) 
     max_dead_to_end = db.IntField(default=15) 
     
+    # --- أسماء الصفحات ---
     nav_home = db.StringField(default='🏠 بوابة سيفار (الرئيسية)')
     nav_profile = db.StringField(default='📜 مخطوطتي (الملف الشخصي)')
     nav_friends = db.StringField(default='🤝 التحالفات (الأصدقاء)')
