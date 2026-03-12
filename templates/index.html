@@ -1,31 +1,37 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* ستايلات المودات الخاصة (لن تظهر إلا عند تفعيلها) */
-    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; margin-top: 20px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
+    /* ستايلات المودات الخاصة (مخفية ولا تظهر إلا عند التفعيل) */
+    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
     .gates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .gate-card { background: #111; border: 2px solid #333; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; }
     .gate-card:hover { border-color: #e74c3c; transform: translateY(-3px); }
     .gate-card.locked { opacity: 0.5; cursor: not-allowed; border-color: #222 !important; transform: none !important; }
     
-    .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 30px; margin-top: 20px; }
+    .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
     .vote-input-group { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
     .vote-input-group input { padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 13px; }
+
+    /* 🗂️ ستايل خانات الوصول السريع (الكلاسيكية) */
+    .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; margin-top: 20px; }
+    .hub-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px; text-align: center; color: #fff; text-decoration: none; transition: all 0.3s; display: flex; flex-direction: column; gap: 10px; }
+    .hub-card:hover { background: #222; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .hub-icon { font-size: 35px; }
 </style>
 
-<div class="home-banner-container" style="position: relative; text-align: center; margin-bottom: 25px;">
+<div style="text-align: center; margin-bottom: 30px;">
     {% if settings.banner_url %}
-        <img src="{{ settings.banner_url }}" class="home-banner" alt="Maze Banner" crossorigin="anonymous" style="width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid var(--zone-0-black); box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
+        <img src="{{ settings.banner_url }}" alt="Banner" style="max-width: 100%; max-height: 250px; object-fit: cover; border-radius: 10px; border: 2px solid var(--zone-0-black); margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);">
     {% endif %}
-    <h1 class="translatable home-title" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }}; position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); margin: 0; width: 100%; font-size: 28px; text-shadow: 2px 2px 5px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; z-index: 10;">
-        {{ settings.home_title if settings else 'البوابة' }}
+    <h1 class="translatable" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }}; text-shadow: 0 0 15px {{ settings.home_color }}; margin: 0; font-size: 2.2em;">
+        {{ settings.home_title if settings else 'بوابة سيفار' }}
     </h1>
 </div>
 
 {% if not session.get('user_id') %}
 <div class="hunter-card" style="text-align: center; padding: 30px 20px; border-color: var(--zone-3-gold);">
     <h2 style="color: var(--zone-3-gold); margin-top: 0;">أهلاً بك في متاهة سيفار</h2>
-    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">النقوش تنتظر من يقرأها، والأسرار تنتظر من يكتشفها.</p>
+    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">النقوش تنتظر من يقرأها، والأسرار تنتظر من يكتشفها. ادخل إن كنت تملك الشجاعة.</p>
     <div style="display: flex; gap: 10px; justify-content: center;">
         <a href="/login" class="btn-primary" style="width: 45%;">تسجيل الدخول 🔑</a>
         <a href="/register" class="btn-primary" style="width: 45%; background: #444;">مستكشف جديد 📜</a>
@@ -33,11 +39,13 @@
 </div>
 {% endif %}
 
+
 {% if current_user %}
     
     {% if settings and settings.gates_mode_active %}
     <div class="gate-container">
         <h2 style="color: #e74c3c; margin-top: 0;">🛑 اختبار البوابات الملعونة 🛑</h2>
+        
         {% if current_user.chosen_gate == 0 %}
             <p style="color: #e2e8f0; font-size: 15px; margin-bottom: 20px; font-style: italic;">{{ settings.gates_description }}</p>
             {% if settings.gates_selection_locked %}<div class="flash error" style="margin-bottom: 15px;">أبواب الاختيار مُقلقة حالياً بتعويذة الملك. تمهل وفكر.</div>{% endif %}
@@ -115,10 +123,29 @@
     </div>
     {% endif %}
 
+    <div class="hub-grid">
+        <a href="/store" class="hub-card" style="border-color: var(--zone-3-gold);">
+            <span class="hub-icon">🐪</span>
+            <strong>السوق</strong>
+        </a>
+        <a href="/news" class="hub-card" style="border-color: #3498db;">
+            <span class="hub-icon">📜</span>
+            <strong>الأخبار</strong>
+        </a>
+        <a href="/puzzles" class="hub-card" style="border-color: #9b59b6;">
+            <span class="hub-icon">🧩</span>
+            <strong>الألغاز</strong>
+        </a>
+        <a href="/declarations" class="hub-card" style="border-color: #2ecc71;">
+            <span class="hub-icon">📢</span>
+            <strong>التصريحات</strong>
+        </a>
+    </div>
+
 {% endif %}
 
 {% if news %}
-<div class="hunter-card floor-1 translatable" data-ar-title="📜 مخطوطة إخبارية جديدة" data-en-title="📜 New News Scroll" style="margin-top: 20px;">
+<div class="hunter-card floor-1 translatable" data-ar-title="📜 مخطوطة إخبارية جديدة" data-en-title="📜 New News Scroll">
     <strong style="color:var(--text-main);">{{ news.title }}</strong>
     <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">{{ news.content[:200] }}...</p>
     <a href="/news" class="btn-primary translatable" data-ar="👀 قراءة المخطوطة" data-en="👀 Read Scroll">👀 قراءة المخطوطة</a>
