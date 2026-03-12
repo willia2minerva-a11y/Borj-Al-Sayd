@@ -6,13 +6,29 @@
     <title>متاهة سيفار</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* ستايل الشريط الإخباري العام */
+        .global-news-ticker { background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); color: #e2e8f0; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; border-bottom: 2px solid #e74c3c; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.2); position: relative; z-index: 1000; overflow: hidden; }
+        .global-news-ticker marquee { margin: 0; }
+        .flash-container { margin-top: 10px; }
+        main { margin-top: 10px; }
+    </style>
 </head>
 <body>
+    
+    {% if war_settings and war_settings.global_news_active %}
+    <div class="global-news-ticker">
+        <marquee behavior="scroll" direction="right" scrollamount="6">
+            ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} ☠️
+        </marquee>
+    </div>
+    {% endif %}
+
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
         <a href="/" class="logo translatable" data-ar="🏜️ متاهة سيفار" data-en="🏜️ Sephar Maze">🏜️ متاهة سيفار</a>
         
         <div style="display: flex; align-items: center; gap: 15px;">
-            {% if session.get('user_id') and current_user and war_settings and war_settings.war_mode %}
+            {% if session.get('user_id') and current_user and war_settings and (war_settings.war_mode or war_settings.final_battle_mode) %}
             <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 8px; border: 1px solid #333;">
                 <span style="font-size: 10px; color: var(--text-muted); display: block; line-height: 1;">الدم</span>
                 <strong style="font-size: 14px; color: {% if current_user.health > 50 %}#2ecc71{% elif current_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">
@@ -62,10 +78,10 @@
             {% if un_store and un_store > 0 %}<span class="notif-badge">{{ un_store }}</span>{% endif %}
         </a>
         
-        <a href="/graveyard" style="color: #e2e8f0;"><span>{{ war_settings.nav_grave if war_settings else '💀 المقبرة المنسية' }}</span></a>
+        <a href="/graveyard" style="color: #e2e8f0;"><span>{{ war_settings.nav_grave if war_settings else '💀 المقبرة Mنسية' }}</span></a>
         
         <hr style="border-color: #333; margin: 0; width: 100%;">
-        <a href="/logout" style="color: #ff4444;"><span>🚪 الهروب من المتاهة (خروج)</span></a>
+        <a href="/logout" style="color: #ff4444;"><span>🚪 خروج</span></a>
     </nav>
     {% endif %}
     
@@ -77,4 +93,4 @@
     <main>{% block content %}{% endblock %}</main>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-            </html>
+</html>
