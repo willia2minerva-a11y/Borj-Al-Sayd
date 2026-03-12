@@ -11,6 +11,7 @@ import math
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')}
 app.config['SECRET_KEY'] = 'sephar-maze-ultimate-key'
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30) # 👈 حفظ تسجيل الدخول لمدة 30 يوماً
 db.init_app(app)
 
 def check_achievements(user):
@@ -158,7 +159,7 @@ def submit_gate_test():
     if user.gate_status == 'testing':
         user.gate_test_answer = request.form.get('test_answer', '')
         user.save()
-    return redirect(url_for('home')) # سيعيده لصفحة التجميد وتظهر له رسالة الانتظار
+    return redirect(url_for('home'))
 
 # --- 🗳️ مسار الطابق الثالث (لعبة التصويت 100) ---
 @app.route('/submit_floor3_votes', methods=['POST'])
@@ -191,7 +192,7 @@ def submit_floor3_votes():
     flash('تم تثبيت أصواتك بنجاح! انتظر إغلاق التصويت.', 'success')
     return redirect(url_for('home'))
 
-# --- مسارات التسجيل واللوجين وباقي الصفحات (كما هي) ---
+# --- مسارات التسجيل واللوجين وباقي الصفحات ---
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -212,6 +213,7 @@ def login():
     if request.method == 'POST':
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(user.password_hash, request.form['password']):
+            session.permanent = True # 👈 تفعيل حفظ الجلسة
             session['user_id'] = str(user.id); session['role'] = user.role; return redirect(url_for('home'))
         flash('بيانات الدخول خاطئة.', 'error')
     return render_template('login.html')
@@ -325,7 +327,6 @@ def use_item(target_id):
 
     return redirect(request.referrer)
 
-# --- باقي المسارات (الإدارة، وغيرها) ---
 @app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
 @admin_required
 def admin_update_profile(target_id):
@@ -500,7 +501,6 @@ def admin_panel():
                 for s in slackers: s.status = 'eliminated'; s.freeze_reason = 'خائن لم يوزع أصواته'; s.save()
                 flash(f'تم إعدام الكسالى وتوزيع {total_stolen} صوت!', 'success')
         
-        # ... الأوامر السابقة للإدارة ستبقى في قوالب القسم الثاني ...
         return redirect(url_for('admin_panel'))
         
     users = [u for u in User.objects() if getattr(u, 'role', 'hunter') not in ['ghost', 'cursed_ghost']]
@@ -512,4 +512,3 @@ def admin_panel():
     return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders)
 
 if __name__ == '__main__': app.run(debug=True)
-
