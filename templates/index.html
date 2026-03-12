@@ -1,26 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* ستايلات الرعب للبوابات */
-    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
-    .gate-description { color: #e2e8f0; font-size: 16px; margin-bottom: 25px; font-style: italic; line-height: 1.6; }
-    .gates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
-    .gate-card { background: #111; border: 2px solid #333; border-radius: 8px; padding: 20px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
-    .gate-card:hover { border-color: #e74c3c; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3); }
-    .gate-card.locked { opacity: 0.5; cursor: not-allowed; border-color: #222 !important; transform: none !important; box-shadow: none !important; }
-    .gate-name { color: #fff; font-size: 18px; font-weight: bold; margin-bottom: 15px; display: block; }
-    .gate-icon { font-size: 40px; margin-bottom: 10px; display: block; opacity: 0.7; }
-    .confirm-btn { background: #e74c3c; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
-    .confirm-btn:disabled { background: #444; cursor: not-allowed; }
-    
-    /* ستايل صفحة الانتظار بعد الاختيار */
-    .waiting-status { color: var(--zone-3-gold); font-size: 18px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); padding: 20px; border: 1px dashed var(--zone-3-gold); border-radius: 8px; }
+    /* 🛠️ إصلاح حجم الغلاف للهواتف */
+    .home-banner-container { position: relative; margin-top: 10px; margin-bottom: 20px; text-align: center; }
+    .home-banner { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .home-title { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 5px 20px; border-radius: 8px; font-size: 24px; font-weight: bold; text-shadow: 2px 2px 4px #000; margin: 0; white-space: nowrap; }
 
-    /* ستايل الطابق الثالث (التصويت) */
+    /* ستايلات البوابات */
+    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
+    .gate-description { color: #e2e8f0; font-size: 15px; margin-bottom: 20px; font-style: italic; line-height: 1.6; }
+    .gates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .gate-card { background: #111; border: 2px solid #333; border-radius: 8px; padding: 15px; transition: all 0.3s ease; cursor: pointer; }
+    .gate-card:hover { border-color: #e74c3c; transform: translateY(-3px); }
+    .gate-card.locked { opacity: 0.5; cursor: not-allowed; border-color: #222 !important; transform: none !important; }
+    .gate-name { color: #fff; font-size: 14px; font-weight: bold; margin-bottom: 5px; display: block; }
+    .gate-icon { font-size: 30px; margin-bottom: 5px; display: block; }
+    
+    /* ستايل صفحة الانتظار */
+    .waiting-status { color: var(--zone-3-gold); font-size: 16px; font-weight: bold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); padding: 20px; border: 1px dashed var(--zone-3-gold); border-radius: 8px; }
+
+    /* ستايل الطابق الثالث */
     .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
-    .vote-input-group { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; display: flex; gap: 10px; align-items: center; }
-    .vote-input-group input { padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; }
+    .vote-input-group { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+    .vote-input-group input { padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 13px; }
 </style>
+
+<div class="home-banner-container">
+    {% if settings.banner_url %}<img src="{{ settings.banner_url }}" class="home-banner" alt="Maze Banner" crossorigin="anonymous">{% endif %}
+    <h1 class="translatable home-title" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }};">
+        {{ settings.home_title if settings else 'بوابة سيفار' }}
+    </h1>
+</div>
+
+{% if not session.get('user_id') %}
+<div class="hunter-card" style="text-align: center; padding: 30px 20px; border-color: var(--zone-3-gold);">
+    <h2 style="color: var(--zone-3-gold); margin-top: 0;">أهلاً بك في متاهة سيفار</h2>
+    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">النقوش تنتظر من يقرأها، والأسرار تنتظر من يكتشفها. ادخل إن كنت تملك الشجاعة.</p>
+    <div style="display: flex; gap: 10px; justify-content: center;">
+        <a href="/login" class="btn-primary" style="width: 45%;">تسجيل الدخول 🔑</a>
+        <a href="/register" class="btn-primary" style="width: 45%; background: #444;">مستكشف جديد 📜</a>
+    </div>
+</div>
+{% endif %}
+
 
 {% if current_user %}
     
@@ -32,32 +54,28 @@
             <p class="gate-description">{{ settings.gates_description }}</p>
             
             {% if settings.gates_selection_locked %}
-                <div class="flash error">لقد صَدِئَت الأبواب... أبواب الاختيار مُقلقة حالياً بتعويذة الملك. انتظر تمزيق الختم.</div>
+                <div class="flash error" style="margin-bottom: 15px;">لقد صَدِئَت الأبواب... أبواب الاختيار مُقلقة حالياً بتعويذة الملك. تمهل وفكر.</div>
             {% endif %}
             
             <div class="gates-grid">
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(1, '{{ settings.gate_1_name }}')">
-                    <span class="gate-icon">🚪</span>
-                    <span class="gate-name">{{ settings.gate_1_name }}</span>
+                    <span class="gate-icon">🚪</span><span class="gate-name">{{ settings.gate_1_name }}</span>
                 </div>
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(2, '{{ settings.gate_2_name }}')">
-                    <span class="gate-icon">🚪</span>
-                    <span class="gate-name">{{ settings.gate_2_name }}</span>
+                    <span class="gate-icon">🚪</span><span class="gate-name">{{ settings.gate_2_name }}</span>
                 </div>
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(3, '{{ settings.gate_3_name }}')">
-                    <span class="gate-icon">🚪</span>
-                    <span class="gate-name">{{ settings.gate_3_name }}</span>
+                    <span class="gate-icon">🚪</span><span class="gate-name">{{ settings.gate_3_name }}</span>
                 </div>
             </div>
 
             <form id="gateForm" action="/choose_gate" method="POST" style="display: none;">
                 <input type="hidden" name="gate_num" id="gateNumInput">
             </form>
-
         {% else %}
             <div class="waiting-status">
                 تم تسجيل مسارك في ({{ settings['gate_' ~ current_user.chosen_gate ~ '_name'] }})...<br>
-                أنت الآن في برزخ الانتظار. المتاهة تقيم خيارك... لا تتحرك.
+                المتاهة تقيم خيارك... لا تتحرك.
             </div>
         {% endif %}
     </div>
@@ -66,8 +84,7 @@
         function selectGate(gateNum, gateName) {
             const locked = {{ 'true' if settings.gates_selection_locked else 'false' }};
             if (locked) return;
-
-            if (confirm(`لقد اخترت مسار (${gateName}).\n\nهل أنت متأكد تماماً؟ المتاهة لا تنسى الاختيارات، ولا يوجد طريق للعودة بعد التأكيد.`)) {
+            if (confirm(`لقد اخترت مسار (${gateName}).\n\nهل أنت متأكد تماماً؟ لا يوجد طريق للعودة!`)) {
                 document.getElementById('gateNumInput').value = gateNum;
                 document.getElementById('gateForm').submit();
             }
@@ -75,31 +92,29 @@
     </script>
     {% endif %}
 
-
     {% if settings and settings.floor3_mode_active and current_user.status == 'active' %}
     <div class="floor3-container">
         <h2 style="color: #8e44ad; text-align: center; margin-top: 0;">🗳️ محكمة أصوات النجاة (100)</h2>
         
         {% if not current_user.has_voted %}
-            <p style="text-align: center; color: #aaa; font-size: 14px; font-style: italic;">
-                أمامك 15 رحالة، لكن 5 فقط سيعبرون. وزع 100 "صوت نجاة" على 5 أشخاص مختلفين. كن ذكياً... تذكر صفقات الخفاء.
+            <p style="text-align: center; color: #aaa; font-size: 13px; font-style: italic;">
+                وزع 100 "صوت نجاة" على 5 أشخاص مختلفين لتحديد المتأهلين.
             </p>
             <form action="/submit_floor3_votes" method="POST" id="voteForm">
                 {% for i in range(1, 6) %}
                 <div class="vote-input-group">
-                    <label style="color: #8e44ad; font-weight: bold;">الضحية {{ i }}:</label>
-                    <input type="number" name="target_{{ i }}" placeholder="ID الرحالة (أرقام)" required style="width: 100px;">
-                    <input type="number" name="amount_{{ i }}" placeholder="الأصوات..." required style="width: 80px;" min="1" max="96" class="vote-amount">
+                    <label style="color: #8e44ad; font-weight: bold; font-size:12px;">شخص {{ i }}:</label>
+                    <input type="number" name="target_{{ i }}" placeholder="ID (أرقام)" required style="width: 40%;">
+                    <input type="number" name="amount_{{ i }}" placeholder="الأصوات" required style="width: 30%;" min="1" max="96" class="vote-amount">
                 </div>
                 {% endfor %}
                 <div style="text-align: center; margin-top: 15px;">
-                    <span style="color: #aaa; margin-left: 10px;">المجموع: <strong id="totalVotes" style="color: #fff;">0</strong> / 100</span>
-                    <button type="submit" class="btn-primary" style="background: #8e44ad; width: auto;" id="submitVotesBtn" disabled>تثبيت الأصوات (لا تراجع)</button>
+                    <span style="color: #aaa; font-size: 13px;">المجموع: <strong id="totalVotes" style="color: #fff;">0</strong> / 100</span><br>
+                    <button type="submit" class="btn-primary" style="background: #8e44ad; width: 100%; margin-top: 10px;" id="submitVotesBtn" disabled>تثبيت الأصوات</button>
                 </div>
             </form>
 
             <script>
-                // سكريبت لحساب المجموع وتفعيل الزر
                 const amountInputs = document.querySelectorAll('.vote-amount');
                 const totalDisplay = document.getElementById('totalVotes');
                 const submitBtn = document.getElementById('submitVotesBtn');
@@ -109,36 +124,21 @@
                         let total = 0;
                         amountInputs.forEach(i => total += (parseInt(i.value) || 0));
                         totalDisplay.innerText = total;
-                        if (total === 100) {
-                            totalDisplay.style.color = "#2ecc71";
-                            submitBtn.disabled = false;
-                        } else {
-                            totalDisplay.style.color = "#e74c3c";
-                            submitBtn.disabled = true;
-                        }
+                        if (total === 100) { totalDisplay.style.color = "#2ecc71"; submitBtn.disabled = false; } 
+                        else { totalDisplay.style.color = "#e74c3c"; submitBtn.disabled = true; }
                     });
                 });
             </script>
         {% else %}
-            <div class="waiting-status" style="border-color: #8e44ad; color: #fff; text-align: center;">
-                لقد سلمت أرواح الرحالة للمحكمة بنجاح.<br>
-                <small style="color: #aaa;">أنت الآن تملك ({{ current_user.survival_votes }}) صوت نجاة.</small><br>
-                انتظر حتى ينتهي الجميع لفرز الأصوات وإعلان الـ 5 الناجين.
+            <div class="waiting-status" style="border-color: #8e44ad; color: #fff; text-align: center; font-size: 14px;">
+                لقد سلمت أرواح الرحالة للمحكمة.<br>
+                انتظر حتى ينتهي الجميع لفرز الأصوات وإعلان الناجين.
             </div>
         {% endif %}
     </div>
     {% endif %}
 
-{% endif %}
-
-<div class="home-banner-container" style="position: relative; margin-top: 20px;">
-    {% if settings.banner_url %}<img src="{{ settings.banner_url }}" class="home-banner" alt="Maze Banner" crossorigin="anonymous">{% endif %}
-    <h1 class="translatable home-title" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }};">
-        {{ settings.home_title if settings else 'البوابة' }}
-    </h1>
-</div>
-
-{% if news %}
+{% endif %} {% if news %}
 <div class="hunter-card floor-1 translatable" data-ar-title="📜 مخطوطة إخبارية جديدة" data-en-title="📜 New News Scroll" style="margin-top: 20px;">
     <strong style="color:var(--text-main);">{{ news.title }}</strong>
     <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">{{ news.content[:200] }}...</p>
@@ -161,3 +161,4 @@
 </div>
 {% endif %}
 {% endblock %}
+
