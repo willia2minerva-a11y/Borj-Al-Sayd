@@ -9,10 +9,9 @@
     .fb-fake-input { flex-grow: 1; background: #3a3b3c; padding: 10px 15px; border-radius: 20px; color: #b0b3b8; cursor: pointer; font-size: 15px; text-align: right; }
     .fb-fake-input:hover { background: #4e4f50; }
     
-    /* نافذة النشر الحقيقية (تظهر عند الضغط) */
+    /* نافذة النشر الحقيقية */
     .post-modal { display: none; margin-top: 10px; border-top: 1px solid #3a3b3c; padding-top: 15px; }
     .fb-real-input { width: 100%; background: transparent; border: none; color: #e4e6eb; font-size: 16px; outline: none; resize: none; margin-bottom: 10px; font-family: inherit; }
-    .fb-title-input { width: 100%; background: #3a3b3c; border: none; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
     .fb-submit-btn { width: 100%; background: #2374e1; color: #fff; font-weight: bold; border: none; padding: 10px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
     .fb-submit-btn:hover { background: #3982e4; }
 
@@ -21,8 +20,7 @@
     .fb-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
     .fb-post-name { color: #e4e6eb; font-weight: bold; font-size: 15px; text-decoration: none; }
     .fb-post-time { color: #b0b3b8; font-size: 12px; }
-    .fb-post-title { color: #fff; font-size: 16px; margin: 0 0 10px 0; border-bottom: 1px solid #3a3b3c; padding-bottom: 5px; }
-    .fb-post-content { color: #e4e6eb; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+    .fb-post-content { color: #e4e6eb; font-size: 15px; line-height: 1.5; white-space: pre-wrap; margin-top: 10px; }
     .fb-post-img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: cover; }
 </style>
 
@@ -44,7 +42,6 @@
 
         <div id="postModal" class="post-modal">
             <form action="/declarations" method="POST" enctype="multipart/form-data">
-                <input type="text" name="title" class="fb-title-input" placeholder="عنوان التصريح..." required>
                 <textarea name="content" class="fb-real-input" rows="4" placeholder="اكتب ما يدور في ذهنك..." required></textarea>
                 <div style="margin-bottom: 10px; color: #b0b3b8; font-size: 13px;">
                     <label>📷 إرفاق صورة (اختياري):</label><br>
@@ -69,7 +66,6 @@
                 <div class="fb-post-time">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
             </div>
         </div>
-        <h4 class="fb-post-title">{{ dec.title }}</h4>
         <div class="fb-post-content">{{ dec.content }}</div>
         {% if dec.image_data %}
             <img src="{{ dec.image_data }}" class="fb-post-img" alt="صورة مرفقة">
