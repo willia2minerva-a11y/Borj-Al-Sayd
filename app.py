@@ -72,13 +72,11 @@ def check_locks_and_status():
     if user:
         check_lazy_death_and_bleed(user, settings)
         
-        # إذا كان مقيداً برابط الرمال يعلق هنا
         if user.quicksand_lock_until and datetime.utcnow() < user.quicksand_lock_until:
             time_left = user.quicksand_lock_until - datetime.utcnow()
             mins, secs = divmod(time_left.seconds, 60)
             return render_template('locked.html', message=f'ابتلعتك الرمال! 🏜️ مقيد لـ {mins}د و {secs}ث')
         
-        # غرفة الاختبار
         if getattr(user, 'gate_status', '') == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']:
             return render_template('gate_test.html', message=settings.gates_test_message, user=user)
 
@@ -222,6 +220,22 @@ def profile():
     my_seals = [i for i in my_items if i.item_type == 'seal']
     return render_template('profile.html', user=user, zone_class=zones.get(user.zone, 'floor-0'), banner_url=settings.banner_url if settings else '', my_items=my_items, my_seals=my_seals)
 
+@app.route('/settings', methods=['POST'])
+@login_required
+def update_settings():
+    user = User.objects(id=session['user_id']).first()
+    action = request.form.get('action')
+    if action == 'change_avatar':
+        file = request.files.get('avatar_file')
+        if file: user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تم التحديث!', 'success')
+    elif action == 'change_name':
+        new_name = request.form.get('new_name')
+        now = datetime.utcnow()
+        if user.last_name_change and (now - user.last_name_change).days < 15: flash('عذراً، يمكنك تغيير اسمك مرة واحدة كل 15 يوماً فقط!', 'error')
+        elif User.objects(username=new_name).first(): flash('الاسم مستخدم مسبقاً!', 'error')
+        else: user.username = new_name; user.last_name_change = now; flash('تم تغيير الاسم بنجاح!', 'success')
+    user.save(); return redirect(url_for('profile'))
+
 @app.route('/hunter/<int:target_id>')
 @login_required
 def hunter_profile(target_id):
@@ -316,7 +330,7 @@ def use_item(target_id):
         for i in target.inventory:
             if 'حجاب' in i or 'درع' in i or 'عباءة' in i: has_shield = True; shield_name = i; break
         if has_shield:
-            target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash(f'🖐️ الهدف محمي! احترقت يدك!', 'error')
+            target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash(f'🖐️ الهدف محمي بـ ({shield_name})! احترقت يدك!', 'error')
         else:
             target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash(f'🖐️ تمت السرقة!', 'success')
 
@@ -331,21 +345,13 @@ def admin_update_profile(target_id):
         if action == 'edit_name':
             target_user.username = request.form.get('new_name'); target_user.save(); flash('تم التعديل!', 'success')
         elif action == 'edit_points':
-            target_user.points = int(request.form.get('new_points')); target_user.save(); flash('تم التعديل!', 'success')
+            target_user.points = int(request.form.get('new_points', 0)); target_user.save(); flash('تم التعديل!', 'success')
         elif action == 'edit_hp':
-            target_user.health = int(request.form.get('new_hp'))
+            target_user.health = int(request.form.get('new_hp', 0))
             if target_user.health <= 0: target_user.health = 0; target_user.status = 'eliminated'
             elif target_user.status == 'eliminated': target_user.status = 'active'
             target_user.save(); flash('تم التعديل!', 'success')
     return redirect(url_for('hunter_profile', target_id=target_id))
-
-@app.route('/settings', methods=['POST'])
-@login_required
-def update_settings():
-    user = User.objects(id=session['user_id']).first()
-    file = request.files.get('avatar_file')
-    if file: user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تُحدثت!', 'success')
-    user.save(); return redirect(url_for('profile'))
 
 @app.route('/friends', methods=['GET'])
 @login_required
@@ -469,11 +475,11 @@ def admin_panel():
     if request.method == 'POST':
         action = request.form.get('action')
         
+        # 👑 أوامر التحكم في المودات والشريط
         if action == 'toggle_global_news':
             settings.global_news_active = not settings.global_news_active
             settings.global_news_text = request.form.get('global_news_text', '')
             settings.save(); flash('تحديث الشريط الإخباري', 'success')
-
         elif action == 'setup_gates':
             settings.gates_mode_active = True
             settings.gates_selection_locked = True if request.form.get('locked') else False
@@ -481,10 +487,8 @@ def admin_panel():
             settings.gate_1_name = request.form.get('g1', ''); settings.gate_2_name = request.form.get('g2', ''); settings.gate_3_name = request.form.get('g3', '')
             settings.gates_test_message = request.form.get('test_msg', '')
             settings.save(); flash('تم ضبط البوابات!', 'success')
-
         elif action == 'close_gates_mode':
             settings.gates_mode_active = False; settings.save(); flash('تم إيقاف المود', 'success')
-            
         elif action == 'judge_gates':
             fates = {1: request.form.get('fate_1'), 2: request.form.get('fate_2'), 3: request.form.get('fate_3')}
             for u in User.objects(gate_status='waiting', status='active'):
@@ -493,8 +497,7 @@ def admin_panel():
                 elif fate == 'kill': u.status = 'eliminated'; u.freeze_reason = 'اختار بوابة الموت'
                 elif fate == 'test': u.gate_status = 'testing'
                 u.save()
-            flash('تم إصدار الحكم!', 'success')
-
+            flash('تم إصدار الحكم على الواقفين في ساحة الانتظار!', 'success')
         elif action == 'judge_test_user':
             uid = request.form.get('user_id'); decision = request.form.get('decision')
             u = User.objects(id=uid).first()
@@ -502,15 +505,12 @@ def admin_panel():
                 if decision == 'pass': u.gate_status = 'passed'; flash(f'إنجاح {u.username}', 'success')
                 elif decision == 'kill': u.status = 'eliminated'; u.freeze_reason = 'فشل في الاختبار'; flash(f'إعدام {u.username}', 'success')
                 u.save()
-
         elif action == 'emergency_gate':
             uid = int(request.form.get('hunter_id', 0)); gate_num = int(request.form.get('gate_num', 0))
             u = User.objects(hunter_id=uid).first()
             if u: u.chosen_gate = gate_num; u.gate_status = 'waiting'; u.save(); flash('تدخل يدوي ناجح', 'success')
-                
         elif action == 'toggle_floor3':
-            settings.floor3_mode_active = not settings.floor3_mode_active; settings.save(); flash('تبديل الطابق الثالث', 'success')
-
+            settings.floor3_mode_active = not settings.floor3_mode_active; settings.save(); flash('تبديل حالة الطابق الثالث', 'success')
         elif action == 'punish_floor3_slackers':
             slackers = User.objects(has_voted=False, status='active', role='hunter')
             if slackers.count() > 0:
@@ -520,15 +520,97 @@ def admin_panel():
                     bonus = total_stolen // active_voters.count()
                     for v in active_voters: v.survival_votes += bonus; v.save()
                 for s in slackers: s.status = 'eliminated'; s.freeze_reason = 'خائن لم يوزع أصواته'; s.save()
-                flash(f'أعدمت الكسالى ووزعت {total_stolen} صوت!', 'success')
+                flash(f'تم إعدام الكسالى وتوزيع {total_stolen} صوت!', 'success')
+        
+        # 👑 أوامر التحكم الأساسية
+        elif action == 'toggle_maintenance':
+            settings.maintenance_mode = not settings.maintenance_mode; settings.save(); flash('تم التبديل!', 'success')
+        elif action == 'toggle_war':
+            settings.war_mode = not settings.war_mode; settings.save(); flash('تم التبديل!', 'success')
+        elif action == 'toggle_final_battle':
+            settings.final_battle_mode = not settings.final_battle_mode; settings.save(); flash('تم التبديل!', 'success')
+        elif action == 'update_war_settings':
+            settings.bleed_rate_minutes = int(request.form.get('bleed_rate_minutes', 60))
+            settings.bleed_amount = int(request.form.get('bleed_amount', 1))
+            settings.safe_time_minutes = int(request.form.get('safe_time_minutes', 120))
+            settings.max_dead_to_end = int(request.form.get('max_dead_to_end', 15))
+            settings.save(); flash('حُفظت القوانين', 'success')
+        elif action == 'update_nav_names':
+            settings.nav_home = request.form.get('nav_home', settings.nav_home)
+            settings.nav_profile = request.form.get('nav_profile', settings.nav_profile)
+            settings.nav_friends = request.form.get('nav_friends', settings.nav_friends)
+            settings.nav_news = request.form.get('nav_news', settings.nav_news)
+            settings.nav_puzzles = request.form.get('nav_puzzles', settings.nav_puzzles)
+            settings.nav_decs = request.form.get('nav_decs', settings.nav_decs)
+            settings.nav_store = request.form.get('nav_store', settings.nav_store)
+            settings.nav_grave = request.form.get('nav_grave', settings.nav_grave)
+            settings.save(); flash('حُفظت الأسماء', 'success')
+        elif action == 'bulk_action':
+            selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
+            for uid in selected:
+                u = User.objects(id=uid).first()
+                if u and u.hunter_id != 1000:
+                    if bulk_type == 'activate': u.status = 'active'; u.health = 100
+                    elif bulk_type == 'freeze': u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'مقيّد')
+                    elif bulk_type == 'eliminate': u.status = 'eliminated'; u.freeze_reason = request.form.get('bulk_reason', 'هلك')
+                    u.save()
+            flash('تم!', 'success')
+        elif action == 'update_home_settings':
+            settings.home_title = request.form.get('home_title', 'البوابة')
+            settings.home_color = request.form.get('home_color', 'var(--zone-0-black)')
+            file = request.files.get('banner_file')
+            if file and file.filename != '': settings.banner_url = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+            settings.save(); flash('تم!', 'success')
+        elif action == 'add_news':
+            cat = 'puzzle' if request.form.get('puzzle_type') != 'none' else 'news'
+            News(title=request.form.get('title'), content=request.form.get('content'), category=cat, puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save(); flash('نُشرت!', 'success')
+        elif action == 'add_standalone_puzzle':
+            ptype = request.form.get('puzzle_type'); panswer = request.form.get('puzzle_answer', '')
+            trap_dur = int(request.form.get('trap_duration', 0) or 0); trap_pen = int(request.form.get('trap_penalty', 0) or 0)
+            News(title="لغز مخفي", content="لغز خفي", category='hidden', puzzle_type=ptype, puzzle_answer=panswer, reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1)), trap_duration_minutes=trap_dur, trap_penalty_points=trap_pen).save()
+            if ptype in ['fake_account', 'cursed_ghost'] and panswer.isdigit():
+                role_type = 'ghost' if ptype == 'fake_account' else 'cursed_ghost'
+                if not User.objects(hunter_id=int(panswer)).first(): User(hunter_id=int(panswer), username=f"شبح_{panswer}", password_hash="dummy", role=role_type, status='active', avatar='👻').save()
+            flash('زرع الفخ', 'success')
+        elif action == 'add_store_item':
+            item_type = request.form.get('item_type', 'normal')
+            effect_amount = int(request.form.get('effect_amount', 0) or 0)
+            is_mirage = True if request.form.get('is_mirage') == 'on' else False
+            is_luck = True if request.form.get('is_luck') == 'on' else False
+            l_min = int(request.form.get('luck_min', 0) or 0); l_max = int(request.form.get('luck_max', 0) or 0)
+            item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')), item_type=item_type, effect_amount=effect_amount, is_mirage=is_mirage, mirage_message=request.form.get('mirage_message', ''), is_luck=is_luck, luck_min=l_min, luck_max=l_max)
+            file = request.files.get('item_image')
+            if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+            item.save(); flash('إلى القافلة!', 'success')
+        elif action == 'add_inventory':
+            u = User.objects(id=request.form.get('user_id')).first()
+            item_name = request.form.get('item_name')
+            if u and item_name:
+                if item_name not in u.inventory: u.inventory.append(item_name); u.save(); flash(f'أضيفت لـ {u.username}', 'success')
+                else: flash('يملكها!', 'error')
+        elif action == 'remove_inventory':
+            u = User.objects(id=request.form.get('user_id')).first()
+            item_name = request.form.get('item_name')
+            if u and item_name:
+                if item_name in u.inventory: u.inventory.remove(item_name); u.save(); flash(f'صودرت', 'success')
+                else: flash('لا يملكها!', 'error')
+        elif action == 'add_points':
+            user = User.objects(id=request.form.get('user_id')).first()
+            if user: user.points = int(request.form.get('points_amount', 0)); user.save(); flash('حُفظت!', 'success')
         
         return redirect(url_for('admin_panel'))
         
+    # 🛠️ متغيرات الإدارة
     users = [u for u in User.objects() if getattr(u, 'role', 'hunter') not in ['ghost', 'cursed_ghost']]
     test_users = User.objects(gate_status='testing', status='active')
     gate_stats = {1: User.objects(chosen_gate=1, status='active').count(), 2: User.objects(chosen_gate=2, status='active').count(), 3: User.objects(chosen_gate=3, status='active').count()}
     floor3_leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:5] if settings.floor3_mode_active else []
     
-    return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders)
+    pending_decs = News.objects(category='declaration', status='pending')
+    pending_count = pending_decs.count()
+    hidden_puzzles = News.objects(category='hidden')
+    
+    return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders, pending_decs=pending_decs, pending_count=pending_count, hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
+
