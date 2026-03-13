@@ -4,6 +4,7 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
+    meta = {'strict': False} # 🛡️ هذا الأمر يمنع انهيار السيرفر بسبب البيانات القديمة
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True)
     facebook_link = db.StringField()
@@ -42,6 +43,7 @@ class User(db.Document):
     stats_items_bought = db.IntField(default=0)
 
 class News(db.Document):
+    meta = {'strict': False}
     title = db.StringField()
     content = db.StringField()
     image_data = db.StringField()
@@ -59,6 +61,7 @@ class News(db.Document):
     trap_penalty_points = db.IntField(default=0)
 
 class StoreItem(db.Document):
+    meta = {'strict': False}
     name = db.StringField(required=True)
     description = db.StringField()
     price = db.IntField(required=True)
@@ -73,6 +76,7 @@ class StoreItem(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
+    meta = {'strict': False}
     setting_name = db.StringField(default='main_config')
     home_title = db.StringField(default='البوابة')
     home_color = db.StringField(default='var(--zone-0-black)')
@@ -112,6 +116,7 @@ class GlobalSettings(db.Document):
     nav_grave = db.StringField(default='💀 المقبرة')
 
 class BattleLog(db.Document):
+    meta = {'strict': False}
     victim_name = db.StringField()
     weapon_name = db.StringField()
     remaining_hp = db.IntField()
