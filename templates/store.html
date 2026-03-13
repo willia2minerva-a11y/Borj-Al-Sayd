@@ -1,53 +1,49 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-3-gold);" class="translatable" data-ar="🛒 السوق السري" data-en="🛒 Secret Market">🛒 السوق السري</h2>
+<h2 style="color: var(--zone-3-gold); text-align: center;">🐪 قافلة التجار</h2>
+<p style="text-align: center; color: var(--text-muted); font-size: 14px;">اشتري أدوات البقاء، ولا تثق في كل ما يُباع.</p>
 
-<div class="store-grid">
+{% if current_user.status != 'active' %}
+<div class="flash error" style="text-align: center;">👻 الأشباح لا يمكنها شراء الأدوات من القافلة. اكتفِ بالمشاهدة!</div>
+{% endif %}
+
+<div class="store-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">
     {% for item in items %}
-    <div class="hunter-card store-item" style="margin:0; text-align:center; padding:15px; display: flex; flex-direction: column; justify-content: space-between;">
+    <div class="store-item" style="background: #111; border: 1px solid var(--zone-3-gold); border-radius: 8px; padding: 15px; text-align: center; position: relative;">
         
-        <div>
-            {% if item.image %}<img src="{{ item.image }}" loading="lazy" decoding="async" style="width:100%; height:120px; object-fit:cover; border-radius:5px; margin-bottom:10px;">{% endif %}
-            <h3 style="color: var(--zone-3-gold); margin: 0 0 5px 0;">{{ item.name }}</h3>
-            <p style="font-size: 12px; color: var(--text-muted); height:40px; overflow:hidden;">{{ item.description }}</p>
-            <div style="color: var(--zone-4-diamond); font-size: 20px; font-weight: bold; margin: 10px 0;" class="neon-number">{{ item.price }} 💎</div>
-        </div>
-        
-        <form method="POST" action="/buy/{{ item.id }}" style="margin-bottom: 5px;">
-            <button type="submit" class="btn-primary">شراء الآن</button>
-        </form>
-
-        {% if session.get('role') == 'admin' %}
-        <div style="display: flex; gap: 5px; margin-top: 5px;">
-            <button onclick="document.getElementById('edit-form-{{ item.id }}').style.display='block'" class="btn-primary" style="background: linear-gradient(45deg, #3498db, #2980b9); padding: 6px; font-size: 11px;">تعديل ✏️</button>
-            <form method="POST" action="/delete_store_item/{{ item.id }}" onsubmit="return confirm('هل أنت متأكد من سحب هذه الأداة من السوق نهائياً؟');" style="margin: 0; width: 50%;">
-                <button type="submit" class="btn-danger" style="width: 100%; padding: 6px; font-size: 11px;">حذف ❌</button>
-            </form>
-        </div>
-
-        <form id="edit-form-{{ item.id }}" method="POST" action="/edit_store_item/{{ item.id }}" enctype="multipart/form-data" style="display: none; margin-top: 10px; background: #111; padding: 10px; border-radius: 8px; border: 1px dashed var(--zone-3-gold); text-align: right;">
-            <label style="font-size: 11px; color: var(--text-muted);">اسم الأداة:</label>
-            <input type="text" name="item_name" value="{{ item.name }}" style="padding: 6px; margin-bottom: 5px; font-size: 12px;" required>
-            
-            <label style="font-size: 11px; color: var(--text-muted);">التفاصيل:</label>
-            <input type="text" name="item_desc" value="{{ item.description }}" style="padding: 6px; margin-bottom: 5px; font-size: 12px;" required>
-            
-            <label style="font-size: 11px; color: var(--text-muted);">السعر بالنقاط:</label>
-            <input type="number" name="item_price" value="{{ item.price }}" class="neon-number" style="padding: 6px; margin-bottom: 5px; font-size: 12px;" required>
-            
-            <label style="font-size: 11px; color: var(--text-muted);">تغيير الصورة (اختياري):</label>
-            <input type="file" name="item_image" accept="image/*" style="font-size: 10px; margin-bottom: 10px; padding: 4px;">
-            
-            <div style="display: flex; gap: 5px;">
-                <button type="submit" class="btn-primary" style="padding: 6px; font-size: 11px; background: linear-gradient(45deg, #2ecc71, #27ae60);">حفظ التعديل ✔️</button>
-                <button type="button" onclick="document.getElementById('edit-form-{{ item.id }}').style.display='none'" class="btn-danger" style="padding: 6px; font-size: 11px; width: 50%;">إلغاء</button>
+        {% if item.image %}
+            <img src="{{ item.image }}" alt="{{ item.name }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333;">
+        {% else %}
+            <div style="font-size: 40px; margin-bottom: 10px;">
+                {% if item.item_type == 'weapon' %}🗡️
+                {% elif item.item_type == 'heal' %}🧪
+                {% elif item.item_type == 'spy' %}👁️
+                {% elif item.item_type == 'steal' %}🖐️
+                {% elif item.item_type == 'seal' %}🏺
+                {% else %}📦{% endif %}
             </div>
-        </form>
         {% endif %}
 
+        <h3 style="color: #fff; margin: 0 0 5px 0; font-size: 16px;">{{ item.name }}</h3>
+        <p style="color: #aaa; font-size: 12px; margin: 0 0 15px 0;">{{ item.description }}</p>
+        <div style="color: var(--zone-3-gold); font-weight: bold; font-size: 18px; margin-bottom: 15px;">{{ item.price }} نقطة</div>
+        
+        {% if current_user.status == 'active' %}
+            <form action="/buy/{{ item.id }}" method="POST">
+                <button type="submit" class="btn-primary" style="width: 100%;" {% if current_user.points < item.price %}disabled style="background: #444;"{% endif %}>
+                    شراء الإمداد
+                </button>
+            </form>
+        {% else %}
+            <button class="btn-primary" style="width: 100%; background: #444; cursor: not-allowed;" disabled>مقفول للشبح</button>
+        {% endif %}
+
+        {% if current_user.role == 'admin' %}
+            <form action="/delete_store_item/{{ item.id }}" method="POST" style="margin-top: 5px;">
+                <button type="submit" class="btn-danger" style="width: 100%; padding: 5px; font-size: 11px;">حذف من السوق</button>
+            </form>
+        {% endif %}
     </div>
-    {% else %}
-    <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1; margin-top: 30px;">السوق فارغ حالياً... البضائع قادمة قريباً.</p>
     {% endfor %}
 </div>
 {% endblock %}
