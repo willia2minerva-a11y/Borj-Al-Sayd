@@ -5,132 +5,116 @@ db = MongoEngine()
 
 class User(db.Document):
     hunter_id = db.IntField(unique=True)
-    username = db.StringField(unique=True, required=True)
+    username = db.StringField(unique=True)
     facebook_link = db.StringField()
-    password_hash = db.StringField(required=True)
-    avatar = db.StringField(default='👤')
+    password_hash = db.StringField()
+    role = db.StringField(default='hunter') # admin, hunter, ghost, cursed_ghost
+    status = db.StringField(default='active') # active, eliminated, frozen
+    health = db.IntField(default=100)
     points = db.IntField(default=0)
     zone = db.IntField(default=0)
-    special_rank = db.StringField(default='مستكشف مبتدئ')
-    
-    status = db.StringField(default='active') # active, frozen, eliminated
-    freeze_reason = db.StringField(default='') 
-    role = db.StringField(default='hunter') 
-    inventory = db.ListField(db.StringField())
-    last_name_change = db.DateTimeField(default=None)
-    ip_address = db.StringField()
-    friends = db.ListField(db.IntField())
-    friend_requests = db.ListField(db.IntField())
-    last_guess_time = db.DateTimeField(default=None) 
-    quicksand_lock_until = db.DateTimeField(default=None)
-    
-    # --- نظام الحرب والمعركة الأخيرة ---
-    health = db.IntField(default=100) 
-    last_health_check = db.DateTimeField(default=datetime.utcnow) 
+    inventory = db.ListField(db.StringField(), default=list)
+    friends = db.ListField(db.IntField(), default=list)
+    friend_requests = db.ListField(db.IntField(), default=list)
+    achievements = db.ListField(db.StringField(), default=list)
+    avatar = db.StringField(default='👤')
+    created_at = db.DateTimeField(default=datetime.utcnow)
+    last_active = db.DateTimeField(default=datetime.utcnow)
     last_action_time = db.DateTimeField(default=datetime.utcnow)
-    last_active = db.DateTimeField(default=datetime.utcnow) 
-    tajis_eye_until = db.DateTimeField(default=None) 
-    destroyed_seals = db.IntField(default=0) 
-
-    # --- 🚪 إضافات مود البوابات ---
-    chosen_gate = db.IntField(default=0) # 0=لم يختار, 1=البوابة الأولى، إلخ
-    gate_status = db.StringField(default='none') # none, waiting, testing, passed
-    gate_test_answer = db.StringField(default='') # إجابته على اختبار الملك
-
-    # --- 🗳️ إضافات الطابق الثالث (لعبة التوزيع) ---
-    survival_votes = db.IntField(default=0) # أصوات النجاة التي حصل عليها من الآخرين
-    has_voted = db.BooleanField(default=False) # هل قام بتوزيع الـ 100 صوت؟
-    
-    stats_ghosts_caught = db.IntField(default=0)
-    stats_puzzles_solved = db.IntField(default=0)
-    stats_items_bought = db.IntField(default=0)
-    achievements = db.ListField(db.StringField()) 
-    
+    last_health_check = db.DateTimeField(default=datetime.utcnow)
+    freeze_reason = db.StringField(default='')
+    ip_address = db.StringField()
+    chosen_gate = db.IntField(default=0)
+    gate_status = db.StringField(default='') # waiting, passed, testing
+    gate_test_answer = db.StringField(default='')
+    survival_votes = db.IntField(default=0)
+    has_voted = db.BooleanField(default=False)
     last_seen_news = db.DateTimeField(default=datetime.utcnow)
     last_seen_puzzles = db.DateTimeField(default=datetime.utcnow)
     last_seen_decs = db.DateTimeField(default=datetime.utcnow)
     last_seen_store = db.DateTimeField(default=datetime.utcnow)
-    
-    created_at = db.DateTimeField(default=datetime.utcnow)
-    meta = {'indexes': ['hunter_id', 'username', 'status', 'role', 'health', 'last_active']}
+    last_name_change = db.DateTimeField(null=True)
+    destroyed_seals = db.IntField(default=0)
+    tajis_eye_until = db.DateTimeField(null=True)
+    quicksand_lock_until = db.DateTimeField(null=True)
+    stats_ghosts_caught = db.IntField(default=0)
+    stats_puzzles_solved = db.IntField(default=0)
+    stats_items_bought = db.IntField(default=0)
 
 class News(db.Document):
-    title = db.StringField(required=True)
-    content = db.StringField(required=True)
-    image_data = db.StringField(default='') 
-    category = db.StringField(default='news') 
+    title = db.StringField()
+    content = db.StringField()
+    image_data = db.StringField()
+    category = db.StringField(default='news') # news, puzzle, declaration, hidden
     author = db.StringField(default='الإدارة')
-    status = db.StringField(default='approved') 
-    puzzle_type = db.StringField(default='none') 
-    puzzle_answer = db.StringField()
+    created_at = db.DateTimeField(default=datetime.utcnow)
+    status = db.StringField(default='approved') # approved, pending
+    puzzle_type = db.StringField(default='none') # none, text, secret_link, quicksand_trap, fake_account, cursed_ghost
+    puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
-    trap_penalty_points = db.IntField(default=0) 
-    trap_duration_minutes = db.IntField(default=0) 
+    winners_list = db.ListField(db.StringField(), default=list)
     max_winners = db.IntField(default=1)
     current_winners = db.IntField(default=0)
-    winners_list = db.ListField(db.StringField())
-    created_at = db.DateTimeField(default=datetime.utcnow)
-    meta = {'indexes': ['category', 'status', 'created_at']}
+    trap_duration_minutes = db.IntField(default=0)
+    trap_penalty_points = db.IntField(default=0)
 
 class StoreItem(db.Document):
     name = db.StringField(required=True)
-    description = db.StringField(required=True)
+    description = db.StringField()
     price = db.IntField(required=True)
-    image = db.StringField(default='')
-    item_type = db.StringField(default='normal') 
-    effect_amount = db.IntField(default=0) 
-    is_mirage = db.BooleanField(default=False) 
-    mirage_message = db.StringField(default='') 
+    image = db.StringField()
+    item_type = db.StringField(default='normal') # normal, weapon, heal, spy, steal, seal
+    effect_amount = db.IntField(default=0)
     is_luck = db.BooleanField(default=False)
-    luck_min = db.IntField(default=-50)
-    luck_max = db.IntField(default=100)
+    luck_min = db.IntField(default=0)
+    luck_max = db.IntField(default=0)
+    is_mirage = db.BooleanField(default=False)
+    mirage_message = db.StringField(default='')
     created_at = db.DateTimeField(default=datetime.utcnow)
-
-class BattleLog(db.Document):
-    victim_name = db.StringField(required=True)
-    weapon_name = db.StringField(required=True)
-    remaining_hp = db.IntField(required=True)
-    created_at = db.DateTimeField(default=datetime.utcnow)
-    meta = {'indexes': ['-created_at']}
 
 class GlobalSettings(db.Document):
-    setting_name = db.StringField(unique=True, default='main_config')
+    setting_name = db.StringField(default='main_config')
+    home_title = db.StringField(default='البوابة')
+    home_color = db.StringField(default='var(--zone-0-black)')
     banner_url = db.StringField(default='')
-    home_title = db.StringField(default='بوابة سيفار')
-    home_color = db.StringField(default='var(--zone-1-wood)')
     
-    # --- الشريط الإخباري العام ---
     global_news_active = db.BooleanField(default=False)
-    global_news_text = db.StringField(default='رسالة من ملك المتاهة...')
-
-    # --- إعدادات المودات ---
-    maintenance_mode = db.BooleanField(default=False) 
-    war_mode = db.BooleanField(default=False) 
+    global_news_text = db.StringField(default='')
+    
+    # الصيانة الذكية بالوقت والصفحات المنفصلة عن الحرب
+    maintenance_mode = db.BooleanField(default=False)
+    maintenance_until = db.DateTimeField(null=True)
+    maintenance_pages = db.ListField(db.StringField(), default=list)
+    
+    war_mode = db.BooleanField(default=False)
     final_battle_mode = db.BooleanField(default=False)
+    bleed_rate_minutes = db.IntField(default=60)
+    bleed_amount = db.IntField(default=1)
+    safe_time_minutes = db.IntField(default=120)
+    dead_count = db.IntField(default=0)
+    
+    gates_mode_active = db.BooleanField(default=False)
+    gates_selection_locked = db.BooleanField(default=False)
+    gates_description = db.StringField(default='اختر بوابة...')
+    gate_1_name = db.StringField(default='بوابة 1')
+    gate_2_name = db.StringField(default='بوابة 2')
+    gate_3_name = db.StringField(default='بوابة 3')
+    gates_test_message = db.StringField(default='أنت في غرفة الاختبار...')
+    
     floor3_mode_active = db.BooleanField(default=False)
     
-    # --- 🚪 إعدادات مود البوابات ---
-    gates_mode_active = db.BooleanField(default=False)
-    gates_selection_locked = db.BooleanField(default=True) # تفعيل/إيقاف القفل المبدئي
-    gates_description = db.StringField(default='أمامك ثلاث بوابات، واحدة للمرور، وواحدة للموت، وواحدة لغرفة الحكماء. اختر مسارك بعناية...')
-    gate_1_name = db.StringField(default='بوابة الظلام')
-    gate_2_name = db.StringField(default='بوابة النور')
-    gate_3_name = db.StringField(default='بوابة الدماء')
-    gates_test_message = db.StringField(default='لقد اخترت البوابة المجهولة. الآن أثبت استحقاقك للعبور: ضحِّ بـ 50 قطرة من دمك واكتب (أوافق) في الأسفل.')
+    nav_home = db.StringField(default='🏠 الرئيسية')
+    nav_profile = db.StringField(default='📜 الملف الشخصي')
+    nav_friends = db.StringField(default='🤝 الأصدقاء')
+    nav_news = db.StringField(default='📜 الأخبار')
+    nav_puzzles = db.StringField(default='🧩 الألغاز')
+    nav_decs = db.StringField(default='📢 التصريحات')
+    nav_store = db.StringField(default='🐪 المتجر')
+    nav_grave = db.StringField(default='💀 المقبرة')
 
-    # --- قوانين الحرب ---
-    bleed_rate_minutes = db.IntField(default=60) 
-    bleed_amount = db.IntField(default=1) 
-    safe_time_minutes = db.IntField(default=120) 
-    dead_count = db.IntField(default=0) 
-    max_dead_to_end = db.IntField(default=15) 
-    
-    # --- أسماء الصفحات ---
-    nav_home = db.StringField(default='🏠 بوابة سيفار (الرئيسية)')
-    nav_profile = db.StringField(default='📜 مخطوطتي (الملف الشخصي)')
-    nav_friends = db.StringField(default='🤝 التحالفات (الأصدقاء)')
-    nav_news = db.StringField(default='📜 أخبار المتاهة (الأخبار)')
-    nav_puzzles = db.StringField(default='🧩 مخطوطات سيفار (الألغاز)')
-    nav_decs = db.StringField(default='📢 تدوينات الرحالة (التصريحات)')
-    nav_store = db.StringField(default='🐪 قافلة التجار (السوق)')
-    nav_grave = db.StringField(default='💀 المقبرة المنسية')
+class BattleLog(db.Document):
+    victim_name = db.StringField()
+    weapon_name = db.StringField()
+    remaining_hp = db.IntField()
+    created_at = db.DateTimeField(default=datetime.utcnow)
+
