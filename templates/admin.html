@@ -1,16 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .admin-section { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
-    .admin-section h3 { color: var(--zone-3-gold); border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 0; }
     .admin-form-group { margin-bottom: 15px; }
     .admin-form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 5px; }
     .admin-form-group input, .admin-form-group select, .admin-form-group textarea { width: 100%; padding: 8px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; }
     
-    /* ستايلات القوائم المنسدلة (Accordion) للمودات */
-    .mod-btn { background: #222; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #444; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 5px; transition: 0.3s; font-weight: bold; display: flex; justify-content: space-between; }
-    .mod-btn:hover { background: #333; border-color: var(--zone-3-gold); }
-    .mod-content { padding: 15px; display: none; background: #0a0a0a; border: 1px dashed #444; border-radius: 5px; margin-bottom: 15px; }
+    /* 👑 ستايلات القوائم المنسدلة الموحدة لكل الإدارة */
+    .mod-btn { background: #1a1a1a; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #333; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 8px; transition: 0.3s; font-weight: bold; display: flex; justify-content: space-between; border-right: 4px solid var(--zone-3-gold); }
+    .mod-btn:hover { background: #2a2a2a; border-color: var(--zone-3-gold); }
+    .mod-content { padding: 15px; display: none; background: #0a0a0a; border: 1px solid #222; border-radius: 5px; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
 </style>
 
 <h2 style="color: var(--zone-3-gold); text-align: center;">👑 كهف القيادة والمودات</h2>
@@ -70,7 +68,7 @@
     {% endif %}
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-war')">⚔️ مود الحرب والصيانة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-war')" style="border-right-color: #e74c3c;">⚔️ مود الحرب والصيانة <span>▼</span></button>
 <div id="mod-war" class="mod-content">
     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
         <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="toggle_maintenance"><button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.maintenance_mode else '#3498db' }};">الصيانة</button></form>
@@ -85,7 +83,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-floor3')">🗳️ مود التصويت (100 نقطة) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-floor3')" style="border-right-color: #8e44ad;">🗳️ مود التصويت (100 نقطة) <span>▼</span></button>
 <div id="mod-floor3" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 15px;"><input type="hidden" name="action" value="toggle_floor3"><button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.floor3_mode_active else '#8e44ad' }};">{{ 'إيقاف المود' if settings.floor3_mode_active else 'تشغيل المود' }}</button></form>
     {% if settings.floor3_mode_active %}
@@ -94,10 +92,9 @@
     {% endif %}
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-final')">👑 مود المعركة الأخيرة (خاص بك) <span>▼</span></button>
-<div id="mod-final" class="mod-content" style="border-color: #f1c40f;">
+<button type="button" class="mod-btn" onclick="toggleMod('mod-final')" style="border-right-color: #f1c40f;">👑 مود المعركة الأخيرة (خاص بك) <span>▼</span></button>
+<div id="mod-final" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 15px;"><input type="hidden" name="action" value="toggle_final_battle"><button type="submit" class="btn-primary" style="width: 100%; background: {{ '#f1c40f' if settings.final_battle_mode else '#2c3e50' }}; color: #000;">{{ 'إيقاف المعركة الأخيرة' if settings.final_battle_mode else 'إعلان المعركة الأخيرة (إخفاء النقاط)' }}</button></form>
-    
     <div style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #f1c40f;">
         <strong style="color: #f1c40f; display: block; margin-bottom: 10px;">💪 رفع صحة الزعيم (أنت):</strong>
         <form action="/admin" method="POST" style="display: flex; gap: 5px;">
@@ -105,19 +102,19 @@
             <input type="number" name="admin_hp" placeholder="مثال: 5000" required style="width: 60%; padding: 8px; background: #000; color: #fff; border: 1px solid #444;">
             <button type="submit" class="btn-primary" style="width: 40%; background: #f1c40f; color: #000;">تفعيل المناعة</button>
         </form>
-        <small style="color: #aaa;">هذا الخيار يرفع دمك لأي رقم تريده لتصمد أمام هجمات اللاعبين في الطابق الأخير.</small>
     </div>
 </div>
 
-<hr style="border-color: #333; margin: 30px 0;">
-
-<div class="admin-section" style="border-color: #3498db;">
-    <h3>🖼️ الغلاف والشريط الإخباري العام</h3>
-    <form action="/admin" method="POST" style="margin-bottom: 15px; display: flex; gap: 5px;">
-        <input type="hidden" name="action" value="toggle_global_news">
-        <input type="text" name="global_news_text" value="{{ settings.global_news_text }}" placeholder="خبر عاجل..." style="width: 70%; padding: 8px; background: #000; color: #fff; border: 1px solid #444;">
-        <button type="submit" class="btn-primary" style="width: 30%; background: {{ '#e74c3c' if settings.global_news_active else '#2ecc71' }};">{{ 'إيقاف' if settings.global_news_active else 'تشغيل' }}</button>
-    </form>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-banner')" style="border-right-color: #3498db;">🖼️ الغلاف والشريط الإخباري <span>▼</span></button>
+<div id="mod-banner" class="mod-content">
+    <div style="background: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 5px; border: 1px dashed #3498db; margin-bottom: 15px;">
+        <strong style="color: #3498db;">شريط الأخبار العاجلة (أعلى الموقع):</strong>
+        <form action="/admin" method="POST" style="margin-top: 10px; display: flex; gap: 5px;">
+            <input type="hidden" name="action" value="toggle_global_news">
+            <input type="text" name="global_news_text" value="{{ settings.global_news_text }}" placeholder="اكتب الخبر العاجل هنا..." style="width: 70%; padding: 8px; background: #000; color: #fff; border: 1px solid #444;">
+            <button type="submit" class="btn-primary" style="width: 30%; background: {{ '#e74c3c' if settings.global_news_active else '#2ecc71' }};">{{ 'إيقاف' if settings.global_news_active else 'تشغيل' }}</button>
+        </form>
+    </div>
     <form action="/admin" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="update_home_settings">
         <div class="admin-form-group"><label>اسم المرحلة:</label><input type="text" name="home_title" value="{{ settings.home_title }}"></div>
@@ -127,8 +124,8 @@
     </form>
 </div>
 
-<div class="admin-section">
-    <h3>📝 أسماء الصفحات</h3>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-pages')" style="border-right-color: #95a5a6;">📝 أسماء الصفحات <span>▼</span></button>
+<div id="mod-pages" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_nav_names">
         <div class="admin-form-group"><input type="text" name="nav_home" value="{{ settings.nav_home }}"></div>
@@ -143,18 +140,13 @@
     </form>
 </div>
 
-<div class="admin-section">
-    <h3>📜 إضافة (خبر / لغز / فخ)</h3>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-news')" style="border-right-color: #2ecc71;">📜 إضافة (خبر / لغز) <span>▼</span></button>
+<div id="mod-news" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_news">
         <div class="admin-form-group"><input type="text" name="title" placeholder="العنوان" required></div>
         <div class="admin-form-group"><textarea name="content" placeholder="المحتوى" required></textarea></div>
-        <div class="admin-form-group">
-            <select name="puzzle_type">
-                <option value="none">خبر عادي (بدون لغز)</option>
-                <option value="text">لغز نصي (كلمة سر)</option>
-            </select>
-        </div>
+        <div class="admin-form-group"><select name="puzzle_type"><option value="none">خبر عادي (بدون لغز)</option><option value="text">لغز نصي (كلمة سر)</option></select></div>
         <div class="admin-form-group"><input type="text" name="puzzle_answer" placeholder="إجابة اللغز (إن وجد)"></div>
         <div style="display:flex; gap:10px;">
             <input type="number" name="reward_points" placeholder="النقاط للمشتركين" class="admin-form-group">
@@ -164,8 +156,34 @@
     </form>
 </div>
 
-<div class="admin-section">
-    <h3>🐪 إضافة للسوق</h3>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-traps')" style="border-right-color: #e67e22;">🕸️ زرع فخ / رابط / شبح ملعون <span>▼</span></button>
+<div id="mod-traps" class="mod-content">
+    <form action="/admin" method="POST">
+        <input type="hidden" name="action" value="add_standalone_puzzle">
+        <div class="admin-form-group">
+            <label>نوع الفخ أو اللغز السري:</label>
+            <select name="puzzle_type" required>
+                <option value="secret_link">رابط مخفي (يعطي نقاط)</option>
+                <option value="quicksand_trap">فخ رمال (يُجمد اللاعب في مكانه)</option>
+                <option value="fake_account">حساب شبح مرشد (يعطي نقاط لمن يرسل له طلب)</option>
+                <option value="cursed_ghost">شبح ملعون (يخصم نقاط لمن يرسل له طلب)</option>
+            </select>
+        </div>
+        <div class="admin-form-group"><label>الجواب أو ID الشبح:</label><input type="text" name="puzzle_answer" placeholder="ID الحساب أو كلمة السر"></div>
+        <div style="display: flex; gap: 5px;">
+            <div class="admin-form-group"><label>المكافأة:</label><input type="number" name="reward_points" placeholder="نقاط المكافأة"></div>
+            <div class="admin-form-group"><label>عدد الفائزين:</label><input type="number" name="max_winners" placeholder="مثال: 5" value="1"></div>
+        </div>
+        <div style="display: flex; gap: 5px;">
+            <div class="admin-form-group"><label>عقوبة الخصم:</label><input type="number" name="trap_penalty" placeholder="يخصم (للشبح الملعون)"></div>
+            <div class="admin-form-group"><label>مدة التجميد (دقائق):</label><input type="number" name="trap_duration" placeholder="للرمال المتحركة"></div>
+        </div>
+        <button type="submit" class="btn-danger" style="width: 100%; background: #e67e22;">زرع في المتاهة 🕸️</button>
+    </form>
+</div>
+
+<button type="button" class="mod-btn" onclick="toggleMod('mod-store')" style="border-right-color: #f39c12;">🐪 إضافة للسوق والصناديق <span>▼</span></button>
+<div id="mod-store" class="mod-content">
     <form action="/admin" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="add_store_item">
         <div class="admin-form-group"><input type="text" name="item_name" placeholder="اسم الأداة" required></div>
@@ -173,35 +191,42 @@
         <div class="admin-form-group"><input type="number" name="item_price" placeholder="السعر" required></div>
         <div class="admin-form-group">
             <select name="item_type">
-                <option value="normal">أداة عادية</option>
-                <option value="weapon">سلاح (ينقص الدم)</option>
-                <option value="heal">علاج (يزيد الدم)</option>
-                <option value="spy">تجسس (عين تاجيس)</option>
-                <option value="steal">سرقة (يد الشبح)</option>
-                <option value="seal">ختم ملكي (لتدميره)</option>
+                <option value="normal">أداة عادية</option><option value="weapon">سلاح</option><option value="heal">علاج</option><option value="spy">تجسس</option><option value="steal">سرقة</option><option value="seal">ختم ملكي</option>
             </select>
         </div>
         <div class="admin-form-group"><input type="number" name="effect_amount" placeholder="قوة التأثير (للأسلحة والعلاج)"></div>
+        <div class="admin-form-group"><label>صورة (اختياري):</label><input type="file" name="item_image" accept="image/*"></div>
+        
+        <div style="background: rgba(243, 156, 18, 0.1); padding: 10px; border: 1px dashed #f39c12; margin-bottom: 15px; border-radius: 5px;">
+            <strong style="color: #f39c12; font-size: 12px; display: block; margin-bottom: 10px;">🎲 أدوات المخاطرة:</strong>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" name="is_luck" style="width:auto;"> صندوق حظ (يعطي أو يخصم نقاط عشوائياً)</label>
+            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
+                <input type="number" name="luck_min" placeholder="أقل نتيجة (مثال: -50)" style="flex:1; padding:5px;">
+                <input type="number" name="luck_max" placeholder="أعلى نتيجة (مثال: 100)" style="flex:1; padding:5px;">
+            </div>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" name="is_mirage" style="width:auto;"> سراب/فخ (يسرق المال ولا يعطي شيئاً)</label>
+            <input type="text" name="mirage_message" placeholder="رسالة الفخ (مثال: الصندوق فارغ وانفجر في وجهك!)" style="padding:5px; width:100%; box-sizing: border-box;">
+        </div>
         <button type="submit" class="btn-primary">إضافة للسوق</button>
     </form>
 </div>
 
-<div class="admin-section">
-    <h3>👥 إدارة أرواح الرحالة</h3>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" style="border-right-color: #9b59b6;">👥 إدارة أرواح الرحالة <span>▼</span></button>
+<div id="mod-users" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="bulk_action">
-        <div style="max-height: 200px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
+        <div style="max-height: 250px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px; margin-bottom: 10px;">
             {% for u in users %}
-            <div style="margin-bottom: 5px;">
+            <div style="margin-bottom: 5px; border-bottom: 1px dashed #222; padding-bottom: 5px;">
                 <input type="checkbox" name="selected_users" value="{{ u.id }}">
-                <span style="color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }};">[{{ u.status }}]</span> {{ u.username }} (ID: {{ u.hunter_id }}) - دم: {{ u.health }}
+                <span style="color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }}; font-size: 11px;">[{{ u.status }}]</span> 
+                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: underline; font-weight: bold; margin-left: 5px;" target="_blank">{{ u.username }}</a> 
+                <span style="color:#aaa; font-size: 11px;">(ID: {{ u.hunter_id }}) - دم: {{ u.health }}</span>
             </div>
             {% endfor %}
         </div>
         <select name="bulk_type" class="admin-form-group" style="width: 100%; margin-bottom: 10px;">
-            <option value="activate">إحياء / تفعيل</option>
-            <option value="freeze">تجميد / ربط</option>
-            <option value="eliminate">إعدام للمقبرة</option>
+            <option value="activate">إحياء / تفعيل</option><option value="freeze">تجميد / ربط</option><option value="eliminate">إعدام للمقبرة</option>
         </select>
         <input type="text" name="bulk_reason" placeholder="سبب الإعدام أو التجميد..." class="admin-form-group" style="width: 100%; margin-bottom: 10px;">
         <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ على المحدد</button>
@@ -215,3 +240,4 @@
     }
 </script>
 {% endblock %}
+
