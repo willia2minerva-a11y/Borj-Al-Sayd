@@ -34,7 +34,7 @@ def check_lazy_death_and_bleed(user, settings):
     
     hours_passed = (now - getattr(user, 'last_active', user.created_at)).total_seconds() / 3600.0
     if hours_passed > 72:
-        user.health = 0; user.status = 'eliminated'; user.freeze_reason = 'ابتلعته الرمال المتحركة لغيابه 72 ساعة'
+        user.health = 0; user.status = 'eliminated'; user.freeze_reason = 'ابتلعته الرمال لغيابه 72 ساعة'
         user.save(); return
 
     if settings and getattr(settings, 'war_mode', False):
@@ -62,16 +62,25 @@ def check_locks_and_status():
         if not user: session.pop('user_id', None); session.pop('role', None)
         else: user.last_active = datetime.utcnow(); user.save()
 
+    # 🛠️ نظام الصيانة الذكي والمؤقت (لا يمس الحرب)
     if settings.maintenance_mode:
-        if not user and request.endpoint != 'home': return render_template('locked.html', message='جاري ترميم النقوش. ⏳')
-        elif user and getattr(user, 'role', '') != 'admin': return render_template('locked.html', message='جاري ترميم النقوش. ⏳')
+        now = datetime.utcnow()
+        if settings.maintenance_until and now > settings.maintenance_until:
+            settings.maintenance_mode = False; settings.maintenance_pages = []; settings.save()
+        else:
+            if not user or getattr(user, 'role', '') != 'admin':
+                ep = request.endpoint
+                if 'all' in settings.maintenance_pages or ep in settings.maintenance_pages:
+                    return render_template('locked.html', message='جاري ترميم ونقش هذه الصفحة. ستعود قريباً ⏳')
 
     if user:
         check_lazy_death_and_bleed(user, settings)
+        
         if user.quicksand_lock_until and datetime.utcnow() < user.quicksand_lock_until:
             time_left = user.quicksand_lock_until - datetime.utcnow()
             mins, secs = divmod(time_left.seconds, 60)
             return render_template('locked.html', message=f'مقيد لـ {mins}د و {secs}ث')
+            
         if getattr(user, 'gate_status', '') == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']:
             return render_template('gate_test.html', message=settings.gates_test_message, user=user)
 
@@ -82,6 +91,7 @@ def inject_notifications():
         notifs['war_settings'] = GlobalSettings.objects(setting_name='main_config').first()
         if getattr(notifs['war_settings'], 'war_mode', False): notifs['battle_logs'] = BattleLog.objects().order_by('-created_at')[:3]
     except: pass
+    
     if 'user_id' in session:
         try:
             user = User.objects(id=session['user_id']).first()
@@ -180,8 +190,7 @@ def logout(): session.clear(); return redirect(url_for('home'))
 @app.route('/profile')
 @login_required
 def profile():
-    user = User.objects(id=session['user_id']).first()
-    settings = GlobalSettings.objects(setting_name='main_config').first()
+    user = User.objects(id=session['user_id']).first(); settings = GlobalSettings.objects(setting_name='main_config').first()
     my_items = StoreItem.objects(name__in=user.inventory) if user.inventory else []
     return render_template('profile.html', user=user, banner_url=settings.banner_url if settings else '', my_items=my_items, my_seals=[i for i in my_items if i.item_type == 'seal'])
 
@@ -196,7 +205,7 @@ def update_settings():
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         now = datetime.utcnow()
-        if user.last_name_change and (now - user.last_name_change).days < 15: flash('يُسمح بالتغيير كل 15 يوماً فقط!', 'error')
+        if user.last_name_change and (now - user.last_name_change).days < 15: flash('يسمح بتغيير الاسم كل 15 يوماً فقط!', 'error')
         elif User.objects(username=new_name).first(): flash('الاسم مستخدم مسبقاً!', 'error')
         else: user.username = new_name; user.last_name_change = now; flash('تم تغيير الاسم بنجاح!', 'success')
     user.save(); return redirect(url_for('profile'))
@@ -231,8 +240,7 @@ def admin_update_profile(target_id):
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
 def transfer(target_id):
-    sender = User.objects(id=session['user_id']).first()
-    receiver = User.objects(hunter_id=target_id).first()
+    sender = User.objects(id=session['user_id']).first(); receiver = User.objects(hunter_id=target_id).first()
     if sender.status != 'active' or not receiver or receiver.status != 'active' or receiver.hunter_id not in sender.friends: return redirect(request.referrer)
     ttype = request.form.get('transfer_type')
     if ttype == 'points':
@@ -248,10 +256,8 @@ def transfer(target_id):
 def use_item(target_id):
     attacker = User.objects(id=session['user_id']).first()
     if attacker.status != 'active': return redirect(request.referrer)
-    target = User.objects(hunter_id=target_id).first()
-    settings = GlobalSettings.objects(setting_name='main_config').first()
-    item_name = request.form.get('item_name')
-    item = StoreItem.objects(name=item_name).first()
+    target = User.objects(hunter_id=target_id).first(); settings = GlobalSettings.objects(setting_name='main_config').first()
+    item_name = request.form.get('item_name'); item = StoreItem.objects(name=item_name).first()
     if not item or item_name not in attacker.inventory: return redirect(request.referrer)
     now = datetime.utcnow()
     
@@ -292,15 +298,14 @@ def use_item(target_id):
                 if 'حجاب' in i or 'درع' in i or 'عباءة' in i: has_shield = True; shield_name = i; break
             if has_shield: target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash('الهدف محمي! احترقت يدك.', 'error')
             else: target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash('تمت السرقة!', 'success')
-
     return redirect(request.referrer)
 
+# 🔍 محرك بحث الأصدقاء وإدارة الطلبات
 @app.route('/friends', methods=['GET'])
 @login_required
 def friends():
     user = User.objects(id=session['user_id']).first()
-    search_query = request.args.get('search')
-    search_result = None
+    search_query = request.args.get('search'); search_result = None
     if search_query:
         if search_query.isdigit(): search_result = User.objects(hunter_id=int(search_query)).first()
         else: search_result = User.objects(username__icontains=search_query).first()
@@ -325,14 +330,13 @@ def add_friend():
         return redirect(request.referrer)
         
     if target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
-        target.friend_requests.append(user.hunter_id); target.save(); flash('تم الإرسال', 'success')
+        target.friend_requests.append(user.hunter_id); target.save(); flash('تم إرسال الطلب', 'success')
     return redirect(request.referrer)
 
 @app.route('/cancel_friend/<int:target_id>', methods=['POST'])
 @login_required
 def cancel_friend(target_id):
-    user = User.objects(id=session['user_id']).first()
-    target = User.objects(hunter_id=target_id).first()
+    user = User.objects(id=session['user_id']).first(); target = User.objects(hunter_id=target_id).first()
     if target:
         if user.hunter_id in target.friend_requests: target.friend_requests.remove(user.hunter_id)
         elif target.hunter_id in user.friends: user.friends.remove(target.hunter_id); target.friends.remove(user.hunter_id)
@@ -417,9 +421,9 @@ def buy_item(item_id):
             outcome = random.randint(item.luck_min, item.luck_max); user.points += outcome
             if outcome > 0: flash(f'حظ موفق! حصلت على {outcome} نقطة', 'success')
             elif outcome < 0: flash(f'حظ سيء! خسرت {abs(outcome)} نقطة', 'error')
-            else: flash('صندوق فارغ!', 'info')
+            else: flash('الصندوق فارغ!', 'info')
         elif getattr(item, 'is_mirage', False):
-            flash(f'فخ السراب! {item.mirage_message}', 'error')
+            flash(item.mirage_message, 'error')
         else:
             user.inventory.append(item.name); flash('اشتريت الأداة بنجاح!', 'success')
         user.save()
@@ -435,9 +439,30 @@ def admin_panel():
     
     if request.method == 'POST':
         action = request.form.get('action')
-        if action == 'set_admin_hp':
-            admin_user = User.objects(id=session['user_id']).first(); admin_user.health = int(request.form.get('admin_hp', 100)); admin_user.save()
-            flash(f'💪 تم رفع صحتك الإمبراطورية!', 'success')
+        
+        # 🛠️ الصيانة الذكية المنفصلة
+        if action == 'setup_maintenance':
+            dur = int(request.form.get('m_duration', 0) or 0)
+            pages = request.form.getlist('m_pages')
+            if dur > 0 and pages:
+                settings.maintenance_mode = True
+                settings.maintenance_until = datetime.utcnow() + timedelta(minutes=dur)
+                settings.maintenance_pages = pages
+                flash('تم تشغيل الصيانة المجدولة!', 'success')
+            else:
+                settings.maintenance_mode = False; settings.maintenance_until = None; settings.maintenance_pages = []
+                flash('تم إيقاف الصيانة!', 'success')
+            settings.save()
+            
+        elif action == 'toggle_war':
+            settings.war_mode = not settings.war_mode
+            if not settings.war_mode:
+                User.objects(status='active').update(health=100); settings.dead_count = 0; BattleLog.objects.delete()
+            settings.save()
+            flash('تم تغيير حالة الحرب!', 'success')
+            
+        elif action == 'set_admin_hp':
+            admin_user = User.objects(id=session['user_id']).first(); admin_user.health = int(request.form.get('admin_hp', 100)); admin_user.save(); flash('💪 تم رفع صحتك الإمبراطورية!', 'success')
         elif action == 'toggle_final_battle': settings.final_battle_mode = not settings.final_battle_mode; settings.save()
         elif action == 'setup_gates':
             settings.gates_mode_active = True; settings.gates_selection_locked = bool(request.form.get('locked')); settings.gates_description = request.form.get('desc', ''); settings.gate_1_name = request.form.get('g1', ''); settings.gate_2_name = request.form.get('g2', ''); settings.gate_3_name = request.form.get('g3', ''); settings.gates_test_message = request.form.get('test_msg', ''); settings.save()
@@ -450,6 +475,7 @@ def admin_panel():
                 elif f == 'kill': u.status = 'eliminated'; u.freeze_reason = 'اختار بوابة الموت'
                 elif f == 'test': u.gate_status = 'testing'
                 u.save()
+            flash('تم الحكم!', 'success')
         elif action == 'judge_test_user':
             u = User.objects(id=request.form.get('user_id')).first()
             if u:
@@ -460,21 +486,13 @@ def admin_panel():
         elif action == 'punish_floor3_slackers':
             slackers = User.objects(has_voted=False, status='active', role='hunter')
             if slackers.count() > 0:
-                total_stolen = slackers.count() * 100
-                active_voters = User.objects(has_voted=True, status='active', role='hunter')
+                total_stolen = slackers.count() * 100; active_voters = User.objects(has_voted=True, status='active', role='hunter')
                 if active_voters.count() > 0:
                     bonus = total_stolen // active_voters.count()
                     for v in active_voters: v.survival_votes += bonus; v.save()
                 for s in slackers: s.status = 'eliminated'; s.freeze_reason = 'خائن لم يوزع أصواته'; s.save()
+                flash('أعدمت الكسالى!', 'success')
         elif action == 'toggle_global_news': settings.global_news_active = not settings.global_news_active; settings.global_news_text = request.form.get('global_news_text', ''); settings.save()
-        elif action == 'toggle_maintenance': settings.maintenance_mode = not settings.maintenance_mode; settings.save()
-        elif action == 'toggle_war':
-            settings.war_mode = not settings.war_mode
-            if not settings.war_mode:
-                User.objects(status='active').update(health=100)
-                settings.dead_count = 0
-                BattleLog.objects.delete()
-            settings.save()
         elif action == 'update_war_settings': settings.bleed_rate_minutes = int(request.form.get('bleed_rate_minutes', 60)); settings.bleed_amount = int(request.form.get('bleed_amount', 1)); settings.safe_time_minutes = int(request.form.get('safe_time_minutes', 120)); settings.save()
         elif action == 'update_nav_names': settings.nav_home = request.form.get('nav_home', settings.nav_home); settings.nav_profile = request.form.get('nav_profile', settings.nav_profile); settings.nav_friends = request.form.get('nav_friends', settings.nav_friends); settings.nav_news = request.form.get('nav_news', settings.nav_news); settings.nav_puzzles = request.form.get('nav_puzzles', settings.nav_puzzles); settings.nav_decs = request.form.get('nav_decs', settings.nav_decs); settings.nav_store = request.form.get('nav_store', settings.nav_store); settings.nav_grave = request.form.get('nav_grave', settings.nav_grave); settings.save()
         elif action == 'update_home_settings':
@@ -500,15 +518,6 @@ def admin_panel():
                     elif bulk_type == 'freeze': u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'مقيّد')
                     elif bulk_type == 'eliminate': u.status = 'eliminated'; u.freeze_reason = request.form.get('bulk_reason', 'هلك')
                     u.save()
-        elif action == 'add_inventory':
-            u = User.objects(id=request.form.get('user_id')).first()
-            if u and request.form.get('item_name') not in u.inventory: u.inventory.append(request.form.get('item_name')); u.save()
-        elif action == 'remove_inventory':
-            u = User.objects(id=request.form.get('user_id')).first()
-            if u and request.form.get('item_name') in u.inventory: u.inventory.remove(request.form.get('item_name')); u.save()
-        elif action == 'add_points':
-            u = User.objects(id=request.form.get('user_id')).first()
-            if u: u.points = int(request.form.get('points_amount', 0)); u.save()
             
         return redirect(url_for('admin_panel'))
         
@@ -516,10 +525,8 @@ def admin_panel():
     test_users = User.objects(gate_status='testing', status='active')
     gate_stats = {1: User.objects(chosen_gate=1, status='active').count(), 2: User.objects(chosen_gate=2, status='active').count(), 3: User.objects(chosen_gate=3, status='active').count()}
     floor3_leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:5] if settings.floor3_mode_active else []
-    pending_decs = News.objects(category='declaration', status='pending')
-    hidden_puzzles = News.objects(category='hidden')
     
-    return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders, pending_decs=pending_decs, hidden_puzzles=hidden_puzzles)
+    return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders)
 
 if __name__ == '__main__': app.run(debug=True)
 
