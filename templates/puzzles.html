@@ -1,54 +1,52 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-4-diamond);" class="translatable" data-ar="🧩 الألغاز والفخاخ" data-en="🧩 Puzzles & Traps">🧩 الألغاز والفخاخ</h2>
+<h2 style="color: var(--zone-4-diamond); text-align: center;">🧩 مخطوطات الألغاز</h2>
+<p style="text-align: center; color: var(--text-muted); font-size: 14px;">حل اللغز لتنال الجائزة... أو ربما اللعنة.</p>
 
-{% for p in puzzles_list %}
-<div class="hunter-card" style="padding: 0; border-color: {% if p.current_winners >= p.max_winners %}#e74c3c{% else %}var(--zone-4-diamond){% endif %};">
-    
-    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: {% if p.current_winners >= p.max_winners %}#e74c3c{% else %}var(--zone-4-diamond){% endif %};">
-        <span>
-            {{ p.title }}
-            {% if p.current_winners >= p.max_winners %}
-                <small style="color: #e74c3c; font-weight: bold; margin-right: 10px;">[مغلق - انتهت الجوائز]</small>
-            {% endif %}
-        </span>
-        
-        <div style="display: flex; gap: 10px; align-items: center;">
-            {% if session.get('role') == 'admin' %}
-            <form method="POST" action="/delete_news/{{ p.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد السحق؟');">
-                <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
-            </form>
-            {% endif %}
+{% if current_user.status != 'active' %}
+<div class="flash error" style="text-align: center;">👻 الأشباح فقدت عقولها، لا يمكنها كتابة حلول الألغاز!</div>
+{% endif %}
+
+<div style="margin-top: 20px;">
+    {% for puzzle in puzzles_list %}
+    <div class="hunter-card floor-3" style="margin-bottom: 20px; border-color: var(--zone-4-diamond);">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px;">
+            <strong style="color: #fff; font-size: 18px;">{{ puzzle.title }}</strong>
+            <span style="background: rgba(0, 153, 204, 0.2); color: var(--zone-4-diamond); padding: 3px 8px; border-radius: 4px; font-size: 12px;">
+                {{ puzzle.reward_points }} نقطة
+            </span>
         </div>
-    </div>
-    
-    <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-main); line-height: 1.6;">
-            {{ p.content | safe | replace('<img', '<img loading="lazy" decoding="async"') }}
-        </p>
+        
+        <p style="color: #e2e8f0; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ puzzle.content }}</p>
+        
+        <div style="margin-top: 15px; font-size: 12px; color: #aaa; text-align: left;">
+            الفائزون: {{ puzzle.current_winners }} / {{ puzzle.max_winners }}
+        </div>
 
-        {% if p.current_winners >= p.max_winners %}
-            <div style="background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; margin-top: 15px; border: 1px dashed #e74c3c; text-align: center;">
-                <h4 style="color: #e74c3c; margin: 0 0 5px 0;">لقد فاز الأذكى وانتهى اللغز!</h4>
-                {% if p.puzzle_type == 'secret_word' %}
-                    <span style="color: var(--text-muted);">الإجابة كانت: <strong style="color: #fff;">{{ p.puzzle_answer }}</strong></span>
-                {% endif %}
+        {% if current_user.id|string in puzzle.winners_list %}
+            <div style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; border: 1px dashed #2ecc71;">
+                لقد قمت بحل هذا اللغز مسبقاً! 🌟
             </div>
-            
-        {% elif p.puzzle_type == 'secret_word' %}
-            <div style="background:#222; padding:15px; border-radius:8px; margin-top:15px; border: 1px dashed var(--zone-4-diamond);">
-                <form method="POST" style="margin: 0; display: flex; gap: 5px;">
-                    <input type="hidden" name="puzzle_id" value="{{ p.id }}">
-                    <input type="text" name="guess" placeholder="اكتب الحل هنا..." required style="margin-bottom: 0;">
-                    <button type="submit" class="btn-primary" style="width:30%;">حل اللغز</button>
+        {% elif puzzle.current_winners >= puzzle.max_winners %}
+            <div style="background: rgba(231, 76, 60, 0.2); color: #e74c3c; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; border: 1px dashed #e74c3c;">
+                لقد انتهت الجوائز المخصصة لهذا اللغز.
+            </div>
+        {% else %}
+            {% if current_user.status == 'active' %}
+                <form action="/puzzles" method="POST" style="margin-top: 15px; display: flex; gap: 5px;">
+                    <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
+                    <input type="text" name="guess" placeholder="اكتب إجابتك هنا..." required style="flex-grow: 1; padding: 10px; background: #111; color: #fff; border: 1px solid #333; border-radius: 5px; outline: none;">
+                    <button type="submit" class="btn-primary" style="background: var(--zone-4-diamond); color: #000; width: auto; padding: 0 20px;">إرسال</button>
                 </form>
-            </div>
+            {% else %}
+                <div style="background: #111; color: #777; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; border: 1px dashed #333;">
+                    مربع الإجابة مقفل (شبح)
+                </div>
+            {% endif %}
         {% endif %}
-        <br>
     </div>
+    {% else %}
+    <div style="text-align: center; color: var(--text-muted);">لم يتم نقش أي ألغاز حالياً.</div>
+    {% endfor %}
 </div>
-{% else %}
-<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">لا توجد ألغاز حالياً... استعد للقادم.</p>
-{% endfor %}
 {% endblock %}
-
