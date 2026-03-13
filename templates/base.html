@@ -7,18 +7,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        /* ستايل الشريط الإخباري العام */
-        .global-news-ticker { background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); color: #e2e8f0; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; border-bottom: 2px solid #e74c3c; }
-        .global-news-ticker marquee { margin: 0; }
+        /* 🚨 ستايل الشريط الإخباري اللانهائي الاحترافي */
+        .ticker-wrap { width: 100%; background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); border-bottom: 2px solid #e74c3c; overflow: hidden; box-sizing: border-box; position: relative; z-index: 1000; padding: 10px 0; }
+        .ticker-move { display: inline-block; white-space: nowrap; animation: ticker 25s linear infinite; font-weight: bold; color: #e2e8f0; font-size: 14px; }
+        .ticker-move:hover { animation-play-state: paused; }
+        @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+        .flash-container { margin-top: 10px; }
+        main { margin-top: 10px; }
     </style>
 </head>
 <body>
     
     {% if war_settings and war_settings.global_news_active %}
-    <div class="global-news-ticker">
-        <marquee behavior="scroll" direction="right" scrollamount="6">
-            ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} ☠️
-        </marquee>
+    <div class="ticker-wrap">
+        <div class="ticker-move">
+            ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }}
+        </div>
     </div>
     {% endif %}
 
@@ -26,7 +30,7 @@
         <a href="/" class="logo translatable" data-ar="🏜️ متاهة سيفار" data-en="🏜️ Sephar Maze">🏜️ متاهة سيفار</a>
         
         <div style="display: flex; align-items: center; gap: 15px;">
-            {% if session.get('user_id') and current_user and war_settings and war_settings.war_mode %}
+            {% if session.get('user_id') and current_user and war_settings and war_settings.war_mode and current_user.role != 'admin' %}
             <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 8px; border: 1px solid #333;">
                 <span style="font-size: 10px; color: var(--text-muted); display: block; line-height: 1;">الدم</span>
                 <strong style="font-size: 14px; color: {% if current_user.health > 50 %}#2ecc71{% elif current_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">
@@ -51,7 +55,7 @@
     {% if session.get('user_id') %}
     <nav id="side-nav">
         {% if current_user and current_user.role == 'admin' %}
-        <a href="/admin" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);">👑 كهف القيادة (الإدارة)</a>
+        <a href="/admin" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);">👑 كهف القيادة</a>
         <hr style="border-color: #333; margin: 0; width: 100%;">
         {% endif %}
         
@@ -75,7 +79,6 @@
             <span>🐪 قافلة التجار (السوق)</span>
             {% if un_store and un_store > 0 %}<span class="notif-badge">{{ un_store }}</span>{% endif %}
         </a>
-        
         <a href="/graveyard" style="color: #e2e8f0;"><span>💀 المقبرة المنسية</span></a>
         
         <hr style="border-color: #333; margin: 0; width: 100%;">
@@ -88,6 +91,7 @@
             {% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
         {% endwith %}
     </div>
+    
     <main>{% block content %}{% endblock %}</main>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
