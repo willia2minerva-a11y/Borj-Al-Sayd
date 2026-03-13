@@ -1,47 +1,82 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-5-fire);">📢 تدوينات الرحالة (التصريحات)</h2>
-
-<div class="hunter-card" style="border-color: var(--zone-4-diamond); background: rgba(0, 238, 255, 0.05);">
-    <h4 style="margin-top: 0; color: var(--zone-4-diamond);">✍️ شارك أفكارك مع المتاهة</h4>
-    <form method="POST" enctype="multipart/form-data" style="margin: 0;">
-        <!-- حيلة برمجية: عنوان مخفي لمنع انهيار السيرفر -->
-        <input type="hidden" name="title" value="تصريح صياد">
-        
-        <textarea name="content" rows="4" placeholder="ماذا ستنشر أو بماذا ستصرح لباقي الصيادين؟" required style="margin-bottom: 10px; width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #111; color: #fff;"></textarea>
-        
-        <label style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 5px;">إرفاق رسمة أو نقش (اختياري):</label>
-        <input type="file" name="image_file" accept="image/*" style="margin-bottom: 15px;">
-        
-        <button type="submit" class="btn-primary" style="background: linear-gradient(45deg, var(--zone-4-diamond), #0099cc); color: #000; font-weight: bold;">إرسال التصريح</button>
-    </form>
-</div>
-
-<h3 style="color: var(--text-main); margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px;">📜 سجل المتاهة</h3>
-
-{% for n in decs %}
-<div class="hunter-card" style="padding: 0; border-color: var(--zone-5-fire);">
-    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: var(--zone-5-fire);">
-        <span style="color: var(--zone-3-gold);">بواسطة: {{ n.author }}</span>
-        
-        {% if session.get('role') == 'admin' %}
-        <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد سحق هذا التصريح؟');">
-            <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
-        </form>
-        {% endif %}
-    </div>
+<style>
+    /* ستايلات مستوحاة من فيسبوك بالوضع الليلي */
+    .fb-container { max-width: 600px; margin: auto; }
+    .fb-create-post { background: #242526; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .fb-input-wrapper { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; }
+    .fb-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #3a3b3c; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .fb-fake-input { flex-grow: 1; background: #3a3b3c; padding: 10px 15px; border-radius: 20px; color: #b0b3b8; cursor: pointer; font-size: 15px; text-align: right; }
+    .fb-fake-input:hover { background: #4e4f50; }
     
-    <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-main); font-style: normal; line-height: 1.6;">
-            {{ n.content | safe }}
-        </p>
-        {% if n.image_data %}
-            <img src="{{ n.image_data }}" style="width: 100%; border-radius: 8px; margin-top: 10px;" loading="lazy" decoding="async">
-        {% endif %}
-        <br>
+    /* نافذة النشر الحقيقية (تظهر عند الضغط) */
+    .post-modal { display: none; margin-top: 10px; border-top: 1px solid #3a3b3c; padding-top: 15px; }
+    .fb-real-input { width: 100%; background: transparent; border: none; color: #e4e6eb; font-size: 16px; outline: none; resize: none; margin-bottom: 10px; font-family: inherit; }
+    .fb-title-input { width: 100%; background: #3a3b3c; border: none; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    .fb-submit-btn { width: 100%; background: #2374e1; color: #fff; font-weight: bold; border: none; padding: 10px; border-radius: 5px; cursor: pointer; transition: 0.2s; }
+    .fb-submit-btn:hover { background: #3982e4; }
+
+    /* شكل المنشور */
+    .fb-post { background: #242526; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+    .fb-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .fb-post-name { color: #e4e6eb; font-weight: bold; font-size: 15px; text-decoration: none; }
+    .fb-post-time { color: #b0b3b8; font-size: 12px; }
+    .fb-post-title { color: #fff; font-size: 16px; margin: 0 0 10px 0; border-bottom: 1px solid #3a3b3c; padding-bottom: 5px; }
+    .fb-post-content { color: #e4e6eb; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+    .fb-post-img { width: 100%; border-radius: 8px; margin-top: 10px; max-height: 400px; object-fit: cover; }
+</style>
+
+<div class="fb-container">
+    <h2 style="color: var(--zone-3-gold); text-align: center;">📢 تدوينات الرحالة</h2>
+
+    {% if current_user and current_user.status == 'active' %}
+    <div class="fb-create-post">
+        <div class="fb-input-wrapper">
+            <div class="fb-avatar">
+                {% if current_user.avatar.startswith('data:') or current_user.avatar.startswith('http') %}
+                    <img src="{{ current_user.avatar }}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+                {% else %} {{ current_user.avatar }} {% endif %}
+            </div>
+            <div class="fb-fake-input" onclick="document.getElementById('postModal').style.display='block'">
+                بم تفكر يا {{ current_user.username }}؟
+            </div>
+        </div>
+
+        <div id="postModal" class="post-modal">
+            <form action="/declarations" method="POST" enctype="multipart/form-data">
+                <input type="text" name="title" class="fb-title-input" placeholder="عنوان التصريح..." required>
+                <textarea name="content" class="fb-real-input" rows="4" placeholder="اكتب ما يدور في ذهنك..." required></textarea>
+                <div style="margin-bottom: 10px; color: #b0b3b8; font-size: 13px;">
+                    <label>📷 إرفاق صورة (اختياري):</label><br>
+                    <input type="file" name="image_file" accept="image/*" style="margin-top: 5px;">
+                </div>
+                <button type="submit" class="fb-submit-btn">نشر</button>
+            </form>
+        </div>
     </div>
+    {% elif current_user and current_user.status != 'active' %}
+    <div class="hunter-card graveyard" style="text-align: center; margin-bottom: 20px;">
+        <p style="color: #e74c3c; margin: 0;">👻 الأشباح لا يمكنها التحدث أو كتابة التصريحات.</p>
+    </div>
+    {% endif %}
+
+    {% for dec in decs %}
+    <div class="fb-post">
+        <div class="fb-post-header">
+            <div class="fb-avatar" style="background: var(--zone-3-gold); color: #000;">👤</div>
+            <div>
+                <a href="#" class="fb-post-name">{{ dec.author }}</a>
+                <div class="fb-post-time">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+        </div>
+        <h4 class="fb-post-title">{{ dec.title }}</h4>
+        <div class="fb-post-content">{{ dec.content }}</div>
+        {% if dec.image_data %}
+            <img src="{{ dec.image_data }}" class="fb-post-img" alt="صورة مرفقة">
+        {% endif %}
+    </div>
+    {% else %}
+    <div style="text-align: center; color: var(--text-muted); margin-top: 30px;">لا توجد تصريحات بعد...</div>
+    {% endfor %}
 </div>
-{% else %}
-<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">الهدوء يسبق العاصفة... لا توجد تصريحات حالياً 🏜️</p>
-{% endfor %}
 {% endblock %}
