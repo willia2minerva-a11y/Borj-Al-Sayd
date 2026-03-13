@@ -80,7 +80,6 @@ def inject_notifications():
     notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'battle_logs': []}
     try:
         notifs['war_settings'] = GlobalSettings.objects(setting_name='main_config').first()
-        # جلب آخر 3 إصابات فقط
         if getattr(notifs['war_settings'], 'war_mode', False): notifs['battle_logs'] = BattleLog.objects().order_by('-created_at')[:3]
     except: pass
     if 'user_id' in session:
@@ -159,7 +158,7 @@ def submit_floor3_votes():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        if User.objects(username=request.form['username']).first(): flash('مستخدم.', 'error'); return redirect(url_for('register'))
+        if User.objects(username=request.form['username']).first(): flash('الاسم مستخدم.', 'error'); return redirect(url_for('register'))
         last_u = User.objects.order_by('-hunter_id').first()
         new_id = (last_u.hunter_id + 1) if last_u else 1000
         User(hunter_id=new_id, username=request.form['username'], password_hash=generate_password_hash(request.form['password']), role='admin' if new_id==1000 else 'hunter').save()
@@ -172,7 +171,7 @@ def login():
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(user.password_hash, request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); session['role'] = user.role; return redirect(url_for('home'))
-        flash('خطأ.', 'error')
+        flash('بيانات خاطئة.', 'error')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -197,9 +196,9 @@ def update_settings():
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         now = datetime.utcnow()
-        if user.last_name_change and (now - user.last_name_change).days < 15: flash('كل 15 يوم!', 'error')
-        elif User.objects(username=new_name).first(): flash('مستخدم!', 'error')
-        else: user.username = new_name; user.last_name_change = now; flash('تغير!', 'success')
+        if user.last_name_change and (now - user.last_name_change).days < 15: flash('يُسمح بالتغيير كل 15 يوماً فقط!', 'error')
+        elif User.objects(username=new_name).first(): flash('الاسم مستخدم مسبقاً!', 'error')
+        else: user.username = new_name; user.last_name_change = now; flash('تم تغيير الاسم بنجاح!', 'success')
     user.save(); return redirect(url_for('profile'))
 
 @app.route('/hunter/<int:target_id>')
@@ -219,13 +218,13 @@ def admin_update_profile(target_id):
     target_user = User.objects(hunter_id=target_id).first()
     if target_user:
         action = request.form.get('action')
-        if action == 'edit_name': target_user.username = request.form.get('new_name'); flash('تم!', 'success')
-        elif action == 'edit_points': target_user.points = int(request.form.get('new_points', 0)); flash('تم!', 'success')
+        if action == 'edit_name': target_user.username = request.form.get('new_name'); flash('تم التعديل!', 'success')
+        elif action == 'edit_points': target_user.points = int(request.form.get('new_points', 0)); flash('تم التعديل!', 'success')
         elif action == 'edit_hp':
             target_user.health = int(request.form.get('new_hp', 0))
             if target_user.health <= 0: target_user.health = 0; target_user.status = 'eliminated'
             elif target_user.status == 'eliminated': target_user.status = 'active'
-            flash('تم!', 'success')
+            flash('تم التعديل!', 'success')
         target_user.save()
     return redirect(url_for('hunter_profile', target_id=target_id))
 
@@ -238,10 +237,10 @@ def transfer(target_id):
     ttype = request.form.get('transfer_type')
     if ttype == 'points':
         amt = int(request.form.get('amount', 0))
-        if 0 < amt <= sender.points: sender.points -= amt; receiver.points += amt; sender.save(); receiver.save(); flash('تُحول!', 'success')
+        if 0 < amt <= sender.points: sender.points -= amt; receiver.points += amt; sender.save(); receiver.save(); flash('تم التحويل!', 'success')
     elif ttype == 'item':
         itm = request.form.get('item_name')
-        if itm in sender.inventory: sender.inventory.remove(itm); receiver.inventory.append(itm); sender.save(); receiver.save(); flash('أُرسل!', 'success')
+        if itm in sender.inventory: sender.inventory.remove(itm); receiver.inventory.append(itm); sender.save(); receiver.save(); flash('تم الإرسال!', 'success')
     return redirect(request.referrer)
 
 @app.route('/use_item/<int:target_id>', methods=['POST'])
@@ -261,8 +260,8 @@ def use_item(target_id):
             attacker.destroyed_seals += 1; attacker.inventory.remove(item_name)
             if attacker.destroyed_seals >= 4:
                 settings.war_mode = False; settings.final_battle_mode = False; settings.save()
-                User.objects(status='active').update(health=100); flash('دُمرت اللعنة!', 'success')
-            else: flash('دُمر الختم!', 'success')
+                User.objects(status='active').update(health=100); flash('لقد دمرت اللعنة!', 'success')
+            else: flash('تم تدمير الختم!', 'success')
             attacker.save()
         return redirect(request.referrer)
 
@@ -273,17 +272,17 @@ def use_item(target_id):
             target.health -= item.effect_amount
             if target.health <= 0: target.health = 0; target.status = 'eliminated'; settings.dead_count += 1; settings.save()
             BattleLog(victim_name=target.username, weapon_name=item.name, remaining_hp=target.health).save()
-            target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save(); flash('ضُرب!', 'success')
+            target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save(); flash('تمت الضربة!', 'success')
             
     elif item.item_type == 'heal':
         if target.id == attacker.id or target.hunter_id in attacker.friends:
             if target.role == 'admin': target.health += item.effect_amount
             else: target.health = min(100, target.health + item.effect_amount)
-            target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save(); flash('عُولج!', 'success')
+            target.save(); attacker.inventory.remove(item_name); attacker.last_action_time = now; attacker.save(); flash('تم العلاج!', 'success')
 
     elif item.item_type == 'spy':
-        if any('حجاب' in i or 'درع' in i for i in target.inventory): attacker.inventory.remove(item_name); attacker.save(); flash('محمي!', 'error')
-        else: attacker.tajis_eye_until = now + timedelta(hours=1); attacker.inventory.remove(item_name); attacker.save(); flash('فُتحت عينك!', 'success')
+        if any('حجاب' in i or 'درع' in i for i in target.inventory): attacker.inventory.remove(item_name); attacker.save(); flash('الهدف محمي بحجاب!', 'error')
+        else: attacker.tajis_eye_until = now + timedelta(hours=1); attacker.inventory.remove(item_name); attacker.save(); flash('فُتحت عين تاجيس!', 'success')
 
     elif item.item_type == 'steal':
         stolen_item = request.form.get('target_item')
@@ -291,12 +290,11 @@ def use_item(target_id):
             has_shield = False; shield_name = ""
             for i in target.inventory:
                 if 'حجاب' in i or 'درع' in i or 'عباءة' in i: has_shield = True; shield_name = i; break
-            if has_shield: target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash('محمي!', 'error')
-            else: target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash('سُرق!', 'success')
+            if has_shield: target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash('الهدف محمي! احترقت يدك.', 'error')
+            else: target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash('تمت السرقة!', 'success')
 
     return redirect(request.referrer)
 
-# 🔍 تم إصلاح محرك بحث الأصدقاء هنا
 @app.route('/friends', methods=['GET'])
 @login_required
 def friends():
@@ -319,15 +317,15 @@ def add_friend():
         
     if getattr(target, 'role', '') in ['ghost', 'cursed_ghost']:
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target.hunter_id)).first()
-        if getattr(target, 'role', '') == 'cursed_ghost' and trap: user.points -= trap.trap_penalty_points; user.save(); flash('شبح ملعون!', 'error')
+        if getattr(target, 'role', '') == 'cursed_ghost' and trap: user.points -= trap.trap_penalty_points; user.save(); flash('أيقظت شبحاً ملعوناً!', 'error')
         elif trap and str(user.id) not in trap.winners_list and trap.current_winners < trap.max_winners:
             if trap.reward_points > 0: user.points += trap.reward_points
             user.stats_ghosts_caught += 1; trap.current_winners += 1; trap.winners_list.append(str(user.id))
-            user.save(); trap.save(); check_achievements(user); flash('اصطدت شبحاً!', 'success')
+            user.save(); trap.save(); check_achievements(user); flash('اصطدت شبحاً بنجاح!', 'success')
         return redirect(request.referrer)
         
     if target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
-        target.friend_requests.append(user.hunter_id); target.save(); flash('أُرسل', 'success')
+        target.friend_requests.append(user.hunter_id); target.save(); flash('تم الإرسال', 'success')
     return redirect(request.referrer)
 
 @app.route('/cancel_friend/<int:target_id>', methods=['POST'])
@@ -338,7 +336,7 @@ def cancel_friend(target_id):
     if target:
         if user.hunter_id in target.friend_requests: target.friend_requests.remove(user.hunter_id)
         elif target.hunter_id in user.friends: user.friends.remove(target.hunter_id); target.friends.remove(user.hunter_id)
-        user.save(); target.save(); flash('أُلغي', 'success')
+        user.save(); target.save(); flash('تم الإلغاء', 'success')
     return redirect(request.referrer)
 
 @app.route('/accept_friend/<int:friend_id>')
@@ -350,7 +348,7 @@ def accept_friend(friend_id):
         if f and f.status != 'active': user.friend_requests.remove(friend_id); user.save(); return redirect(request.referrer)
         user.friend_requests.remove(friend_id); user.friends.append(friend_id)
         if f: f.friends.append(user.hunter_id); f.save()
-        user.save(); check_achievements(user); flash('قُبل!', 'success')
+        user.save(); check_achievements(user); flash('تم القبول! 🤝', 'success')
     return redirect(request.referrer)
 
 @app.route('/news')
@@ -364,25 +362,27 @@ def news():
 def puzzles():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
-        if user.status != 'active': return redirect(url_for('puzzles')) # حظر الأشباح من حل الألغاز
+        if user.status != 'active': return redirect(url_for('puzzles'))
         guess = request.form.get('guess'); puzzle = News.objects(id=request.form.get('puzzle_id')).first()
         if puzzle and guess == puzzle.puzzle_answer and str(user.id) not in puzzle.winners_list:
             user.points += puzzle.reward_points; user.stats_puzzles_solved += 1; puzzle.winners_list.append(str(user.id))
-            puzzle.save(); user.save(); flash('صحيح!', 'success')
+            puzzle.save(); user.save(); flash('إجابة صحيحة!', 'success')
         return redirect(url_for('puzzles'))
     user.last_seen_puzzles = datetime.utcnow(); user.save()
     return render_template('puzzles.html', puzzles_list=News.objects(category='puzzle', status='approved').order_by('-created_at'))
 
-# 🔗 حظر الأشباح من الروابط السرية للجوائز
 @app.route('/secret_link/<puzzle_id>')
 @login_required
 def secret_link(puzzle_id):
     user = User.objects(id=session['user_id']).first()
     if user.status != 'active': return redirect(request.referrer)
     puzzle = News.objects(id=puzzle_id).first()
-    if puzzle and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
+    if puzzle and puzzle.puzzle_type == 'quicksand_trap':
+        user.quicksand_lock_until = datetime.utcnow() + timedelta(minutes=puzzle.trap_duration_minutes)
+        user.save(); flash('وقعت في فخ الرمال المتحركة!', 'error')
+    elif puzzle and str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
         user.points += puzzle.reward_points; puzzle.current_winners += 1; puzzle.winners_list.append(str(user.id))
-        user.save(); puzzle.save(); flash('جائزة سرية!', 'success')
+        user.save(); puzzle.save(); flash('حصلت على جائزة سرية!', 'success')
     return redirect(request.referrer)
 
 @app.route('/declarations', methods=['GET', 'POST'])
@@ -390,10 +390,11 @@ def secret_link(puzzle_id):
 def declarations():
     user = User.objects(id=session['user_id']).first()
     if request.method == 'POST':
-        if user.status != 'active': return redirect(url_for('declarations')) # حظر الأشباح من النشر
+        if user.status != 'active': return redirect(url_for('declarations'))
         img_b64 = ''; file = request.files.get('image_file')
         if file and file.filename != '': img_b64 = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
-        News(title=request.form.get('title'), content=request.form.get('content', '').strip(), image_data=img_b64, category='declaration', author=user.username, status='approved' if getattr(user, 'role', '') == 'admin' else 'pending').save()
+        content_text = request.form.get('content', '').strip() or ' '
+        News(title=f"تصريح من {user.username}", content=content_text, image_data=img_b64, category='declaration', author=user.username, status='approved' if getattr(user, 'role', '') == 'admin' else 'pending').save()
         flash('تم النشر', 'success'); return redirect(url_for('declarations'))
     user.last_seen_decs = datetime.utcnow(); user.save()
     return render_template('declarations.html', decs=News.objects(category='declaration', status='approved').order_by('-created_at'), current_user=user)
@@ -408,10 +409,20 @@ def store():
 @login_required
 def buy_item(item_id):
     user = User.objects(id=session['user_id']).first()
-    if user.status != 'active': return redirect(url_for('store')) # حظر الأشباح من الشراء
+    if user.status != 'active': return redirect(url_for('store'))
     item = StoreItem.objects(id=item_id).first()
     if user and item and user.points >= item.price:
-        user.points -= item.price; user.inventory.append(item.name); user.save(); flash('اشتريت الأداة!', 'success')
+        user.points -= item.price
+        if getattr(item, 'is_luck', False):
+            outcome = random.randint(item.luck_min, item.luck_max); user.points += outcome
+            if outcome > 0: flash(f'حظ موفق! حصلت على {outcome} نقطة', 'success')
+            elif outcome < 0: flash(f'حظ سيء! خسرت {abs(outcome)} نقطة', 'error')
+            else: flash('صندوق فارغ!', 'info')
+        elif getattr(item, 'is_mirage', False):
+            flash(f'فخ السراب! {item.mirage_message}', 'error')
+        else:
+            user.inventory.append(item.name); flash('اشتريت الأداة بنجاح!', 'success')
+        user.save()
     return redirect(url_for('store'))
 
 @app.route('/graveyard')
@@ -457,20 +468,19 @@ def admin_panel():
                 for s in slackers: s.status = 'eliminated'; s.freeze_reason = 'خائن لم يوزع أصواته'; s.save()
         elif action == 'toggle_global_news': settings.global_news_active = not settings.global_news_active; settings.global_news_text = request.form.get('global_news_text', ''); settings.save()
         elif action == 'toggle_maintenance': settings.maintenance_mode = not settings.maintenance_mode; settings.save()
-        
-        # ⚠️ مسح السجلات عند إيقاف الحرب
         elif action == 'toggle_war':
             settings.war_mode = not settings.war_mode
             if not settings.war_mode:
-                User.objects(status='active').update(health=100) # إعادة الدم للناجين
+                User.objects(status='active').update(health=100)
                 settings.dead_count = 0
-                BattleLog.objects.delete() # 🗑️ مسح سجلات الطعن القديمة
+                BattleLog.objects.delete()
             settings.save()
-            
         elif action == 'update_war_settings': settings.bleed_rate_minutes = int(request.form.get('bleed_rate_minutes', 60)); settings.bleed_amount = int(request.form.get('bleed_amount', 1)); settings.safe_time_minutes = int(request.form.get('safe_time_minutes', 120)); settings.save()
         elif action == 'update_nav_names': settings.nav_home = request.form.get('nav_home', settings.nav_home); settings.nav_profile = request.form.get('nav_profile', settings.nav_profile); settings.nav_friends = request.form.get('nav_friends', settings.nav_friends); settings.nav_news = request.form.get('nav_news', settings.nav_news); settings.nav_puzzles = request.form.get('nav_puzzles', settings.nav_puzzles); settings.nav_decs = request.form.get('nav_decs', settings.nav_decs); settings.nav_store = request.form.get('nav_store', settings.nav_store); settings.nav_grave = request.form.get('nav_grave', settings.nav_grave); settings.save()
-        elif action == 'update_home_settings': settings.home_title = request.form.get('home_title', 'البوابة'); settings.home_color = request.form.get('home_color', 'var(--zone-0-black)'); file = request.files.get('banner_file'); 
-        if action == 'update_home_settings' and file and file.filename != '': settings.banner_url = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; settings.save()
+        elif action == 'update_home_settings':
+            settings.home_title = request.form.get('home_title', 'البوابة'); settings.home_color = request.form.get('home_color', 'var(--zone-0-black)'); file = request.files.get('banner_file'); 
+            if file and file.filename != '': settings.banner_url = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+            settings.save()
         elif action == 'add_news': News(title=request.form.get('title'), content=request.form.get('content'), category='puzzle' if request.form.get('puzzle_type') != 'none' else 'news', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points', 0)), max_winners=int(request.form.get('max_winners', 1))).save()
         elif action == 'add_standalone_puzzle':
             ptype = request.form.get('puzzle_type'); panswer = request.form.get('puzzle_answer', '')
@@ -479,7 +489,7 @@ def admin_panel():
         elif action == 'add_store_item':
             item = StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price')), item_type=request.form.get('item_type', 'normal'), effect_amount=int(request.form.get('effect_amount', 0) or 0), is_mirage=bool(request.form.get('is_mirage')), mirage_message=request.form.get('mirage_message', ''), is_luck=bool(request.form.get('is_luck')), luck_min=int(request.form.get('luck_min', 0) or 0), luck_max=int(request.form.get('luck_max', 0) or 0))
             file = request.files.get('item_image')
-            if file: item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
+            if file and file.filename != '': item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
             item.save()
         elif action == 'bulk_action':
             selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
