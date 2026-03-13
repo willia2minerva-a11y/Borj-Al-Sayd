@@ -4,143 +4,51 @@
     <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
     
     <div class="avatar-ring {{ zone_class }}" style="margin-top: -60px;">
-        <div class="emoji-avatar">{{ target_user.avatar }}</div>
+        {% if target_user.avatar.startswith('data:image') or target_user.avatar.startswith('http') %}
+            <img src="{{ target_user.avatar }}" alt="Avatar" crossorigin="anonymous" loading="lazy">
+        {% else %}
+            <div class="emoji-avatar">{{ target_user.avatar }}</div>
+        {% endif %}
     </div>
 
     <h2 style="margin-bottom: 5px;">{{ target_user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ target_user.hunter_id }}</span></h2>
 
-    {% if war_settings and war_settings.war_mode %}
-    <div style="margin-top: 15px; width: 80%; margin-left: auto; margin-right: auto;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
-            <span>الصحة (HP)</span>
-            <span class="neon-number" style="color: {% if target_user.health > 50 %}#2ecc71{% elif target_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">{{ target_user.health }}/100</span>
-        </div>
-        <div style="width: 100%; background: #222; border-radius: 10px; height: 12px; overflow: hidden; border: 1px solid #111;">
-            <div style="height: 100%; width: {{ target_user.health }}%; background: {% if target_user.health > 50 %}#2ecc71{% elif target_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s;"></div>
-        </div>
+    {% if current_user.role == 'admin' %}
+    <div style="background: rgba(255,0,0,0.1); padding: 10px; border: 1px dashed #e74c3c; margin: 15px 0; border-radius: 8px;">
+        <strong style="color: #e74c3c; font-size: 12px;">👑 تعديل الآدمن:</strong>
+        <form method="POST" action="/admin_update_profile/{{ target_user.hunter_id }}" style="display:flex; gap:5px; margin-top:5px;">
+            <input type="hidden" name="action" value="edit_name">
+            <input type="text" name="new_name" value="{{ target_user.username }}" style="width:70%;">
+            <button type="submit" class="btn-primary" style="width:30%; padding:5px;">اسم</button>
+        </form>
+        <form method="POST" action="/admin_update_profile/{{ target_user.hunter_id }}" style="display:flex; gap:5px; margin-top:5px;">
+            <input type="hidden" name="action" value="edit_points">
+            <input type="number" name="new_points" value="{{ target_user.points }}" style="width:70%;">
+            <button type="submit" class="btn-primary" style="width:30%; padding:5px;">نقاط</button>
+        </form>
+        <form method="POST" action="/admin_update_profile/{{ target_user.hunter_id }}" style="display:flex; gap:5px; margin-top:5px;">
+            <input type="hidden" name="action" value="edit_hp">
+            <input type="number" name="new_hp" value="{{ target_user.health }}" style="width:70%;">
+            <button type="submit" class="btn-primary" style="width:30%; padding:5px;">دم HP</button>
+        </form>
     </div>
     {% endif %}
 
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
-    
-    <div style="display: flex; justify-content: space-around; align-items: flex-start;">
-        <div>
-            <span style="color: var(--text-muted); font-size:12px;">النقاط</span><br>
-            <strong class="neon-number" id="target-points" style="font-size: 28px;">
-                {% if war_settings and war_settings.final_battle_mode and current_user.role != 'admin' %}
-                    ???
-                {% else %}
-                    {{ target_user.points }}
-                {% endif %}
-            </strong>
-        </div>
-        <div>
-            <span style="color: var(--text-muted); font-size:12px;">الحالة</span><br>
-            <strong style="font-size: 16px; color: {{ '#2ecc71' if target_user.status == 'active' else '#e74c3c' }};">{{ 'مقصي 💀' if target_user.status != 'active' else 'نشط 🟢' }}</strong>
-        </div>
+    <div style="display: flex; justify-content: space-around;">
+        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ target_user.points }}</strong></div>
+        <div><span style="color: var(--text-muted); font-size:12px;">الحالة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if target_user.status == 'active' else '#e74c3c' }};">{{ 'مقصي 💀' if target_user.status != 'active' else 'نشط 🟢' }}</strong></div>
     </div>
     
-    <!-- منطقة الأسرار: تظهر فقط للمسؤول أو للجاسوس (عين تاجيس) -->
-    <div id="secret-zone" style="display: none; margin-top: 20px; background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #3498db;">
-        <h4 style="margin-top: 0; color: #3498db;">👁️ رؤية تاجيس (محتويات حقيبته)</h4>
-        <div style="font-size: 12px; color: #fff; text-align: right;">
-            {% if target_user.inventory %}
-                <ul style="margin:0; padding-right:15px;">
-                    {% for item in target_user.inventory %}<li>{{ item }}</li>{% endfor %}
-                </ul>
-            {% else %}
-                (الحقيبة فارغة)
-            {% endif %}
-        </div>
-    </div>
-
-    {% if target_user.status != 'eliminated' and current_user.id|string != target_user.id|string %}
+    {% if current_user.id|string != target_user.id|string %}
     <div style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #333;">
-        
-        <!-- التجسس والسرقة (دائماً متاحة) -->
-        {% if my_spies %}
-            <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px;">
-                <input type="hidden" name="item_name" value="{{ my_spies[0].name }}">
-                <button type="submit" class="btn-primary" style="background: #3498db; width: 100%;">استخدام ({{ my_spies[0].name }}) للتجسس 👁️</button>
-            </form>
-        {% endif %}
-        
-        {% if my_steals %}
-            <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px; display: flex; gap: 5px;">
-                <input type="hidden" name="item_name" value="{{ my_steals[0].name }}">
-                <input type="text" name="target_item" placeholder="اسم الغرض لسرقته (راقب حقيبته أولاً)" required style="width: 70%; padding: 8px;">
-                <button type="submit" class="btn-primary" style="background: #9b59b6; width: 30%;">سرقة 🖐️</button>
-            </form>
-        {% endif %}
-
         {% if target_user.hunter_id in current_user.friends %}
-            <!-- سوق الحلفاء (تهريب) -->
-            <div style="background: #111; padding: 10px; border: 1px solid var(--zone-3-gold); border-radius: 8px; margin-bottom: 10px;">
-                <strong style="color: var(--zone-3-gold); font-size: 12px;">🤝 تهريب الحلفاء (السوق السوداء)</strong>
-                <form method="POST" action="/transfer/{{ target_user.hunter_id }}" style="margin-top: 10px; display: flex; flex-direction: column; gap: 5px;">
-                    <select name="transfer_type" style="padding: 5px;" onchange="document.getElementById('tr-amt').style.display = this.value=='points'?'block':'none'; document.getElementById('tr-itm').style.display = this.value=='item'?'block':'none';">
-                        <option value="points">تحويل نقاط سري</option>
-                        <option value="item">تحويل أداة/سلاح سري</option>
-                    </select>
-                    <input type="number" name="amount" id="tr-amt" placeholder="المبلغ..." style="padding: 5px;">
-                    <input type="text" name="item_name" id="tr-itm" placeholder="اسم الأداة من حقيبتك..." style="padding: 5px; display: none;">
-                    <button type="submit" class="btn-primary" style="background: #e67e22; padding: 5px;">إرسال فوري 📦</button>
-                </form>
-            </div>
-            
-            {% if war_settings and war_settings.war_mode and my_heals %}
-                <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px; display: flex; gap: 5px;">
-                    <select name="item_name" style="width: 70%; padding: 8px;">{% for h in my_heals %}<option value="{{ h.name }}">{{ h.name }}</option>{% endfor %}</select>
-                    <button type="submit" class="btn-primary" style="background: #2ecc71; width: 30%;">علاج 🧪</button>
-                </form>
-            {% endif %}
-            
-            <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}" style="margin: 0;" onsubmit="return confirm('إلغاء التحالف سيسمح لك بطعنه! متأكد؟');">
-                <button type="submit" class="btn-danger" style="width: 100%; padding: 10px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c;">إلغاء التحالف (غدر 💔)</button>
-            </form>
-
+            <form method="POST" action="/cancel_friend/{{ target_user.hunter_id }}"><button type="submit" class="btn-danger" style="width: 100%;">إلغاء التحالف 💔</button></form>
         {% else %}
-            {% if war_settings and war_settings.war_mode and my_weapons %}
-                <form method="POST" action="/use_item/{{ target_user.hunter_id }}" style="margin-bottom: 10px; display: flex; gap: 5px;">
-                    <select name="item_name" style="width: 70%; padding: 8px; background: #2c0b0b; border-color: #e74c3c; color: #fff;">
-                        {% for w in my_weapons %}<option value="{{ w.name }}">{{ w.name }}</option>{% endfor %}
-                    </select>
-                    <button type="submit" class="btn-primary" style="background: #e74c3c; width: 30%;">طعن مجهول 🗡️</button>
-                </form>
-            {% endif %}
-            <form method="POST" action="/add_friend" style="margin: 0;">
-                <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
-                <button type="submit" class="btn-primary" style="padding: 10px; background: linear-gradient(45deg, var(--zone-4-diamond), #0099cc); color: #000;">إرسال طلب تحالف 🤝</button>
-            </form>
+            <form method="POST" action="/add_friend"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-primary" style="width: 100%;">إرسال طلب تحالف 🤝</button></form>
         {% endif %}
     </div>
     {% endif %}
 </div>
-
-<!-- سكريبت التجسس وإخفاء النقاط -->
-<script>
-    const isAdmin = {{ 'true' if current_user.role == 'admin' else 'false' }};
-    const isFinalBattle = {{ 'true' if war_settings and war_settings.final_battle_mode else 'false' }};
-    const targetPoints = "{{ target_user.points }}";
-    
-    // فحص وقت انتهاء التجسس (عين تاجيس)
-    const tajisUntilStr = "{{ current_user.tajis_eye_until.isoformat() if current_user.tajis_eye_until else '' }}";
-    let isSpying = false;
-    
-    if (tajisUntilStr && tajisUntilStr !== 'None') {
-        const tajisTime = new Date(tajisUntilStr + "Z").getTime();
-        if (tajisTime > Date.now()) {
-            isSpying = true;
-        }
-    }
-    
-    // إظهار الحقيبة والنقاط الحقيقية إذا كان جاسوساً أو أدمن
-    if (isAdmin || isSpying) {
-        document.getElementById('secret-zone').style.display = 'block';
-        if(isFinalBattle) {
-            document.getElementById('target-points').innerText = targetPoints + " 👁️";
-            document.getElementById('target-points').style.color = "#3498db";
-        }
-    }
-</script>
 {% endblock %}
+
