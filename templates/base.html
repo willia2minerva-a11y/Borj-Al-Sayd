@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        .global-news-ticker { background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); color: #e2e8f0; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; border-bottom: 2px solid #e74c3c; }
+        /* ستايل الشريط الإخباري العام */
+        .global-news-ticker { background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); color: #e2e8f0; padding: 10px; text-align: center; font-weight: bold; font-size: 14px; border-bottom: 2px solid #e74c3c; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.2); position: relative; z-index: 1000; overflow: hidden; }
         .global-news-ticker marquee { margin: 0; }
         .flash-container { margin-top: 10px; }
         main { margin-top: 10px; }
@@ -74,10 +75,11 @@
                 <span>{{ war_settings.nav_store if war_settings else '🐪 المتجر' }}</span>
                 {% if un_store and un_store > 0 %}<span class="notif-badge">{{ un_store }}</span>{% endif %}
             </a>
+            
             <a href="/graveyard" style="color: #e2e8f0;"><span>{{ war_settings.nav_grave if war_settings else '💀 المقبرة' }}</span></a>
             
             <hr style="border-color: #333; margin: 0; width: 100%;">
-            <a href="/logout" style="color: #ff4444;"><span>🚪 تسجيل الخروج</span></a>
+            <a href="/logout" style="color: #ff4444;"><span>🚪 خروج</span></a>
         {% else %}
             <a href="/login"><span>🔑 تسجيل الدخول</span></a>
             <a href="/register"><span>📜 إنشاء حساب</span></a>
@@ -89,7 +91,9 @@
             {% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
         {% endwith %}
     </div>
+    
     <main>{% block content %}{% endblock %}</main>
+    
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
-    </html>
+</html>
