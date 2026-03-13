@@ -1,102 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <style>
-    /* 🖼️ ستايل الغلاف الكلاسيكي مع النص الطافي فوقه */
-    .home-banner-container { position: relative; margin-top: 10px; margin-bottom: 25px; text-align: center; }
-    .home-banner { width: 100%; max-height: 250px; object-fit: cover; border-radius: 12px; border: 2px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-    .home-title { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); margin: 0; width: 100%; z-index: 10; text-shadow: 2px 2px 4px #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000; }
-
-    /* 🗂️ ستايل خانات الوصول السريع (6 مربعات متناسقة) */
-    .hub-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; margin-top: 20px; }
-    .hub-card { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px; text-align: center; color: #fff; text-decoration: none; transition: all 0.3s; display: flex; flex-direction: column; gap: 8px; justify-content: center; align-items: center; }
-    .hub-card:hover { background: #222; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); border-color: var(--zone-3-gold); }
-    .hub-icon { font-size: 35px; }
-
-    /* 🚨 تأثير النبض للنصوص التحذيرية الجديدة */
-    @keyframes pulseAlert { 0% { opacity: 1; } 50% { opacity: 0.4; text-shadow: 0 0 8px currentColor; } 100% { opacity: 1; } }
-    .alert-text { font-size: 11px; margin-top: 2px; animation: pulseAlert 1.5s infinite; font-weight: bold; }
-
-    /* 🛑 ستايلات المودات الخاصة (مخفية افتراضياً) */
-    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
+    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 25px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
     .gates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
     .gate-card { background: #111; border: 2px solid #333; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; }
     .gate-card:hover { border-color: #e74c3c; transform: translateY(-3px); }
     .gate-card.locked { opacity: 0.5; cursor: not-allowed; border-color: #222 !important; transform: none !important; }
-    
-    .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+    .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
     .vote-input-group { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
     .vote-input-group input { padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 13px; }
 </style>
 
-<div class="home-banner-container">
-    {% if settings.banner_url %}
-        <img src="{{ settings.banner_url }}" class="home-banner" alt="Maze Banner" crossorigin="anonymous">
-    {% endif %}
-    <h1 class="translatable home-title" data-ar="{{ settings.home_title }}" data-en="SEPHAR" style="color: {{ settings.home_color }};">
-        {{ settings.home_title if settings else 'بوابة سيفار' }}
-    </h1>
-</div>
-
-{% if not session.get('user_id') %}
-<div class="hunter-card" style="text-align: center; border-color: var(--zone-3-gold); padding: 30px 20px;">
-    <h2 style="color: var(--zone-3-gold); margin-top: 0;">أهلاً بك في متاهة سيفار</h2>
-    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 20px;">النقوش تنتظر من يقرأها، والأسرار تنتظر من يكتشفها. ادخل إن كنت تملك الشجاعة.</p>
-    <div style="display: flex; gap: 10px; justify-content: center;">
-        <a href="/login" class="btn-primary" style="width: 45%;">دخول 🔑</a>
-        <a href="/register" class="btn-primary" style="width: 45%; background: #444;">مستكشف جديد 📜</a>
-    </div>
+{% if war_settings and war_settings.war_mode %}
+<div style="background: #8b0000; color: #fff; padding: 10px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; overflow: hidden; white-space: nowrap; border: 1px solid #ff4d4d; box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);">
+    <marquee scrollamount="6" style="font-size: 14px;">
+        🚨 <span style="color: #ff9999;">تنبيه المتاهة:</span> حرب الإبادة مشتعلة! النزيف التلقائي مفعل. احمِ ظهرك! 🚨
+        {% if battle_logs %}
+            {% for log in battle_logs %}
+                &nbsp;&nbsp;&nbsp; ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة <span style="color:#ffcc00;">[{{ log.victim_name }}]</span> بـ <span style="color:#ff9999;">({{ log.weapon_name }})</span>! صحته الحالية: {{ log.remaining_hp }}%
+            {% endfor %}
+        {% endif %}
+    </marquee>
 </div>
 {% endif %}
 
-{% if current_user %}
+<div class="global-banner" style="background-image: url('{{ settings.banner_url if settings and settings.banner_url else '' }}'); background-size: cover; background-position: center; border-radius: 10px; padding: 40px 20px; text-align: center; border-bottom: 4px solid {{ settings.home_color if settings else 'var(--zone-0-black)' }}; margin-bottom: 25px; position: relative; overflow: hidden;">
+    <div style="background: rgba(0,0,0,0.7); position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
+    <h2 style="color: {{ settings.home_color if settings else 'var(--text-main)' }}; text-shadow: 0 0 10px {{ settings.home_color if settings else 'var(--zone-0-black)' }}; position: relative; z-index: 1; font-size: 28px; font-weight: 900; margin: 0;">
+        {{ settings.home_title if settings else 'البوابة' }}
+    </h2>
+</div>
+
+{% if session.get('user_id') %}
     
-    {% if settings and settings.gates_mode_active %}
+    {% if settings and settings.gates_mode_active and current_user %}
     <div class="gate-container">
         <h2 style="color: #e74c3c; margin-top: 0;">🛑 اختبار البوابات الملعونة 🛑</h2>
         {% if current_user.chosen_gate == 0 %}
-            <p style="color: #e2e8f0; font-size: 15px; margin-bottom: 20px; font-style: italic;">{{ settings.gates_description }}</p>
+            <p style="color: #e2e8f0; font-size: 14px; margin-bottom: 15px; font-style: italic;">{{ settings.gates_description }}</p>
             {% if settings.gates_selection_locked %}<div class="flash error" style="margin-bottom: 15px;">أبواب الاختيار مُقلقة حالياً بتعويذة الملك. تمهل وفكر.</div>{% endif %}
             <div class="gates-grid">
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(1, '{{ settings.gate_1_name }}')">
-                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold;">{{ settings.gate_1_name }}</span>
+                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_1_name }}</span>
                 </div>
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(2, '{{ settings.gate_2_name }}')">
-                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold;">{{ settings.gate_2_name }}</span>
+                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_2_name }}</span>
                 </div>
                 <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(3, '{{ settings.gate_3_name }}')">
-                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold;">{{ settings.gate_3_name }}</span>
+                    <span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_3_name }}</span>
                 </div>
             </div>
             <form id="gateForm" action="/choose_gate" method="POST" style="display: none;"><input type="hidden" name="gate_num" id="gateNumInput"></form>
         {% else %}
-            <div style="color: var(--zone-3-gold); font-size: 16px; font-weight: bold; padding: 20px; border: 1px dashed var(--zone-3-gold); border-radius: 8px;">
+            <div style="color: var(--zone-3-gold); font-size: 14px; font-weight: bold; padding: 15px; border: 1px dashed var(--zone-3-gold); border-radius: 8px;">
                 تم تسجيل مسارك في ({{ settings['gate_' ~ current_user.chosen_gate ~ '_name'] }})...<br>المتاهة تقيم خيارك... لا تتحرك.
             </div>
         {% endif %}
     </div>
     <script>
         function selectGate(gateNum, gateName) {
-            const locked = {{ 'true' if settings.gates_selection_locked else 'false' }};
-            if (locked) return;
+            if ({{ 'true' if settings.gates_selection_locked else 'false' }}) return;
             if (confirm(`لقد اخترت مسار (${gateName}).\n\nهل أنت متأكد تماماً؟ لا يوجد طريق للعودة!`)) {
-                document.getElementById('gateNumInput').value = gateNum;
-                document.getElementById('gateForm').submit();
+                document.getElementById('gateNumInput').value = gateNum; document.getElementById('gateForm').submit();
             }
         }
     </script>
     {% endif %}
 
-    {% if settings and settings.floor3_mode_active and current_user.status == 'active' %}
+    {% if settings and settings.floor3_mode_active and current_user and current_user.status == 'active' %}
     <div class="floor3-container">
         <h2 style="color: #8e44ad; text-align: center; margin-top: 0;">🗳️ محكمة أصوات النجاة (100)</h2>
         {% if not current_user.has_voted %}
-            <p style="text-align: center; color: #aaa; font-size: 13px; font-style: italic;">وزع 100 "صوت نجاة" على 5 أشخاص مختلفين.</p>
+            <p style="text-align: center; color: #aaa; font-size: 12px; font-style: italic;">وزع 100 "صوت نجاة" على 5 أشخاص مختلفين.</p>
             <form action="/submit_floor3_votes" method="POST" id="voteForm">
                 {% for i in range(1, 6) %}
                 <div class="vote-input-group">
-                    <label style="color: #8e44ad; font-weight: bold; font-size:12px;">شخص {{ i }}:</label>
-                    <input type="number" name="target_{{ i }}" placeholder="ID (أرقام)" required style="width: 40%;">
-                    <input type="number" name="amount_{{ i }}" placeholder="الأصوات" required style="width: 30%;" min="1" max="96" class="vote-amount">
+                    <label style="color: #8e44ad; font-weight: bold; font-size:11px;">الرحالة {{ i }}:</label>
+                    <input type="number" name="target_{{ i }}" placeholder="ID" required style="width: 40%;">
+                    <input type="number" name="amount_{{ i }}" placeholder="أصوات" required style="width: 30%;" min="1" max="96" class="vote-amount">
                 </div>
                 {% endfor %}
                 <div style="text-align: center; margin-top: 15px;">
@@ -105,74 +87,58 @@
                 </div>
             </form>
             <script>
-                const amountInputs = document.querySelectorAll('.vote-amount');
-                const totalDisplay = document.getElementById('totalVotes');
-                const submitBtn = document.getElementById('submitVotesBtn');
+                const amountInputs = document.querySelectorAll('.vote-amount'); const totalDisplay = document.getElementById('totalVotes'); const submitBtn = document.getElementById('submitVotesBtn');
                 amountInputs.forEach(input => {
                     input.addEventListener('input', () => {
-                        let total = 0;
-                        amountInputs.forEach(i => total += (parseInt(i.value) || 0));
-                        totalDisplay.innerText = total;
-                        if (total === 100) { totalDisplay.style.color = "#2ecc71"; submitBtn.disabled = false; } 
-                        else { totalDisplay.style.color = "#e74c3c"; submitBtn.disabled = true; }
+                        let total = 0; amountInputs.forEach(i => total += (parseInt(i.value) || 0)); totalDisplay.innerText = total;
+                        if (total === 100) { totalDisplay.style.color = "#2ecc71"; submitBtn.disabled = false; } else { totalDisplay.style.color = "#e74c3c"; submitBtn.disabled = true; }
                     });
                 });
             </script>
         {% else %}
-            <div style="border: 1px dashed #8e44ad; color: #fff; text-align: center; font-size: 14px; padding: 20px; border-radius: 8px;">
-                لقد سلمت أرواح الرحالة للمحكمة.<br>انتظر حتى ينتهي الجميع لفرز الأصوات.
-            </div>
+            <div style="border: 1px dashed #8e44ad; color: #fff; text-align: center; font-size: 13px; padding: 15px; border-radius: 8px;">لقد سلمت أرواح الرحالة للمحكمة.<br>انتظر حتى ينتهي الجميع لفرز الأصوات.</div>
         {% endif %}
     </div>
     {% endif %}
 
-    <div class="hub-grid">
-        <a href="/store" class="hub-card" style="border-color: var(--zone-3-gold);">
-            <span class="hub-icon">🐪</span><strong style="font-size: 14px;">السوق</strong>
-            {% if un_store and un_store > 0 %}<span class="alert-text" style="color: #f1c40f;">✨ غنائم جديدة</span>{% endif %}
+    <div class="top-squares">
+        <a href="/profile" class="square-card" style="border-color: var(--zone-3-gold);">
+            <div class="square-icon">🪪</div><strong class="translatable" data-ar="الرخصة" data-en="License">الرخصة</strong>
         </a>
-        <a href="/news" class="hub-card" style="border-color: #3498db;">
-            <span class="hub-icon">📜</span><strong style="font-size: 14px;">الأخبار</strong>
-            {% if un_news and un_news > 0 %}<span class="alert-text" style="color: #3498db;">🚨 خبر عاجل</span>{% endif %}
-        </a>
-        <a href="/puzzles" class="hub-card" style="border-color: #9b59b6;">
-            <span class="hub-icon">🧩</span><strong style="font-size: 14px;">الألغاز</strong>
-            {% if un_puz and un_puz > 0 %}<span class="alert-text" style="color: #9b59b6;">🔥 لغز سري</span>{% endif %}
-        </a>
-        <a href="/declarations" class="hub-card" style="border-color: #2ecc71;">
-            <span class="hub-icon">📢</span><strong style="font-size: 14px;">التصريحات</strong>
-            {% if un_dec and un_dec > 0 %}<span class="alert-text" style="color: #2ecc71;">💬 تصريح جديد</span>{% endif %}
-        </a>
-        <a href="/profile" class="hub-card" style="border-color: #aaa;">
-            <span class="hub-icon">🎒</span><strong style="font-size: 14px;">مخطوطتي</strong>
-        </a>
-        <a href="/graveyard" class="hub-card" style="border-color: #e74c3c;">
-            <span class="hub-icon">💀</span><strong style="font-size: 14px;">المقبرة</strong>
+        <a href="/friends" class="square-card" style="border-color: var(--zone-4-diamond);">
+            <div class="square-icon">🤝</div><strong class="translatable" data-ar="الأصدقاء" data-en="Friends">الأصدقاء</strong>
         </a>
     </div>
 
-{% endif %}
+    <div class="preview-grid">
+        <a href="/news" class="preview-card" style="border-top: 3px solid #8B5A2B;">
+            <h4 style="margin:0 0 5px 0; color:#8B5A2B;" class="translatable" data-ar="آخر خبر" data-en="Latest News">آخر خبر</h4>
+            <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ news.title if news else 'لا يوجد' }}</p>
+        </a>
+        <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
+            <h4 style="margin:0 0 5px 0; color:var(--zone-5-fire);" class="translatable" data-ar="أحدث تصريح" data-en="Latest Declaration">أحدث تصريح</h4>
+            <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ dec.title if dec else 'لا يوجد' }}</p>
+        </a>
+        <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
+            <h4 style="margin:0 0 5px 0; color:var(--zone-3-gold);" class="translatable" data-ar="السوق" data-en="Market">السوق</h4>
+            <p style="font-size:12px; margin:0; color: var(--text-muted);">اضغط للدخول والتسوق</p>
+        </a>
+    </div>
 
-{% if news %}
-<div class="hunter-card floor-1 translatable" data-ar-title="📜 مخطوطة إخبارية جديدة" data-en-title="📜 New News Scroll">
-    <strong style="color:var(--text-main);">{{ news.title }}</strong>
-    <p style="font-size:13px; color:var(--text-muted); line-height:1.5;">{{ news.content[:200] }}...</p>
-    <a href="/news" class="btn-primary translatable" data-ar="👀 قراءة المخطوطة" data-en="👀 Read Scroll">👀 قراءة المخطوطة</a>
-</div>
-{% endif %}
+    {% if last_frozen %}
+    <a href="/graveyard" class="preview-card ghost-card" style="display: block; text-align:center; padding: 20px; border-top: 3px solid #e74c3c; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); margin-top: 20px; text-decoration: none;">
+        <h4 style="margin:0 0 10px 0; color:#e74c3c; font-size: 16px; text-shadow: 0 0 8px rgba(231,76,60,0.5);">💀 المقبرة المنسية (آخر الضحايا)</h4>
+        <strong style="color: #e2e8f0; font-size: 18px;">{{ last_frozen.username }}</strong>
+        <p style="font-size:13px; color:#aaa; margin-top:5px; font-style: italic;">"{{ last_frozen.freeze_reason }}"</p>
+    </a>
+    {% endif %}
 
-{% if last_frozen %}
-<div class="hunter-card graveyard translatable" data-ar-title="💀 أحدث الهالكين" data-en-title="💀 Latest Eliminated" style="margin-top: 20px;">
-    <strong style="color:#e74c3c;">{{ last_frozen.username }}</strong> #{{ last_frozen.hunter_id }}
-    <p style="font-size:12px; color:#aaa; margin-top:5px;">سبب الهلاك: {{ last_frozen.freeze_reason }}</p>
-</div>
-{% endif %}
-
-{% if dec %}
-<div class="hunter-card floor-0 translatable" data-ar-title="📢 تصريح رحالة" data-en-title="📢 Hunter Declaration" style="margin-top: 20px;">
-    <strong style="color:var(--text-main);">{{ dec.title }}</strong> <small>بواسطة: {{ dec.author }}</small>
-    <p style="font-size:13px; color:var(--text-muted);">{{ dec.content[:150] }}...</p>
-    <a href="/declarations" class="btn-primary translatable" data-ar="🗣️ عرض التصريحات" data-en="🗣️ View Declarations">🗣️ عرض التصريحات</a>
+{% else %}
+<div class="hunter-card" style="text-align: center;">
+    <h3>أهلاً بك في متاهة سيفار</h3>
+    <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام (تسجيل)</a>
+    <a href="{{ url_for('login') }}" class="btn-primary" style="background: #222; color: #fff; border: 1px solid var(--zone-3-gold);">تسجيل الدخول</a>
 </div>
 {% endif %}
 {% endblock %}
+
