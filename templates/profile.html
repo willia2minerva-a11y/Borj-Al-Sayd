@@ -2,7 +2,7 @@
 {% block content %}
 <div class="hunter-card {{ zone_class }}" style="text-align: center; margin-top: 40px; position: relative;">
     
-    <button onclick="document.getElementById('settingsModal').style.display='block'" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 24px; cursor: pointer; z-index: 10;">⚙️</button>
+    <button onclick="document.getElementById('settingsModal').style.display='flex'" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 24px; cursor: pointer; z-index: 10;">⚙️</button>
 
     <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
     
@@ -14,6 +14,18 @@
         {% endif %}
     </div>
 
+    {% if war_settings and war_settings.war_mode %}
+    <div style="margin-top: 5px; width: 80%; margin-left: auto; margin-right: auto;">
+        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
+            <span>صحتي (HP)</span>
+            <span class="neon-number" style="color: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">{{ user.health }}/100</span>
+        </div>
+        <div style="width: 100%; background: #222; border-radius: 10px; height: 12px; overflow: hidden; border: 1px solid #111;">
+            <div style="height: 100%; width: {{ user.health }}%; background: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s;"></div>
+        </div>
+    </div>
+    {% endif %}
+
     <h2 style="margin-top: 15px; margin-bottom: 5px;">{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
     
     <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
@@ -22,6 +34,19 @@
         <div><span style="color: var(--text-muted); font-size:12px;">الحالة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
     </div>
     
+    {% if my_seals %}
+    <div style="margin-top: 20px; background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #e74c3c;">
+        <h4 style="margin-top: 0; color: #e74c3c;">🏺 أختام سيفار الملعونة ({{ user.destroyed_seals }}/4 دُمرت)</h4>
+        <p style="font-size: 12px; color: #ff9999;">لديك أختام ملكية! دمرها قبل أن يسرقها أحد.</p>
+        {% for seal in my_seals %}
+            <form action="/use_item/{{ user.hunter_id }}" method="POST" style="margin-bottom: 5px;">
+                <input type="hidden" name="item_name" value="{{ seal.name }}">
+                <button type="submit" class="btn-danger" style="width: 100%; background: #8b0000; padding: 10px;">تدمير ({{ seal.name }}) 🔨</button>
+            </form>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div style="margin-top: 20px; text-align: right; background: #111; padding: 15px; border-radius: 8px;">
         <h4 style="margin-top: 0; color: var(--zone-4-diamond);">🎒 حقيبتي</h4>
         {% if user.inventory %}
