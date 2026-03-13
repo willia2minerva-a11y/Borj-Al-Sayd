@@ -8,8 +8,8 @@ class User(db.Document):
     username = db.StringField(unique=True)
     facebook_link = db.StringField()
     password_hash = db.StringField()
-    role = db.StringField(default='hunter') # admin, hunter, ghost, cursed_ghost
-    status = db.StringField(default='active') # active, eliminated, frozen
+    role = db.StringField(default='hunter') 
+    status = db.StringField(default='active') 
     health = db.IntField(default=100)
     points = db.IntField(default=0)
     zone = db.IntField(default=0)
@@ -25,7 +25,7 @@ class User(db.Document):
     freeze_reason = db.StringField(default='')
     ip_address = db.StringField()
     chosen_gate = db.IntField(default=0)
-    gate_status = db.StringField(default='') # waiting, passed, testing
+    gate_status = db.StringField(default='') 
     gate_test_answer = db.StringField(default='')
     survival_votes = db.IntField(default=0)
     has_voted = db.BooleanField(default=False)
@@ -45,11 +45,11 @@ class News(db.Document):
     title = db.StringField()
     content = db.StringField()
     image_data = db.StringField()
-    category = db.StringField(default='news') # news, puzzle, declaration, hidden
+    category = db.StringField(default='news')
     author = db.StringField(default='الإدارة')
     created_at = db.DateTimeField(default=datetime.utcnow)
-    status = db.StringField(default='approved') # approved, pending
-    puzzle_type = db.StringField(default='none') # none, text, secret_link, quicksand_trap, fake_account, cursed_ghost
+    status = db.StringField(default='approved')
+    puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
     winners_list = db.ListField(db.StringField(), default=list)
@@ -63,7 +63,7 @@ class StoreItem(db.Document):
     description = db.StringField()
     price = db.IntField(required=True)
     image = db.StringField()
-    item_type = db.StringField(default='normal') # normal, weapon, heal, spy, steal, seal
+    item_type = db.StringField(default='normal') 
     effect_amount = db.IntField(default=0)
     is_luck = db.BooleanField(default=False)
     luck_min = db.IntField(default=0)
@@ -81,7 +81,6 @@ class GlobalSettings(db.Document):
     global_news_active = db.BooleanField(default=False)
     global_news_text = db.StringField(default='')
     
-    # الصيانة الذكية بالوقت والصفحات المنفصلة عن الحرب
     maintenance_mode = db.BooleanField(default=False)
     maintenance_until = db.DateTimeField(null=True)
     maintenance_pages = db.ListField(db.StringField(), default=list)
@@ -117,4 +116,3 @@ class BattleLog(db.Document):
     weapon_name = db.StringField()
     remaining_hp = db.IntField()
     created_at = db.DateTimeField(default=datetime.utcnow)
-
