@@ -200,12 +200,23 @@ def submit_floor3_votes():
     user.has_voted = True; user.save(); flash('تم تثبيت أصواتك بنجاح للمحكمة!', 'success')
     return redirect(url_for('home'))
 
+# 🧠 التحديث الذكي لخوارزمية التسجيل (لسد الفراغات واستغلال الأرقام المحذوفة)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        if User.objects(username=request.form['username']).first(): flash('الاسم مستخدم.', 'error'); return redirect(url_for('register'))
-        last_u = User.objects.order_by('-id').first()
-        new_id = (last_u.hunter_id + 1) if last_u else 1000
+        if User.objects(username=request.form['username']).first(): 
+            flash('الاسم مستخدم مسبقاً في المتاهة.', 'error')
+            return redirect(url_for('register'))
+        
+        # البحث عن أول ID متاح ابتداءً من 1000
+        existing_users = User.objects().order_by('hunter_id')
+        new_id = 1000
+        for u in existing_users:
+            if getattr(u, 'hunter_id', 0) == new_id:
+                new_id += 1
+            elif getattr(u, 'hunter_id', 0) > new_id:
+                break # وجدنا فجوة! الرقم new_id متوفر الآن
+                
         User(hunter_id=new_id, username=request.form['username'], password_hash=generate_password_hash(request.form['password']), role='admin' if new_id==1000 else 'hunter').save()
         return redirect(url_for('login'))
     return render_template('register.html')
@@ -216,7 +227,7 @@ def login():
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(user.password_hash, request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); session['role'] = user.role; return redirect(url_for('home'))
-        flash('بيانات خاطئة.', 'error')
+        flash('البيانات خاطئة.', 'error')
     return render_template('login.html')
 
 @app.route('/logout')
@@ -236,13 +247,13 @@ def update_settings():
     action = request.form.get('action')
     if action == 'change_avatar':
         file = request.files.get('avatar_file')
-        if file and file.filename != '': user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تم!', 'success')
+        if file and file.filename != '': user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تم التحديث!', 'success')
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         now = datetime.utcnow(); last_change = getattr(user, 'last_name_change', None)
-        if last_change and (now - last_change).days < 15: flash('كل 15 يوم فقط!', 'error')
+        if last_change and (now - last_change).days < 15: flash('يسمح بالتغيير كل 15 يوم فقط!', 'error')
         elif User.objects(username=new_name).first(): flash('الاسم مستخدم!', 'error')
-        else: user.username = new_name; user.last_name_change = now; flash('تغير!', 'success')
+        else: user.username = new_name; user.last_name_change = now; flash('تم التغيير!', 'success')
     user.save(); return redirect(url_for('profile'))
 
 @app.route('/hunter/<int:target_id>')
@@ -458,13 +469,11 @@ def declarations():
         flash('تم الإرسال (سينشر بعد الموافقة)', 'success'); return redirect(url_for('declarations'))
     user.last_seen_decs = datetime.utcnow(); user.save()
     
-    # 🟢 جلب التصريحات المقبولة والخاصة باللاعب
     approved_decs = News.objects(category='declaration', status='approved').order_by('-created_at')
     my_pending_decs = News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at')
     
     return render_template('declarations.html', approved_decs=approved_decs, my_pending_decs=my_pending_decs, current_user=user)
 
-# 🗑️ دالة حذف التصريحات الجديدة
 @app.route('/delete_declaration/<dec_id>', methods=['POST'])
 @login_required
 def delete_declaration(dec_id):
@@ -473,7 +482,7 @@ def delete_declaration(dec_id):
         dec = News.objects(id=dec_id).first()
         if dec and (dec.author == user.username or getattr(user, 'role', '') == 'admin'):
             dec.delete()
-            flash('تم حذف التصريح بنجاح!', 'success')
+            flash('تم الحذف بنجاح!', 'success')
         else:
             flash('ليس لديك صلاحية لحذف هذا التصريح.', 'error')
     except Exception:
@@ -595,17 +604,26 @@ def admin_panel():
                 file = request.files.get('item_image')
                 if file and file.filename != '': item.image = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
                 item.save(); flash('تم إضافة الأداة!', 'success')
+            
+            # 💥 دالة التحكم بالأعضاء (وتتضمن خيار الطمس النهائي)
             elif action == 'bulk_action':
-                selected = request.form.getlist('selected_users'); bulk_type = request.form.get('bulk_type')
+                selected = request.form.getlist('selected_users')
+                bulk_type = request.form.get('bulk_type')
                 for uid in selected:
                     u = User.objects(id=uid).first()
+                    # حماية الإمبراطور (أنت) من الحذف أو التعديل بالخطأ
                     if u and getattr(u, 'hunter_id', 0) != 1000:
-                        if bulk_type == 'activate': u.status = 'active'; u.health = 100
-                        elif bulk_type == 'freeze': u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'مقيّد')
-                        elif bulk_type == 'eliminate': u.status = 'eliminated'; u.freeze_reason = request.form.get('bulk_reason', 'هلك')
-                        u.save()
-                flash('تم التنفيذ!', 'success')
-        except Exception: pass
+                        if bulk_type == 'activate':
+                            u.status = 'active'; u.health = 100; u.save()
+                        elif bulk_type == 'freeze':
+                            u.status = 'frozen'; u.freeze_reason = request.form.get('bulk_reason', 'مقيّد'); u.save()
+                        elif bulk_type == 'eliminate':
+                            u.status = 'eliminated'; u.freeze_reason = request.form.get('bulk_reason', 'هلك'); u.save()
+                        elif bulk_type == 'hard_delete': # الطمس النهائي المبرمج
+                            u.delete()
+                flash('تم تنفيذ الأمر الإمبراطوري!', 'success')
+        except Exception as e:
+            pass
             
         return redirect(url_for('admin_panel'))
         
@@ -619,3 +637,4 @@ def admin_panel():
     return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders, pending_decs=pending_decs, hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
+
