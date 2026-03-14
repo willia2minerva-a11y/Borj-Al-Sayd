@@ -1,107 +1,61 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-4-diamond); text-align: center;">🧩 مخطوطات الألغاز</h2>
-<p style="text-align: center; color: var(--text-muted); font-size: 14px;">حل اللغز لتنال الجائزة... أو ربما اللعنة.</p>
+<h2 style="color: var(--zone-4-diamond); text-align: center;">🧩 جدار الألغاز والنقوش</h2>
 
-{% if current_user.status != 'active' %}
-<div class="flash error" style="text-align: center;">👻 الأشباح فقدت عقولها، لا يمكنها حل الألغاز!</div>
-{% endif %}
-
-<div style="margin-top: 20px;">
+<div class="puzzles-grid">
     {% for puzzle in puzzles_list %}
-    <div class="hunter-card floor-3" style="margin-bottom: 20px; border-color: var(--zone-4-diamond); position: relative;">
-        
-        {% if current_user.role == 'admin' %}
-        <form action="/delete_puzzle/{{ puzzle.id }}" method="POST" style="position: absolute; top: 10px; left: 10px; margin: 0;" onsubmit="return confirm('هل أنت متأكد من مسح هذا اللغز من المتاهة؟');">
-            <button type="submit" class="btn-danger" style="padding: 5px 10px; font-size: 12px; background: transparent; border: 1px solid #e74c3c; color: #e74c3c;">مسح اللغز 🗑️</button>
+    <div class="hunter-card puzzle-card" style="border-top: 3px solid var(--zone-4-diamond);">
+        {% if session.role == 'admin' %}
+        <form action="/delete_puzzle/{{ puzzle.id }}" method="POST" style="text-align: right; margin-bottom: 10px;">
+            <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px;" title="حذف اللغز">🗑️</button>
         </form>
         {% endif %}
 
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #333; padding-bottom: 10px; margin-bottom: 10px;">
-            <strong style="color: #fff; font-size: 18px;">{{ puzzle.title }}</strong>
-            <span style="background: rgba(0, 153, 204, 0.2); color: var(--zone-4-diamond); padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">
-                {{ puzzle.reward_points }} نقطة
-            </span>
-        </div>
+        <h3 style="margin-top: 0; color: #fff;">{{ puzzle.title }}</h3>
+        <p style="color: #ccc; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ puzzle.content }}</p>
         
-        <p style="color: #e2e8f0; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ puzzle.content }}</p>
-        
-        <div style="margin-top: 15px; font-size: 12px; font-weight: bold; color: {% if puzzle.current_winners >= puzzle.max_winners %}#e74c3c{% else %}#2ecc71{% endif %}; text-align: right;">
-            الفائزون: ({{ puzzle.current_winners }}/{{ puzzle.max_winners }})
+        <div style="background: #111; padding: 10px; border-radius: 5px; margin: 15px 0; border: 1px solid #333; font-size: 13px;">
+            <span style="color: var(--zone-3-gold);">المكافأة: {{ puzzle.reward_points }} نقطة</span> | 
+            <span style="color: #3498db;">الفائزون: {{ puzzle.current_winners }}/{{ puzzle.max_winners }}</span>
         </div>
 
-        {% if current_user.id|string in puzzle.winners_list %}
-            <div style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; border: 1px dashed #2ecc71;">لقد حللت هذا اللغز مسبقاً! 🌟</div>
+        {% if session.user_id|string in puzzle.winners_list %}
+            <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; color: #2ecc71; padding: 10px; text-align: center; border-radius: 5px;">لقد حللت هذا اللغز مسبقاً. ✔️</div>
         {% elif puzzle.current_winners >= puzzle.max_winners %}
-            <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; border-radius: 5px; text-align: center; margin-top: 15px; border: 1px dashed #e74c3c;">نفدت الجوائز!</div>
-        {% elif current_user.status == 'active' %}
+            <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 10px; text-align: center; border-radius: 5px;">انتهت الجوائز لهذا اللغز. ❌</div>
+        {% else %}
             
-            <form action="/puzzles" method="POST" id="form_{{ puzzle.id }}" style="margin-top: 15px; display: flex; gap: 5px; flex-wrap: wrap;">
+            {% if puzzle.puzzle_type == 'text' %}
+            <form action="/puzzles" method="POST" style="display: flex; gap: 5px;">
                 <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
-                
-                {% if puzzle.puzzle_type == 'click_count' %}
-                    <button type="button" class="btn-primary" onclick="handleCount(this, {{ puzzle.puzzle_answer }}, 'form_{{ puzzle.id }}', 'guess_{{ puzzle.id }}')" style="width: 100%; background: #e67e22;" data-count="0">
-                        اضغطني لكشف السر
-                    </button>
-                    <input type="hidden" name="guess" id="guess_{{ puzzle.id }}">
-                
-                {% elif puzzle.puzzle_type == 'click_order' %}
-                    <div style="width: 100%; display: flex; gap: 5px; flex-wrap: wrap;">
-                        {% set words = puzzle.puzzle_answer.split(',') %}
-                        {% for word in words|shuffle %}
-                            <button type="button" class="btn-primary" onclick="handleSequence(this, '{{ word }}', 'form_{{ puzzle.id }}', 'guess_{{ puzzle.id }}', '{{ puzzle.puzzle_answer }}')" style="flex: 1; background: #34495e;">{{ word }}</button>
-                        {% endfor %}
-                    </div>
-                    <input type="hidden" name="guess" id="guess_{{ puzzle.id }}">
-                
-                {% else %}
-                    <input type="text" name="guess" placeholder="اكتب الإجابة..." required style="flex-grow: 1; padding: 10px; background: #111; color: #fff; border: 1px solid #333; border-radius: 5px; outline: none;">
-                    <button type="submit" class="btn-primary" style="background: var(--zone-4-diamond); color: #000; width: auto; padding: 0 20px;">إرسال</button>
-                {% endif %}
+                <input type="text" name="guess" placeholder="اكتب الإجابة هنا..." required style="flex: 1; padding: 8px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px;">
+                <button type="submit" class="btn-primary" style="width: auto;">تحقق</button>
             </form>
-
+            
+            {% elif puzzle.puzzle_type == 'click_count' %}
+            <form action="/puzzles" method="POST" id="clickForm_{{ puzzle.id }}">
+                <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
+                <input type="hidden" name="guess" id="clickGuess_{{ puzzle.id }}" value="0">
+                <div style="text-align: center;">
+                    <button type="button" class="btn-primary" style="background: #e67e22; padding: 15px 30px; font-size: 20px; border-radius: 50%;" onclick="incrementClick('{{ puzzle.id }}')">اضغطني!</button>
+                    <div style="margin-top: 10px; color: #aaa; font-size: 12px;">الضغطات: <span id="clickCountDisplay_{{ puzzle.id }}" style="color: #fff; font-weight: bold;">0</span></div>
+                    <button type="submit" class="btn-primary" style="margin-top: 10px; width: 100%;">تأكيد وتسليم</button>
+                </div>
+            </form>
+            <script>
+                function incrementClick(pid) {
+                    let input = document.getElementById('clickGuess_' + pid);
+                    let display = document.getElementById('clickCountDisplay_' + pid);
+                    let count = parseInt(input.value) + 1;
+                    input.value = count; display.innerText = count;
+                }
+            </script>
+            {% endif %}
+            
         {% endif %}
     </div>
     {% else %}
-    <div style="text-align: center; color: var(--text-muted);">لم يتم نقش أي ألغاز حالياً.</div>
+    <p style="text-align: center; color: #aaa; width: 100%;">لا توجد ألغاز مطروحة حالياً.</p>
     {% endfor %}
 </div>
-
-<script>
-    function handleCount(btn, targetNum, formId, inputId) {
-        let count = parseInt(btn.getAttribute('data-count')) + 1;
-        btn.setAttribute('data-count', count);
-        btn.innerText = "النقش يضيء... (" + count + ")";
-        if(count >= targetNum) {
-            btn.innerText = "اكتملت التعويذة!";
-            btn.style.background = "#2ecc71";
-            document.getElementById(inputId).value = targetNum;
-            document.getElementById(formId).submit();
-        }
-    }
-
-    function handleSequence(btn, word, formId, inputId, fullAnswer) {
-        let inputEl = document.getElementById(inputId);
-        let currentSeq = inputEl.value;
-        let newSeq = currentSeq ? currentSeq + "," + word : word;
-        inputEl.value = newSeq;
-        
-        btn.style.opacity = "0.5";
-        btn.disabled = true;
-        
-        let targetLength = fullAnswer.split(',').length;
-        let currentLength = newSeq.split(',').length;
-        
-        if(currentLength === targetLength) {
-            if(newSeq === fullAnswer) {
-                document.getElementById(formId).submit();
-            } else {
-                alert('❌ الترتيب خاطئ! النقش يرفض الإجابة. حاول مجدداً.');
-                inputEl.value = '';
-                let allBtns = btn.parentElement.querySelectorAll('button');
-                allBtns.forEach(b => { b.style.opacity = "1"; b.disabled = false; });
-            }
-        }
-    }
-</script>
 {% endblock %}
