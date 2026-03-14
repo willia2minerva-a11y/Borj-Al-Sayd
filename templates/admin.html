@@ -4,109 +4,107 @@
     .admin-form-group { margin-bottom: 15px; }
     .admin-form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 5px; }
     .admin-form-group input, .admin-form-group select, .admin-form-group textarea { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; }
-    .mod-btn { background: #1a1a1a; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #333; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 8px; transition: 0.3s; font-weight: bold; display: flex; justify-content: space-between; border-right: 4px solid var(--zone-3-gold); }
-    .mod-btn:hover { background: #2a2a2a; border-color: var(--zone-3-gold); }
-    .mod-content { padding: 15px; display: none; background: #0a0a0a; border: 1px solid #222; border-radius: 5px; margin-bottom: 15px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    .mod-btn { background: #1a1a1a; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #333; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 8px; transition: 0.3s; font-weight: bold; border-right: 4px solid var(--zone-3-gold); }
+    .mod-btn:hover { background: #2a2a2a; }
+    .mod-content { padding: 15px; display: none; background: #0a0a0a; border: 1px solid #222; border-radius: 5px; margin-bottom: 15px; }
     
-    /* سجل الأحداث الإمبراطوري */
-    .log-container { background: #000; border: 1px solid #333; padding: 10px; height: 350px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #2ecc71; border-radius: 5px; scroll-behavior: smooth; }
-    .log-entry { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; line-height: 1.4; }
+    .log-container { background: #000; border: 1px solid #333; padding: 10px; height: 350px; overflow-y: auto; font-family: monospace; font-size: 12px; border-radius: 5px; }
+    .log-entry { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; }
     .log-combat { color: #e74c3c; border-right: 2px solid #e74c3c; padding-right: 5px; }
     .log-puzzle { color: #f1c40f; border-right: 2px solid #f1c40f; padding-right: 5px; }
     .log-social { color: #3498db; border-right: 2px solid #3498db; padding-right: 5px; }
     .log-system { color: #9b59b6; border-right: 2px solid #9b59b6; padding-right: 5px; }
-
-    /* قائمة الأعضاء السلسة */
-    .smooth-scroll-list { max-height: 400px; overflow-y: auto; scroll-behavior: smooth; background: #000; border: 1px solid #333; padding: 10px; border-radius: 5px; }
-    .smooth-scroll-list::-webkit-scrollbar { width: 8px; }
-    .smooth-scroll-list::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-    .smooth-scroll-list::-webkit-scrollbar-thumb:hover { background: var(--zone-3-gold); }
 </style>
 
-<h2 style="color: var(--zone-3-gold); text-align: center;">👑 عرش التحكم المطلق</h2>
+<h2 style="color: var(--zone-3-gold); text-align: center;">👑 عرش الإمبراطور</h2>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')" style="border-right-color: #2ecc71;">📜 السجل التاريخي للأحداث <span>▼</span></button>
-<div id="mod-logs" class="mod-content" style="display: block;"> <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')" style="border-right-color: #2ecc71;">📜 السجل التاريخي (عين الرقيب)</button>
+<div id="mod-logs" class="mod-content" style="display: block;">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
         <input type="date" id="logDatePicker" value="{{ current_date }}" style="padding: 8px; background: #111; color: #fff; border: 1px solid #444; border-radius: 4px;">
-        <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-primary" style="width: auto; padding: 8px 20px;">استدعاء السجل</button>
-        <a href="/download_logs/{{ current_date }}" class="btn-primary" style="background: #34495e; width: auto; padding: 8px 20px; text-decoration: none;">تحميل TXT 📥</a>
+        <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-primary" style="width: auto;">استدعاء</button>
+        <a href="/download_logs/{{ current_date }}" class="btn-primary" style="background: #34495e; width: auto; text-decoration: none;">تحميل TXT</a>
     </div>
     <div class="log-container">
         {% for log in logs %}
-        <div class="log-entry log-{{ log.category }}">
-            <span style="color: #666;">[{{ log.created_at.strftime('%H:%M:%S') }}]</span> {{ log.action_text }}
-        </div>
+        <div class="log-entry log-{{ log.category }}"><span style="color: #666;">[{{ log.created_at.strftime('%H:%M:%S') }}]</span> {{ log.action_text }}</div>
         {% else %}
-        <div style="text-align: center; color: #444; margin-top: 150px;">لا توجد نقوش مسجلة لهذا التاريخ بعد.</div>
+        <div style="text-align: center; color: #444; margin-top: 150px;">لا توجد سجلات.</div>
         {% endfor %}
     </div>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-target-news')" style="border-right-color: #9b59b6;">🎯 نشر خبر لمجموعة محددة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-target-news')" style="border-right-color: #9b59b6;">🎯 نشر خبر موجه لمجموعة</button>
 <div id="mod-target-news" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_targeted_news">
         <div class="admin-form-group">
-            <label>الفئة المستهدفة بالخبر:</label>
             <select name="target_group">
-                <option value="all">الجميع (عام)</option>
+                <option value="all">الجميع</option>
                 <option value="hunters">الأحياء فقط</option>
                 <option value="ghosts">الأشباح فقط</option>
-                <option value="testing">المسجونين في "الاختبار"</option>
+                <option value="testing">المسجونين في الاختبار</option>
             </select>
         </div>
-        <div class="admin-form-group"><input type="text" name="title" placeholder="عنوان الخبر السري" required></div>
-        <div class="admin-form-group"><textarea name="content" placeholder="اكتب المخطوطة هنا..." rows="4" required></textarea></div>
-        <button type="submit" class="btn-primary" style="background: #9b59b6;">إرسال الخبر الموجه</button>
+        <div class="admin-form-group"><input type="text" name="title" placeholder="عنوان الخبر" required></div>
+        <div class="admin-form-group"><textarea name="content" placeholder="المحتوى..." rows="4" required></textarea></div>
+        <button type="submit" class="btn-primary" style="background: #9b59b6;">نشر الخبر الموجه</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" style="border-right-color: #3498db;">👥 قائمة الأرواح والتحكم <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" style="border-right-color: #3498db;">👥 أرواح الرحالة والتحكم</button>
 <div id="mod-users" class="mod-content">
     <form action="/admin" method="POST" id="bulkForm">
         <input type="hidden" name="action" value="bulk_action">
-        <div class="smooth-scroll-list">
+        <div style="max-height: 250px; overflow-y: auto; background: #000; border: 1px solid #333; padding: 10px;">
             {% for u in users %}
-            <div style="display: flex; align-items: center; padding: 10px; border-bottom: 1px solid #111;">
+            <div style="display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #111;">
                 <input type="checkbox" name="selected_users" value="{{ u.id }}" style="margin-left: 10px;">
-                <span style="color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }}; font-size: 11px; min-width: 50px;">[{{ u.status }}]</span>
-                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold; flex-grow: 1;">{{ u.username }} (#{{ u.hunter_id }})</a>
-                <span style="color: #2ecc71; font-family: monospace;">{{ u.health }}% HP</span>
+                <span style="color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }}; font-size: 11px;">[{{ u.status }}]</span>
+                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold; flex-grow: 1; margin-right: 10px;">{{ u.username }} (#{{ u.hunter_id }})</a>
+                <span style="color: #2ecc71;">{{ u.health }}% HP</span>
             </div>
             {% endfor %}
         </div>
-        <div style="margin-top: 15px; display: grid; gap: 10px;">
+        <div style="margin-top: 15px;">
             <select name="bulk_type" id="bulkActionType" class="admin-form-group">
                 <option value="activate">إحياء / تفعيل</option>
-                <option value="freeze">تجميد / ربط</option>
-                <option value="eliminate">إعدام للمقبرة</option>
-                <option value="hard_delete" style="color: #e74c3c;">⚠️ طمس نهائي (حذف الحساب)</option>
+                <option value="eliminate">إعدام</option>
+                <option value="hard_delete" style="color: #e74c3c;">⚠️ طمس نهائي (حذف الحساب بالكامل)</option>
             </select>
-            <input type="text" name="bulk_reason" placeholder="سبب الإعدام أو التجميد..." class="admin-form-group">
-            <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ الأمر الملكي</button>
+            <input type="text" name="bulk_reason" placeholder="السبب..." class="admin-form-group">
+            <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ</button>
         </div>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-war')">⚔️ مود الحرب والصيانة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-war')">⚔️ الحرب والمعركة الأخيرة</button>
 <div id="mod-war" class="mod-content">
-    <div style="display: flex; gap: 10px;">
-        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="toggle_war"><button type="submit" class="btn-primary" style="background: {{ '#e74c3c' if settings.war_mode else '#2c3e50' }}; width: 100%;">{{ 'إيقاف الحرب' if settings.war_mode else 'بدء الحرب' }}</button></form>
-    </div>
-    </div>
+    <form action="/admin" method="POST" style="margin-bottom: 10px;">
+        <input type="hidden" name="action" value="toggle_war">
+        <button type="submit" class="btn-primary" style="background: {{ '#e74c3c' if settings.war_mode else '#2c3e50' }}; width: 100%;">{{ 'إيقاف الحرب الشاملة' if settings.war_mode else 'بدء الحرب الشاملة' }}</button>
+    </form>
+    <form action="/admin" method="POST" style="margin-bottom: 10px;">
+        <input type="hidden" name="action" value="toggle_final_battle">
+        <button type="submit" class="btn-primary" style="background: {{ '#f1c40f' if settings.final_battle_mode else '#2c3e50' }}; width: 100%; color:#000;">{{ 'إيقاف المعركة الأخيرة' if settings.final_battle_mode else 'بدء المعركة الأخيرة (استهداف الزعيم)' }}</button>
+    </form>
+    <form action="/admin" method="POST" style="display: flex; gap: 10px; border-top: 1px solid #333; padding-top: 10px;">
+        <input type="hidden" name="action" value="set_admin_hp">
+        <input type="number" name="admin_hp" placeholder="صحة الزعيم (مثال 5000)" style="flex:1; padding: 10px; background: #000; color: #fff; border: 1px solid #444;">
+        <button type="submit" class="btn-primary" style="width: auto;">تطبيق الصحة</button>
+    </form>
+</div>
 
 <script>
     function toggleMod(id) {
         var x = document.getElementById(id);
         x.style.display = (x.style.display === "none" || x.style.display === "") ? "block" : "none";
     }
-    
     document.getElementById('bulkForm').onsubmit = function() {
         if(document.getElementById('bulkActionType').value === 'hard_delete') {
-            return confirm('⚠️ هل أنت متأكد من "الطمس النهائي"؟ سيتم مسح الحسابات تماماً وإتاحة أرقام الـ ID من جديد!');
+            return confirm('⚠️ تحذير إمبراطوري: الطمس النهائي يمسح الحساب بالكامل ويفرغ الـ ID. هل أنت متأكد؟');
         }
         return true;
     };
 </script>
 {% endblock %}
-
