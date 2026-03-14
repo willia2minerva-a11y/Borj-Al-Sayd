@@ -2,20 +2,20 @@
 {% block content %}
 <style>
     .admin-form-group { margin-bottom: 15px; }
-    .admin-form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 5px; }
+    .admin-form-group label { display: block; color: #aaa; font-size: 13px; margin-bottom: 5px; font-weight: bold; }
     .admin-form-group input, .admin-form-group select, .admin-form-group textarea { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; }
-    .mod-btn { background: #1a1a1a; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #333; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 8px; transition: 0.3s; font-weight: bold; border-right: 4px solid var(--zone-3-gold); display: flex; justify-content: space-between; }
-    .mod-btn:hover { background: #2a2a2a; }
+    .mod-btn { background: #1a1a1a; color: #fff; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #333; text-align: right; outline: none; font-size: 16px; border-radius: 5px; margin-bottom: 8px; transition: 0.3s; font-weight: bold; border-right: 4px solid var(--zone-3-gold); display: flex; justify-content: space-between; align-items: center; }
+    .mod-btn:hover { background: #2a2a2a; border-color: var(--zone-3-gold); }
     .mod-content { padding: 15px; display: none; background: #0a0a0a; border: 1px solid #222; border-radius: 5px; margin-bottom: 15px; }
     
-    .log-container { background: #000; border: 1px solid #333; padding: 10px; height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px; border-radius: 5px; }
-    .log-entry { margin-bottom: 5px; border-bottom: 1px solid #111; padding-bottom: 2px; }
+    .log-container { background: #000; border: 1px solid #333; padding: 10px; height: 400px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 5px; }
+    .log-entry { margin-bottom: 6px; border-bottom: 1px solid #111; padding-bottom: 4px; line-height: 1.4; }
     .log-combat { color: #e74c3c; border-right: 2px solid #e74c3c; padding-right: 5px; }
     .log-puzzle { color: #f1c40f; border-right: 2px solid #f1c40f; padding-right: 5px; }
     .log-social { color: #3498db; border-right: 2px solid #3498db; padding-right: 5px; }
     .log-system { color: #9b59b6; border-right: 2px solid #9b59b6; padding-right: 5px; }
 
-    .smooth-scroll-list { max-height: 300px; overflow-y: auto; scroll-behavior: smooth; background: #000; border: 1px solid #333; padding: 10px; border-radius: 5px; }
+    .smooth-scroll-list { max-height: 350px; overflow-y: auto; scroll-behavior: smooth; background: #000; border: 1px solid #333; padding: 10px; border-radius: 5px; }
     .smooth-scroll-list::-webkit-scrollbar { width: 8px; }
     .smooth-scroll-list::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
 </style>
@@ -24,12 +24,12 @@
 
 <button type="button" class="mod-btn" onclick="toggleMod('mod-banner')" style="border-right-color: #3498db;">🖼️ تخصيص البوابة والشريط الإخباري <span>▼</span></button>
 <div id="mod-banner" class="mod-content">
-    <div style="background: rgba(52, 152, 219, 0.1); padding: 10px; border-radius: 5px; border: 1px dashed #3498db; margin-bottom: 15px;">
-        <strong style="color: #3498db;">شريط الأخبار العاجلة الدوار:</strong>
-        <form action="/admin" method="POST" style="margin-top: 10px; display: flex; gap: 5px;">
+    <div style="background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 5px; border: 1px dashed #3498db; margin-bottom: 15px;">
+        <strong style="color: #3498db; display: block; margin-bottom: 10px;">شريط الأخبار العاجلة الدوار:</strong>
+        <form action="/admin" method="POST" style="display: flex; gap: 5px;">
             <input type="hidden" name="action" value="toggle_global_news">
-            <input type="text" name="global_news_text" value="{{ settings.global_news_text }}" placeholder="اكتب الخبر العاجل هنا..." style="width: 70%; padding: 10px; background: #000; color: #fff; border: 1px solid #444;">
-            <button type="submit" class="btn-primary" style="width: 30%; background: {{ '#e74c3c' if settings.global_news_active else '#2ecc71' }};">{{ 'إيقاف الشريط' if settings.global_news_active else 'تشغيل الشريط' }}</button>
+            <input type="text" name="global_news_text" value="{{ settings.global_news_text }}" placeholder="اكتب الخبر العاجل هنا..." style="flex: 1; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px;">
+            <button type="submit" class="btn-primary" style="width: auto; background: {{ '#e74c3c' if settings.global_news_active else '#2ecc71' }};">{{ 'إيقاف الشريط' if settings.global_news_active else 'تشغيل الشريط' }}</button>
         </form>
     </div>
     <form action="/admin" method="POST" enctype="multipart/form-data">
@@ -66,8 +66,8 @@
         <div class="admin-form-group">
             <select name="puzzle_type">
                 <option value="none">خبر عادي (بدون لغز)</option>
-                <option value="text">لغز نصي (يتطلب كلمة سر)</option>
-                <option value="click_count">لغز الضغط (الجواب = عدد الضغطات)</option>
+                <option value="text">لغز نصي (يتطلب إجابة)</option>
+                <option value="click_count">لغز الضغط (الجواب = عدد الضغطات المطلوبة)</option>
             </select>
         </div>
         <div class="admin-form-group"><input type="text" name="puzzle_answer" placeholder="الإجابة الصحيحة (كلمة سر أو رقم)"></div>
@@ -84,6 +84,7 @@
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_targeted_news">
         <div class="admin-form-group">
+            <label>الفئة المستهدفة بالرسالة:</label>
             <select name="target_group">
                 <option value="all">الجميع (عام)</option>
                 <option value="hunters">الأحياء فقط</option>
@@ -109,7 +110,7 @@
                 <option value="cursed_ghost">شبح ملعون (شخصية وهمية تسرق نقاط عند إضافتها)</option>
             </select>
         </div>
-        <div class="admin-form-group"><input type="text" name="puzzle_answer" placeholder="ID الشخصية الوهمية أو كود الرابط" required></div>
+        <div class="admin-form-group"><input type="text" name="puzzle_answer" placeholder="ID الشخصية الوهمية أو كود الرابط (مثال: 1005)" required></div>
         <div style="display: flex; gap: 10px;">
             <input type="number" name="reward_points" placeholder="المكافأة (للمرشد/الرابط)" class="admin-form-group">
             <input type="number" name="max_winners" placeholder="عدد الفائزين" class="admin-form-group" value="1">
@@ -118,7 +119,7 @@
             <input type="number" name="trap_penalty" placeholder="النقاط المسروقة (للملعون)" class="admin-form-group">
             <input type="number" name="trap_duration" placeholder="دقائق التجميد (للرمال)" class="admin-form-group">
         </div>
-        <button type="submit" class="btn-danger" style="background: #e67e22; width: 100%;">زرع في المتاهة</button>
+        <button type="submit" class="btn-danger" style="background: #e67e22; width: 100%;">زرع الفخ في المتاهة</button>
     </form>
 </div>
 
@@ -143,40 +144,43 @@
         <div class="admin-form-group"><label>صورة الأداة (اختياري):</label><input type="file" name="item_image" accept="image/*"></div>
         
         <div style="background: rgba(243, 156, 18, 0.1); padding: 15px; border: 1px dashed #f39c12; margin-bottom: 15px; border-radius: 5px;">
-            <strong style="color: #f39c12;">🎲 إعدادات صناديق الحظ والسراب:</strong>
-            <label style="display: flex; gap: 10px; margin: 10px 0;"><input type="checkbox" name="is_luck" style="width:auto;"> جعلها صندوق حظ عشوائي</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="number" name="luck_min" placeholder="أسوأ نتيجة (مثال: -50)" style="flex:1; padding:8px;">
-                <input type="number" name="luck_max" placeholder="أفضل نتيجة (مثال: 100)" style="flex:1; padding:8px;">
+            <strong style="color: #f39c12; display: block; margin-bottom: 10px;">🎲 إعدادات صناديق الحظ والسراب:</strong>
+            <label style="display: flex; gap: 10px; margin-bottom: 10px; color: #fff; cursor: pointer;"><input type="checkbox" name="is_luck" style="width:auto;"> جعلها صندوق حظ عشوائي</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="number" name="luck_min" placeholder="أسوأ نتيجة (مثال: -50)" style="flex:1; padding:8px; border-radius:4px; border:1px solid #444; background:#000; color:#fff;">
+                <input type="number" name="luck_max" placeholder="أفضل نتيجة (مثال: 100)" style="flex:1; padding:8px; border-radius:4px; border:1px solid #444; background:#000; color:#fff;">
             </div>
-            <label style="display: flex; gap: 10px; margin-bottom: 10px;"><input type="checkbox" name="is_mirage" style="width:auto;"> جعلها فخ سراب (يأخذ المال ولا يعطي شيئاً)</label>
-            <input type="text" name="mirage_message" placeholder="رسالة الشماتة عند الوقوع في السراب..." style="width:100%; box-sizing: border-box;">
+            <label style="display: flex; gap: 10px; margin-bottom: 10px; color: #fff; cursor: pointer;"><input type="checkbox" name="is_mirage" style="width:auto;"> جعلها فخ سراب (يأخذ المال ولا يعطي شيئاً)</label>
+            <input type="text" name="mirage_message" placeholder="رسالة الشماتة عند الوقوع في السراب..." style="width:100%; padding:10px; border-radius:4px; border:1px solid #444; background:#000; color:#fff; box-sizing: border-box;">
         </div>
         <button type="submit" class="btn-primary" style="width: 100%;">طرح الأداة في السوق</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" style="border-right-color: #34495e;">👥 أرواح الرحالة والطمس النهائي <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" style="border-right-color: #34495e;">👥 أرواح الرحالة، التفعيل، والطمس <span>▼</span></button>
 <div id="mod-users" class="mod-content">
+    <p style="color: #f1c40f; font-size: 13px; margin-top: 0;">* الحسابات المكتوب بجانبها <strong>[inactive]</strong> هي حسابات جديدة تحتاج لتفعيلك يدوياً عبر اختيار (تفعيل الحسابات).</p>
     <form action="/admin" method="POST" id="bulkForm">
         <input type="hidden" name="action" value="bulk_action">
         <div class="smooth-scroll-list">
             {% for u in users %}
             <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #222;">
-                <input type="checkbox" name="selected_users" value="{{ u.id }}" style="margin: 0 10px 0 0;">
-                <span style="color: {{ '#2ecc71' if u.status=='active' else '#e74c3c' }}; font-size: 11px; min-width: 55px;">[{{ u.status }}]</span>
-                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold; flex-grow: 1;" target="_blank">{{ u.username }} (#{{ u.hunter_id }})</a>
+                <input type="checkbox" name="selected_users" value="{{ u.id }}" style="margin: 0 10px 0 0; transform: scale(1.2);">
+                <span style="color: {{ '#f1c40f' if u.status=='inactive' else ('#2ecc71' if u.status=='active' else '#e74c3c') }}; font-size: 12px; min-width: 70px; font-weight: bold;">
+                    [{{ 'ينتظر التفعيل' if u.status=='inactive' else u.status }}]
+                </span>
+                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold; flex-grow: 1; margin-right: 10px;" target="_blank">{{ u.username }} (#{{ u.hunter_id }})</a>
                 <span style="color: #2ecc71; font-family: monospace;">{{ u.health }}% HP</span>
             </div>
             {% endfor %}
         </div>
         <div style="margin-top: 15px; display: grid; gap: 10px;">
             <select name="bulk_type" id="bulkActionType" class="admin-form-group" style="margin-bottom:0;">
-                <option value="activate">إحياء / تفعيل الحسابات</option>
+                <option value="activate">إحياء / تفعيل الحسابات الجديدة</option>
                 <option value="eliminate">إعدام فوري (للمقبرة)</option>
                 <option value="hard_delete" style="color: #e74c3c; font-weight: bold;">⚠️ طمس نهائي (مسح الحساب وإتاحة الـ ID)</option>
             </select>
-            <input type="text" name="bulk_reason" placeholder="اكتب سبب الإعدام (يظهر في المقبرة)..." class="admin-form-group" style="margin-bottom:0;">
+            <input type="text" name="bulk_reason" placeholder="اكتب سبب الإعدام (يظهر في المقبرة للميت)..." class="admin-form-group" style="margin-bottom:0;">
             <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ الأمر الإمبراطوري</button>
         </div>
     </form>
@@ -186,23 +190,23 @@
 <div id="mod-maintenance" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="setup_maintenance">
-        <label style="color: #fff; margin-bottom: 10px; display: block;">أغلق الصفحات التالية عن الجميع (ما عدا الإمبراطور):</label>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: #111; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
-            <label><input type="checkbox" name="m_pages" value="all"> الموقع بالكامل</label>
-            <label><input type="checkbox" name="m_pages" value="home"> الرئيسية</label>
-            <label><input type="checkbox" name="m_pages" value="store"> السوق</label>
-            <label><input type="checkbox" name="m_pages" value="puzzles"> الألغاز</label>
-            <label><input type="checkbox" name="m_pages" value="declarations"> التصريحات</label>
-            <label><input type="checkbox" name="m_pages" value="friends"> الأصدقاء</label>
+        <label style="color: #fff; margin-bottom: 10px; display: block; font-weight: bold;">أغلق الصفحات التالية عن الجميع (ما عدا الإمبراطور):</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; background: #111; padding: 15px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #333;">
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="all"> الموقع بالكامل</label>
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="home"> الرئيسية</label>
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="store"> السوق</label>
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="puzzles"> الألغاز</label>
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="declarations"> التصريحات</label>
+            <label style="color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px;"><input type="checkbox" name="m_pages" value="friends"> الأصدقاء</label>
         </div>
         <div class="admin-form-group">
             <label>مدة الإغلاق (بالدقائق):</label>
-            <input type="number" name="m_duration" placeholder="مثال: 60 للصيانة ساعة كاملة" required>
+            <input type="number" name="m_duration" placeholder="مثال: 60 (لصيانة تستمر ساعة)" required>
         </div>
         <button type="submit" class="btn-primary" style="background: #7f8c8d; width: 100%;">تشغيل الصيانة المجدولة ⏳</button>
     </form>
     {% if settings.maintenance_mode %}
-    <form action="/admin" method="POST" style="margin-top: 10px;">
+    <form action="/admin" method="POST" style="margin-top: 15px;">
         <input type="hidden" name="action" value="setup_maintenance">
         <input type="hidden" name="m_duration" value="0">
         <button type="submit" class="btn-danger" style="width: 100%;">إيقاف الصيانة فوراً ✖️</button>
@@ -217,50 +221,55 @@
     {% if not settings.gates_mode_active %}
         <form action="/admin" method="POST">
             <input type="hidden" name="action" value="setup_gates">
-            <div class="admin-form-group"><label>وصف المسارات:</label><textarea name="desc">{{ settings.gates_description }}</textarea></div>
-            <div style="display: flex; gap: 5px; margin-bottom: 10px;">
-                <input type="text" name="g1" value="{{ settings.gate_1_name }}" placeholder="بوابة 1" style="width: 33%;">
-                <input type="text" name="g2" value="{{ settings.gate_2_name }}" placeholder="بوابة 2" style="width: 33%;">
-                <input type="text" name="g3" value="{{ settings.gate_3_name }}" placeholder="بوابة 3" style="width: 33%;">
+            <div class="admin-form-group"><label>وصف رسالة البوابات للرحالة:</label><textarea name="desc" rows="3">{{ settings.gates_description }}</textarea></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <input type="text" name="g1" value="{{ settings.gate_1_name }}" placeholder="اسم بوابة 1" style="flex: 1; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 4px;">
+                <input type="text" name="g2" value="{{ settings.gate_2_name }}" placeholder="اسم بوابة 2" style="flex: 1; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 4px;">
+                <input type="text" name="g3" value="{{ settings.gate_3_name }}" placeholder="اسم بوابة 3" style="flex: 1; padding: 10px; background: #000; border: 1px solid #444; color: #fff; border-radius: 4px;">
             </div>
-            <div class="admin-form-group"><label>نص السجن (للمختبرين):</label><textarea name="test_msg">{{ settings.gates_test_message }}</textarea></div>
-            <div class="admin-form-group" style="display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" name="locked" value="1" style="width: auto;" {% if settings.gates_selection_locked %}checked{% endif %}>
-                <label style="margin:0;">قفل البوابات مبدئياً (للتفكير قبل الاختيار)</label>
+            <div class="admin-form-group"><label>نص السجن (يظهر لمن تحكم عليهم بالاختبار):</label><textarea name="test_msg" rows="2">{{ settings.gates_test_message }}</textarea></div>
+            <div class="admin-form-group" style="display: flex; align-items: center; gap: 10px; background: #111; padding: 10px; border-radius: 5px;">
+                <input type="checkbox" name="locked" value="1" style="width: 20px; height: 20px; cursor: pointer;" {% if settings.gates_selection_locked %}checked{% endif %}>
+                <label style="margin:0; cursor: pointer; color: #fff;">قفل البوابات مبدئياً (يمنع اللاعبين من الاختيار الفوري للتفكير)</label>
             </div>
-            <button type="submit" class="btn-danger" style="width: 100%;">تشغيل البوابات وإجبار الجميع 🚀</button>
+            <button type="submit" class="btn-danger" style="width: 100%; background: #c0392b;">تشغيل البوابات وإجبار الجميع على الاختيار 🚀</button>
         </form>
     {% else %}
-        <form action="/admin" method="POST" style="margin-bottom: 15px;">
+        <form action="/admin" method="POST" style="margin-bottom: 20px;">
             <input type="hidden" name="action" value="judge_gates">
-            <strong style="color: #fff; margin-bottom: 10px; display: block;">⚖️ إصدار الحكم على البوابات:</strong>
-            <div style="display: flex; gap: 5px; margin-bottom: 15px;">
-                <div style="flex:1; background:#111; padding:10px; border-radius:5px; text-align:center;">
-                    بوابة 1 ({{ gate_stats[1] }} رحالة)<br>
-                    <select name="fate_1" style="width:100%; margin-top:5px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
+            <strong style="color: #fff; margin-bottom: 15px; display: block; font-size: 16px;">⚖️ إصدار الحكم الإمبراطوري على البوابات:</strong>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex:1; background:#18191a; padding:15px; border-radius:8px; text-align:center; border: 1px solid #333;">
+                    <strong style="color: var(--zone-3-gold); display: block; margin-bottom: 10px;">بوابة 1 ({{ gate_stats[1] }} رحالة)</strong>
+                    <select name="fate_1" style="width:100%; padding: 8px; background: #000; color: #fff; border: 1px solid #555; border-radius: 4px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
                 </div>
-                <div style="flex:1; background:#111; padding:10px; border-radius:5px; text-align:center;">
-                    بوابة 2 ({{ gate_stats[2] }} رحالة)<br>
-                    <select name="fate_2" style="width:100%; margin-top:5px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
+                <div style="flex:1; background:#18191a; padding:15px; border-radius:8px; text-align:center; border: 1px solid #333;">
+                    <strong style="color: var(--zone-3-gold); display: block; margin-bottom: 10px;">بوابة 2 ({{ gate_stats[2] }} رحالة)</strong>
+                    <select name="fate_2" style="width:100%; padding: 8px; background: #000; color: #fff; border: 1px solid #555; border-radius: 4px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
                 </div>
-                <div style="flex:1; background:#111; padding:10px; border-radius:5px; text-align:center;">
-                    بوابة 3 ({{ gate_stats[3] }} رحالة)<br>
-                    <select name="fate_3" style="width:100%; margin-top:5px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
+                <div style="flex:1; background:#18191a; padding:15px; border-radius:8px; text-align:center; border: 1px solid #333;">
+                    <strong style="color: var(--zone-3-gold); display: block; margin-bottom: 10px;">بوابة 3 ({{ gate_stats[3] }} رحالة)</strong>
+                    <select name="fate_3" style="width:100%; padding: 8px; background: #000; color: #fff; border: 1px solid #555; border-radius: 4px;"><option value="pass">يمرون بسلام</option><option value="kill">إعدام جماعي</option><option value="test">سجن الاختبار</option></select>
                 </div>
             </div>
             <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ الحكم الآن ⚡</button>
         </form>
         
         {% if test_users.count() > 0 %}
-        <strong style="color:#e67e22; display:block; margin-bottom:10px;">🛡️ المسجونين في الاختبار:</strong>
-        <div style="background: #111; border: 1px solid #333; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <strong style="color:#e67e22; display:block; margin-bottom:15px; font-size: 16px;">🛡️ المسجونين في الاختبار (تقييم فردي):</strong>
+        <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             {% for tu in test_users %}
-            <form action="/admin" method="POST" style="display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+            <form action="/admin" method="POST" style="display: flex; gap: 15px; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 15px; align-items: center;">
                 <input type="hidden" name="action" value="judge_test_user">
                 <input type="hidden" name="user_id" value="{{ tu.id }}">
-                <div style="flex: 2; color: #fff;"><strong>{{ tu.username }}</strong><br><span style="color:#aaa; font-size:12px;">إجابته: {{ tu.gate_test_answer or 'لم يُجب بعد' }}</span></div>
-                <button type="submit" name="decision" value="pass" class="btn-primary" style="flex: 1; background: #2ecc71;">مرور</button>
-                <button type="submit" name="decision" value="kill" class="btn-danger" style="flex: 1;">إعدام</button>
+                <div style="flex: 2; color: #fff;">
+                    <strong style="font-size: 15px; color: var(--zone-3-gold);">{{ tu.username }}</strong><br>
+                    <span style="color:#ccc; font-size:13px; display: block; margin-top: 5px; background: #000; padding: 8px; border-radius: 4px; border: 1px solid #222;">إجابته: {{ tu.gate_test_answer or 'لم يُجب بعد' }}</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                    <button type="submit" name="decision" value="pass" class="btn-primary" style="background: #2ecc71; padding: 8px;">مرور ونجاة</button>
+                    <button type="submit" name="decision" value="kill" class="btn-danger" style="padding: 8px;">إعدام</button>
+                </div>
             </form>
             {% endfor %}
         </div>
@@ -270,83 +279,84 @@
     {% endif %}
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-war')" style="border-right-color: #e74c3c;">⚔️ 2. مود الحرب الشاملة (مع حصانتك) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-war')" style="border-right-color: #e74c3c;">⚔️ 2. مود الحرب الشاملة (أنت محصن) <span>▼</span></button>
 <div id="mod-war" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 15px;" onsubmit="return confirm('إيقاف الحرب سيشفي الجميع ويرجعهم لـ 100 ويمسح سجلات الطعن. متأكد؟');">
         <input type="hidden" name="action" value="toggle_war">
-        <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.war_mode else '#2c3e50' }};">
+        <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.war_mode else '#2c3e50' }}; font-size: 16px; padding: 15px;">
             {{ 'إيقاف الحرب وإعلان السلام' if settings.war_mode else 'إعلان الحرب الشاملة والنزيف' }}
         </button>
     </form>
-    <div style="background: rgba(231, 76, 60, 0.1); border: 1px dashed #e74c3c; padding: 15px; border-radius: 8px;">
-        <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">إعدادات النزيف التلقائي:</strong>
+    <div style="background: rgba(231, 76, 60, 0.05); border: 1px dashed #e74c3c; padding: 15px; border-radius: 8px;">
+        <strong style="color: #e74c3c; display: block; margin-bottom: 15px;">إعدادات النزيف التلقائي:</strong>
         <form action="/admin" method="POST">
             <input type="hidden" name="action" value="update_war_settings">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                <div><label style="color:#aaa; font-size:12px;">كل كم دقيقة ينزف؟</label><input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes }}" style="width:100%; padding:8px; background:#000; border:1px solid #444; color:#fff;"></div>
-                <div><label style="color:#aaa; font-size:12px;">كم نقطة دم يخسر؟</label><input type="number" name="bleed_amount" value="{{ settings.bleed_amount }}" style="width:100%; padding:8px; background:#000; border:1px solid #444; color:#fff;"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                <div><label style="color:#ccc; font-size:12px; margin-bottom:5px; display:block;">كل كم دقيقة ينزف؟</label><input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes }}" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:4px;"></div>
+                <div><label style="color:#ccc; font-size:12px; margin-bottom:5px; display:block;">كم نقطة دم يخسر؟</label><input type="number" name="bleed_amount" value="{{ settings.bleed_amount }}" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:4px;"></div>
             </div>
-            <div><label style="color:#aaa; font-size:12px;">دقائق الأمان من النزيف بعد أي نشاط:</label><input type="number" name="safe_time_minutes" value="{{ settings.safe_time_minutes }}" style="width:100%; padding:8px; background:#000; border:1px solid #444; color:#fff; margin-bottom:10px;"></div>
-            <button type="submit" class="btn-primary" style="width: 100%;">حفظ قوانين النزيف</button>
+            <div style="margin-bottom: 15px;"><label style="color:#ccc; font-size:12px; margin-bottom:5px; display:block;">دقائق الأمان من النزيف بعد أي نشاط:</label><input type="number" name="safe_time_minutes" value="{{ settings.safe_time_minutes }}" style="width:100%; padding:10px; background:#000; border:1px solid #444; color:#fff; border-radius:4px;"></div>
+            <button type="submit" class="btn-danger" style="width: 100%; background: transparent; border: 1px solid #e74c3c; color: #e74c3c;">حفظ قوانين النزيف</button>
         </form>
     </div>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-floor3')" style="border-right-color: #8e44ad;">🗳️ 3. مود التصويت (100 صوت للنجاة) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-floor3')" style="border-right-color: #8e44ad;">🗳️ 3. مود التصويت (محكمة الأصوات) <span>▼</span></button>
 <div id="mod-floor3" class="mod-content">
-    <form action="/admin" method="POST" style="margin-bottom: 15px;">
+    <form action="/admin" method="POST" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="toggle_floor3">
-        <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.floor3_mode_active else '#8e44ad' }};">
-            {{ 'إغلاق المحكمة وإنهاء التصويت' if settings.floor3_mode_active else 'فتح محكمة الأصوات' }}
+        <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#e74c3c' if settings.floor3_mode_active else '#8e44ad' }}; font-size: 16px; padding: 15px;">
+            {{ 'إغلاق المحكمة وإنهاء التصويت' if settings.floor3_mode_active else 'فتح محكمة الأصوات (100 نقطة)' }}
         </button>
     </form>
     
     {% if settings.floor3_mode_active %}
-        <strong style="color:#8e44ad; display:block; margin-bottom:10px;">🏆 ترتيب الناجين الحالي:</strong>
-        <div style="background: #111; border: 1px solid #333; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+        <strong style="color:#8e44ad; display:block; margin-bottom:10px; font-size: 15px;">🏆 ترتيب الناجين الحالي (أعلى 5):</strong>
+        <div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
             {% for leader in floor3_leaders %}
-                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 5px 0;">
-                    <span style="color:#fff;">{{ loop.index }}. {{ leader.username }}</span>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding: 8px 0;">
+                    <span style="color:#fff; font-weight: bold;">{{ loop.index }}. {{ leader.username }}</span>
                     <strong style="color: #2ecc71;">{{ leader.survival_votes }} صوت</strong>
                 </div>
             {% else %}
-                <p style="color:#666; font-size:13px; text-align:center; margin:0;">لم يتم تجميع أي أصوات بعد.</p>
+                <p style="color:#666; font-size:14px; text-align:center; margin:0;">لم يتم تجميع أي أصوات بعد.</p>
             {% endfor %}
         </div>
         
-        <form action="/admin" method="POST" onsubmit="return confirm('هذا سيعدم كل من لم يوزع أصواته، وسيوزع أصواتهم المسروقة كهدية على الباقين. متأكد؟');">
+        <form action="/admin" method="POST" onsubmit="return confirm('هذا سيعدم كل من لم يوزع أصواته، وسيوزع أصواتهم المسروقة كهدية على الباقين. هل أنت متأكد؟');">
             <input type="hidden" name="action" value="punish_floor3_slackers">
-            <button type="submit" class="btn-danger" style="width: 100%; background: #000; border: 1px solid #8e44ad; color: #8e44ad;">إعدام المتخلفين عن التصويت ⚡</button>
+            <button type="submit" class="btn-danger" style="width: 100%; background: #000; border: 1px solid #8e44ad; color: #8e44ad; padding: 12px; font-weight: bold;">إعدام المتخلفين عن التصويت ⚡</button>
         </form>
     {% endif %}
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-final')" style="border-right-color: #f1c40f;">👑 4. مود المعركة الأخيرة (Boss Fight) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-final')" style="border-right-color: #f1c40f;">👑 4. مود المعركة الأخيرة (الزعيم) <span>▼</span></button>
 <div id="mod-final" class="mod-content">
-    <p style="color: #aaa; font-size: 13px; margin-top: 0;">في هذا المود، سيتم تفعيل خصائص الحرب والنزيف، <strong>ولكن سيُسمح للاعبين باستهدافك وطعنك</strong>. تأكد من رفع صحتك قبل تفعيله!</p>
-    <form action="/admin" method="POST" style="margin-bottom: 15px;">
-        <input type="hidden" name="action" value="toggle_final_battle">
-        <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#f1c40f' if settings.final_battle_mode else '#2c3e50' }}; color: #000;">
-            {{ 'إيقاف المعركة الأخيرة وحصانة الإمبراطور' if settings.final_battle_mode else 'إعلان المعركة الأخيرة (السماح بطعنك)' }}
-        </button>
-    </form>
-    <div style="background: rgba(241, 196, 15, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #f1c40f;">
-        <strong style="color: #f1c40f; display: block; margin-bottom: 10px;">💪 رفع صحة الزعيم (أنت):</strong>
-        <form action="/admin" method="POST" style="display: flex; gap: 5px;">
-            <input type="hidden" name="action" value="set_admin_hp">
-            <input type="number" name="admin_hp" placeholder="مثال: 5000" required style="width: 60%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px;">
-            <button type="submit" class="btn-primary" style="width: 40%; background: #f1c40f; color: #000;">شحن الصحة</button>
+    <div style="background: rgba(241, 196, 15, 0.05); border: 1px dashed #f1c40f; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <p style="color: #ccc; font-size: 14px; margin-top: 0; line-height: 1.5;">في هذا المود، سيتم تفعيل خصائص الحرب والنزيف للجميع، <strong>ولكن سيُرفع عنك درع الحصانة ويُسمح للاعبين باستهدافك وطعنك!</strong> تأكد من رفع صحتك الإمبراطورية قبل إعلانه.</p>
+        <form action="/admin" method="POST">
+            <input type="hidden" name="action" value="toggle_final_battle">
+            <button type="submit" class="btn-primary" style="width: 100%; background: {{ '#f1c40f' if settings.final_battle_mode else '#2c3e50' }}; color: #000; font-weight: bold; font-size: 15px; padding: 12px;">
+                {{ 'إيقاف المعركة الأخيرة (استعادة الحصانة)' if settings.final_battle_mode else 'إعلان المعركة الأخيرة (السماح بطعنك)' }}
+            </button>
         </form>
     </div>
+    
+    <strong style="color: #f1c40f; display: block; margin-bottom: 10px;">💪 شحن صحة الزعيم (أنت):</strong>
+    <form action="/admin" method="POST" style="display: flex; gap: 10px;">
+        <input type="hidden" name="action" value="set_admin_hp">
+        <input type="number" name="admin_hp" placeholder="اكتب رقم الصحة الخارقة (مثال: 5000)" required style="flex: 1; padding: 12px; background: #000; color: #fff; border: 1px solid #444; border-radius: 6px;">
+        <button type="submit" class="btn-primary" style="width: auto; background: #f1c40f; color: #000; font-weight: bold; padding: 12px 25px; border-radius: 6px;">شحن</button>
+    </form>
 </div>
 
 <hr style="border-color: #333; margin: 30px 0;">
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')" style="border-right-color: #ecf0f1; background: #000;">📜 سجل أحداث المتاهة (The Logs) <span>▼</span></button>
-<div id="mod-logs" class="mod-content" style="display: block; border-color: #ecf0f1;"> <div style="display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-        <input type="date" id="logDatePicker" value="{{ current_date }}" style="padding: 8px; background: #111; color: #fff; border: 1px solid #444; border-radius: 4px; flex: 1;">
-        <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-primary" style="width: auto; padding: 8px 20px;">تحديث السجل</button>
-        <a href="/download_logs/{{ current_date }}" class="btn-primary" style="background: #34495e; width: auto; padding: 8px 20px; text-decoration: none;">تحميل TXT 📥</a>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')" style="border-right-color: #ecf0f1; background: #000;">📜 سجل أحداث المتاهة الإمبراطوري <span>▼</span></button>
+<div id="mod-logs" class="mod-content" style="display: block; border-color: #ecf0f1;"> <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <input type="date" id="logDatePicker" value="{{ current_date }}" style="padding: 10px; background: #111; color: #fff; border: 1px solid #444; border-radius: 6px; flex: 1;">
+        <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-primary" style="width: auto; padding: 10px 25px; border-radius: 6px;">تحديث السجل</button>
+        <a href="/download_logs/{{ current_date }}" class="btn-primary" style="background: #34495e; width: auto; padding: 10px 25px; text-decoration: none; border-radius: 6px;">تحميل TXT 📥</a>
     </div>
     <div class="log-container">
         {% for log in logs %}
@@ -365,12 +375,12 @@
         x.style.display = (x.style.display === "none" || x.style.display === "") ? "block" : "none";
     }
     
-    // سكريبت حماية للإمبراطور من الطمس الخاطئ
     document.getElementById('bulkForm').onsubmit = function() {
         if(document.getElementById('bulkActionType').value === 'hard_delete') {
-            return confirm('⚠️ هل أنت متأكد تماماً من "الطمس النهائي"؟ سيتم مسح الحسابات المختارة من قاعدة البيانات نهائياً وتوفير الـ ID الخاص بهم للتسجيل من جديد. لا يمكن التراجع!');
+            return confirm('⚠️ تحذير إمبراطوري أخير!\n\nالطمس النهائي سيمسح الحسابات المختارة من قاعدة البيانات نهائياً، وسيتم توفير الـ ID الخاص بهم للتسجيل من جديد.\n\nهل أنت متأكد تماماً من هذا القرار؟ لا يمكن التراجع عنه!');
         }
         return true;
     };
 </script>
 {% endblock %}
+
