@@ -146,7 +146,6 @@ def home():
         latest_dec = News.objects(category='declaration', status='approved').order_by('-created_at').first()
         last_frozen = User.objects(status='eliminated').order_by('-id').first()
         
-        # تجهيز قائمة الأعضاء لمود التصويت (للبحث الذكي)
         active_hunters_json = "[]"
         if settings and getattr(settings, 'floor3_mode_active', False):
             active_voters_count = User.objects(status='active', role='hunter', has_voted=True).count()
@@ -336,8 +335,8 @@ def use_item(target_id):
             has_shield = False; shield_name = ""
             for i in target.inventory:
                 if 'حجاب' in i or 'درع' in i or 'عباءة' in i: has_shield = True; shield_name = i; break
-            if has_shield: target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash('محمي!', 'error')
-            else: target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash('سُرق!', 'success')
+            if has_shield: target.inventory.remove(shield_name); target.save(); attacker.inventory.remove(item_name); attacker.save(); flash('محمي! احترقت يدك.', 'error')
+            else: target.inventory.remove(stolen_item); target.save(); attacker.inventory.remove(item_name); attacker.inventory.append(stolen_item); attacker.save(); flash('تمت السرقة!', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/friends', methods=['GET'])
@@ -363,11 +362,11 @@ def add_friend():
         
     if getattr(target, 'role', '') in ['ghost', 'cursed_ghost']:
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target.hunter_id)).first()
-        if getattr(target, 'role', '') == 'cursed_ghost' and trap: user.points -= getattr(trap, 'trap_penalty_points', 0); user.save(); flash('شبح ملعون!', 'error')
+        if getattr(target, 'role', '') == 'cursed_ghost' and trap: user.points -= getattr(trap, 'trap_penalty_points', 0); user.save(); flash('أيقظت شبحاً ملعوناً!', 'error')
         elif trap and str(user.id) not in trap.winners_list and (getattr(trap, 'current_winners', 0)) < (getattr(trap, 'max_winners', 1)):
             if getattr(trap, 'reward_points', 0) > 0: user.points += trap.reward_points
             user.stats_ghosts_caught = getattr(user, 'stats_ghosts_caught', 0) + 1; trap.current_winners = getattr(trap, 'current_winners', 0) + 1; trap.winners_list.append(str(user.id))
-            user.save(); trap.save(); check_achievements(user); flash('اصطدت شبحاً!', 'success')
+            user.save(); trap.save(); check_achievements(user); flash('اصطدت شبحاً بنجاح!', 'success')
         return redirect(request.referrer or url_for('home'))
         
     if target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
@@ -393,7 +392,7 @@ def accept_friend(friend_id):
         if f and f.status != 'active': user.friend_requests.remove(friend_id); user.save(); return redirect(request.referrer or url_for('home'))
         user.friend_requests.remove(friend_id); user.friends.append(friend_id)
         if f: f.friends.append(user.hunter_id); f.save()
-        user.save(); check_achievements(user); flash('قُبل! 🤝', 'success')
+        user.save(); check_achievements(user); flash('تم القبول! 🤝', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/news')
@@ -422,7 +421,6 @@ def puzzles():
     user.last_seen_puzzles = datetime.utcnow(); user.save()
     return render_template('puzzles.html', puzzles_list=News.objects(category='puzzle', status='approved').order_by('-created_at'))
 
-# 🗑️ مسار حذف الألغاز للإدارة
 @app.route('/delete_puzzle/<puzzle_id>', methods=['POST'])
 @admin_required
 def delete_puzzle(puzzle_id):
@@ -459,7 +457,28 @@ def declarations():
         News(title=f"تصريح من {user.username}", content=content_text, image_data=img_b64, category='declaration', author=user.username, status='approved' if getattr(user, 'role', '') == 'admin' else 'pending').save()
         flash('تم الإرسال (سينشر بعد الموافقة)', 'success'); return redirect(url_for('declarations'))
     user.last_seen_decs = datetime.utcnow(); user.save()
-    return render_template('declarations.html', decs=News.objects(category='declaration', status='approved').order_by('-created_at'), current_user=user)
+    
+    # 🟢 جلب التصريحات المقبولة والخاصة باللاعب
+    approved_decs = News.objects(category='declaration', status='approved').order_by('-created_at')
+    my_pending_decs = News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at')
+    
+    return render_template('declarations.html', approved_decs=approved_decs, my_pending_decs=my_pending_decs, current_user=user)
+
+# 🗑️ دالة حذف التصريحات الجديدة
+@app.route('/delete_declaration/<dec_id>', methods=['POST'])
+@login_required
+def delete_declaration(dec_id):
+    user = User.objects(id=session['user_id']).first()
+    try:
+        dec = News.objects(id=dec_id).first()
+        if dec and (dec.author == user.username or getattr(user, 'role', '') == 'admin'):
+            dec.delete()
+            flash('تم حذف التصريح بنجاح!', 'success')
+        else:
+            flash('ليس لديك صلاحية لحذف هذا التصريح.', 'error')
+    except Exception:
+        flash('حدث خطأ أثناء الحذف.', 'error')
+    return redirect(url_for('declarations'))
 
 @app.route('/store')
 @login_required
@@ -600,4 +619,3 @@ def admin_panel():
     return render_template('admin.html', users=users, settings=settings, test_users=test_users, gate_stats=gate_stats, floor3_leaders=floor3_leaders, pending_decs=pending_decs, hidden_puzzles=hidden_puzzles)
 
 if __name__ == '__main__': app.run(debug=True)
-
