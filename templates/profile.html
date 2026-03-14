@@ -1,81 +1,58 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="hunter-card {{ zone_class }}" style="text-align: center; margin-top: 40px; position: relative;">
-    
-    <button onclick="document.getElementById('settingsModal').style.display='flex'" style="position: absolute; top: 10px; right: 10px; background: transparent; border: none; font-size: 24px; cursor: pointer; z-index: 10;">⚙️</button>
-
-    <img src="{{ banner_url }}" class="profile-banner" alt="Banner" crossorigin="anonymous">
-    
-    <div class="avatar-ring {{ zone_class }}" style="margin-top: -60px;">
-        {% if user.avatar.startswith('data:image') or user.avatar.startswith('http') %}
-            <img src="{{ user.avatar }}" alt="Avatar" crossorigin="anonymous" loading="lazy">
-        {% else %}
-            <div class="emoji-avatar">{{ user.avatar }}</div>
-        {% endif %}
-    </div>
-
-    {% if war_settings and war_settings.war_mode %}
-    <div style="margin-top: 5px; width: 80%; margin-left: auto; margin-right: auto;">
-        <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 5px;">
-            <span>صحتي (HP)</span>
-            <span class="neon-number" style="color: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">{{ user.health }}/100</span>
-        </div>
-        <div style="width: 100%; background: #222; border-radius: 10px; height: 12px; overflow: hidden; border: 1px solid #111;">
-            <div style="height: 100%; width: {{ user.health }}%; background: {% if user.health > 50 %}#2ecc71{% elif user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %}; transition: width 0.5s;"></div>
-        </div>
-    </div>
-    {% endif %}
-
-    <h2 style="margin-top: 15px; margin-bottom: 5px;">{{ user.username }} <span style="font-size:14px; color:var(--text-muted);">#{{ user.hunter_id }}</span></h2>
-    
-    <hr style="border-color: var(--zone-0-black); margin: 20px 0;">
-    <div style="display: flex; justify-content: space-around; align-items: flex-start;">
-        <div><span style="color: var(--text-muted); font-size:12px;">النقاط</span><br><strong class="neon-number" style="font-size: 28px;">{{ user.points }}</strong></div>
-        <div><span style="color: var(--text-muted); font-size:12px;">الحالة</span><br><strong style="font-size: 16px; color: {{ '#2ecc71' if user.status == 'active' else '#e74c3c' }};">{{ 'مقصي' if user.status != 'active' else 'نشط 🟢' }}</strong></div>
-    </div>
-    
-    {% if my_seals %}
-    <div style="margin-top: 20px; background: rgba(231, 76, 60, 0.1); padding: 15px; border-radius: 8px; border: 1px dashed #e74c3c;">
-        <h4 style="margin-top: 0; color: #e74c3c;">🏺 أختام سيفار الملعونة ({{ user.destroyed_seals }}/4 دُمرت)</h4>
-        <p style="font-size: 12px; color: #ff9999;">لديك أختام ملكية! دمرها قبل أن يسرقها أحد.</p>
-        {% for seal in my_seals %}
-            <form action="/use_item/{{ user.hunter_id }}" method="POST" style="margin-bottom: 5px;">
-                <input type="hidden" name="item_name" value="{{ seal.name }}">
-                <button type="submit" class="btn-danger" style="width: 100%; background: #8b0000; padding: 10px;">تدمير ({{ seal.name }}) 🔨</button>
-            </form>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <div style="margin-top: 20px; text-align: right; background: #111; padding: 15px; border-radius: 8px;">
-        <h4 style="margin-top: 0; color: var(--zone-4-diamond);">🎒 حقيبتي</h4>
-        {% if user.inventory %}
-            <ul style="margin: 0; padding-right: 20px; color: var(--text-main); font-size: 13px;">{% for item in user.inventory %}<li>{{ item }}</li>{% endfor %}</ul>
-        {% else %}
-            <p style="color: var(--text-muted); font-size: 12px; margin: 0;">الحقيبة فارغة.</p>
-        {% endif %}
+<div class="hunter-card" style="text-align: center; position: relative;">
+    <div style="font-size: 60px; margin-bottom: 10px;">{{ user.avatar or '👤' }}</div>
+    <h2 style="margin: 0; color: var(--zone-3-gold);">{{ user.username }}</h2>
+    <p style="color: #aaa; font-size: 14px; margin-top: 5px;">الرقم التعريفي (ID): <strong style="color: #fff;">{{ user.hunter_id }}</strong></p>
+    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 15px;">
+        <span style="background: #111; padding: 8px 15px; border-radius: 5px; border: 1px solid #333; color: #2ecc71;">🩸 الصحة: {{ user.health }}%</span>
+        <span style="background: #111; padding: 8px 15px; border-radius: 5px; border: 1px solid #333; color: var(--zone-3-gold);">💰 النقاط: {{ user.points }}</span>
     </div>
 </div>
 
-<div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: #111; padding: 20px; border-radius: 10px; border: 1px solid var(--zone-3-gold); width: 90%; max-width: 400px;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0;">⚙️ إعدادات الرحالة</h3>
-        
-        <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 20px;">
-            <input type="hidden" name="action" value="change_avatar">
-            <label style="color: #fff; font-size: 12px;">تغيير الصورة:</label>
-            <input type="file" name="avatar_file" accept="image/*" required style="width: 100%; margin-bottom: 10px;">
-            <button type="submit" class="btn-primary">حفظ الصورة</button>
-        </form>
-
-        <form action="/settings" method="POST" style="border-top: 1px dashed #333; padding-top: 15px;">
-            <input type="hidden" name="action" value="change_name">
-            <label style="color: #fff; font-size: 12px;">تغيير الاسم (مرة كل 15 يوم):</label>
-            <input type="text" name="new_name" placeholder="الاسم الجديد..." required style="width: 100%; margin-bottom: 10px; padding: 8px;">
-            <button type="submit" class="btn-primary" style="background: #e67e22;">تغيير الاسم</button>
-        </form>
-
-        <button onclick="document.getElementById('settingsModal').style.display='none'" class="btn-danger" style="margin-top: 15px; width: 100%;">إغلاق</button>
-    </div>
+<h3 style="color: #3498db; margin-top: 30px;">🎒 حقيبة الرحالة</h3>
+<div style="background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+    {% if my_items %}
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for item in my_items %}
+                {% if item.item_type != 'seal' %}
+                <span style="background: #222; padding: 5px 10px; border-radius: 4px; font-size: 13px; color: #fff; border: 1px solid #444;">{{ item.name }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: #666; font-size: 13px; margin: 0; text-align: center;">حقيبتك فارغة، زر السوق للتجهز.</p>
+    {% endif %}
 </div>
+
+{% if my_seals %}
+<h3 style="color: #f1c40f; margin-top: 30px;">🛡️ الأختام الملكية التي بحوزتك</h3>
+<div style="background: rgba(241, 196, 15, 0.1); border: 1px dashed #f1c40f; padding: 15px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+    {% for seal in my_seals %}
+    <span style="font-size: 24px; margin: 0 5px;" title="{{ seal.name }}">🧿</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<h3 style="color: #aaa; margin-top: 30px; border-bottom: 1px solid #333; padding-bottom: 10px;">⚙️ إعدادات الهوية</h3>
+
+<form action="/settings" method="POST" class="hunter-card" style="margin-bottom: 15px;">
+    <input type="hidden" name="action" value="change_name">
+    <label style="color: var(--zone-3-gold); display: block; margin-bottom: 10px;">تغيير الاسم (مرة كل 15 يوم):</label>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" name="new_name" placeholder="الاسم الجديد" required style="flex: 1; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px;">
+        <button type="submit" class="btn-primary" style="width: auto;">حفظ</button>
+    </div>
+</form>
+
+<form action="/settings" method="POST" class="hunter-card" style="margin-bottom: 15px;">
+    <input type="hidden" name="action" value="change_password">
+    <label style="color: #e74c3c; display: block; margin-bottom: 10px;">تغيير كلمة السر (مرة كل 24 ساعة):</label>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+        <input type="password" name="old_password" placeholder="كلمة السر القديمة" required style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px;">
+        <input type="password" name="new_password" placeholder="كلمة السر الجديدة" required style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px;">
+        <input type="password" name="confirm_password" placeholder="تأكيد كلمة السر الجديدة" required style="padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px;">
+        <button type="submit" class="btn-danger" style="width: 100%;">تأكيد تغيير كلمة السر</button>
+    </div>
+</form>
 {% endblock %}
