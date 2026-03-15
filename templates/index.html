@@ -1,160 +1,135 @@
 {% extends 'base.html' %}
 {% block content %}
+
+{% set display_rank = current_user.special_rank if current_user else '' %}
+{% if current_user %}
+    {% if current_user.zone == 'البوابات' %}
+        {% set display_rank = 'مستكشف' %}
+    {% elif 'طابق الأول' in current_user.zone or 'الطابق 1' in current_user.zone %}
+        {% if current_user.points < 50 %}{% set display_rank = 'صياد مبتدئ' %}
+        {% elif current_user.points < 150 %}{% set display_rank = 'صياد متمرس' %}
+        {% elif current_user.points < 300 %}{% set display_rank = 'صياد نخبة' %}
+        {% elif current_user.points < 500 %}{% set display_rank = 'صياد محترف' %}
+        {% else %}{% set display_rank = 'نيتيرو 👑' %}{% endif %}
+    {% endif %}
+{% endif %}
+
 <style>
-    /* بطاقة اللاعب المميزة */
-    .player-card { background: linear-gradient(135deg, #151515 0%, #050505 100%); border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 30px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-    .avatar-circle { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--zone-3-gold); display: flex; justify-content: center; align-items: center; background: #000; font-size: 35px; overflow: hidden; flex-shrink: 0; }
-    .stats-container { display: flex; gap: 30px; flex-wrap: wrap; }
-    .stat-box { text-align: center; }
-    .stat-val { font-size: 22px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-    .stat-name { font-size: 12px; color: #888; margin-top: 5px; }
+    /* الغلاف (البانر) للرئيسية والبروفايل */
+    .epic-banner { position: relative; width: 100%; height: 220px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 25px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); overflow: hidden; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; }
+    .epic-banner::after { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #000 10%, transparent 100%); }
+    .banner-text { position: relative; z-index: 2; text-align: center; }
+    .banner-title { color: #fff; font-size: 32px; font-weight: 900; text-shadow: 0 3px 15px #000, 0 0 25px var(--gold-main); margin: 0 0 5px 0; }
+    .banner-subtitle { color: var(--gold-main); font-size: 16px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold-dark); }
 
-    /* تنبيهات الحرب والأحداث */
-    .event-alert { padding: 15px; border-radius: 8px; font-weight: bold; text-align: center; margin-bottom: 25px; animation: pulse 2s infinite; }
-    .alert-war { background: rgba(139,0,0,0.15); border: 1px solid var(--zone-2-red); color: #ff6b6b; }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+    /* شاشة النصر الأسطورية (انيميشن) */
+    .victory-screen { position: fixed; inset: 0; background: radial-gradient(circle, #2a1f00 0%, #000 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow: hidden; }
+    .victory-title { font-size: 60px; color: var(--gold-light); text-shadow: 0 0 40px var(--gold-main), 0 0 80px #fff; animation: scaleGlow 3s infinite alternate; margin: 0; }
+    .victory-sub { color: #ddd; font-size: 22px; margin-top: 20px; line-height: 1.6; max-width: 600px; animation: slideUp 2s ease-out; }
+    .gold-particles { position: absolute; width: 100%; height: 100%; pointer-events: none; background-image: radial-gradient(var(--gold-main) 1px, transparent 1px); background-size: 50px 50px; opacity: 0.3; animation: floatUp 20s linear infinite; }
+    @keyframes scaleGlow { 0% { transform: scale(0.95); text-shadow: 0 0 20px var(--gold-main); } 100% { transform: scale(1.05); text-shadow: 0 0 60px var(--gold-light), 0 0 100px #fff; } }
+    @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes floatUp { from { background-position: 0 100%; } to { background-position: 0 0; } }
 
-    /* بطاقات الأقسام (تضغط عليها تدخلك للصفحة) */
-    .modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .mod-card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 20px; text-decoration: none; color: #fff; transition: 0.3s; display: flex; flex-direction: column; position: relative; overflow: hidden; }
-    .mod-card:hover { transform: translateY(-5px); border-color: #555; box-shadow: 0 10px 20px rgba(0,0,0,0.5); background: #151515; }
-    .mod-card::before { content: ''; position: absolute; top: 0; right: 0; width: 5px; height: 100%; }
-    .card-news::before { background: var(--zone-3-gold); }
-    .card-decs::before { background: var(--zone-4-blue); }
-    .card-puz::before { background: #9b59b6; }
-    .card-store::before { background: #e67e22; }
-
-    /* شاشة الزوار غير المسجلين */
-    .guest-landing { text-align: center; padding: 60px 20px; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); border: 1px solid #333; border-radius: 12px; margin-top: 20px; }
-    .guest-title { color: var(--zone-3-gold); font-size: 36px; margin-bottom: 10px; }
-    .btn-large { display: inline-block; padding: 15px 40px; margin: 10px; font-size: 18px; font-weight: bold; color: #fff; text-decoration: none; border-radius: 8px; transition: 0.3s; }
-    .btn-login { background: #34495e; border: 1px solid #2c3e50; }
-    .btn-login:hover { background: #2c3e50; }
-    .btn-join { background: var(--zone-2-red); border: 1px solid #ff4c4c; box-shadow: 0 0 15px rgba(139,0,0,0.5); }
-    .btn-join:hover { background: #a00000; transform: scale(1.05); }
+    /* الإحصائيات وبطاقات المودات */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+    .gold-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); position: relative; overflow: hidden; transition: 0.3s; }
+    .gold-card:hover { border-color: var(--gold-dark); transform: translateY(-5px); box-shadow: 0 12px 25px rgba(212,175,55,0.1); }
+    
+    .stats-flex { display: flex; justify-content: space-around; text-align: center; }
+    .stat-val { font-size: 26px; font-weight: 900; color: var(--gold-light); text-shadow: 0 0 10px rgba(212,175,55,0.3); }
+    .stat-label { font-size: 12px; color: #888; margin-top: 5px; }
+    
+    .mod-icon { font-size: 30px; margin-bottom: 10px; display: block; }
+    .mod-title { color: var(--gold-main); font-size: 18px; margin: 0 0 10px 0; }
+    .mod-desc { color: #aaa; font-size: 13px; line-height: 1.5; margin: 0; }
 </style>
 
 {% if not current_user %}
-<div class="guest-landing">
-    <div style="font-size: 60px; margin-bottom: 20px;">🏰</div>
-    <h1 class="guest-title">مرحباً بك في المتاهة</h1>
-    <p style="color: #aaa; font-size: 16px; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.6;">بوابة غامضة تفتح أبوابها للرحالة الشجعان. هل تملك الذكاء والقوة للنجاة من فخاخ سيفار، أم ستكون مجرد جثة أخرى في المقبرة المنسية؟</p>
-    
-    <div>
-        <a href="/login" class="btn-large btn-login">تسجيل الدخول</a>
-        <a href="/register" class="btn-large btn-join">الانضمام للرحالة ⚔️</a>
-    </div>
+<div style="text-align: center; padding: 80px 20px;">
+    <div style="font-size: 70px; margin-bottom: 20px; text-shadow: 0 0 30px var(--gold-main);">🐪</div>
+    <h1 style="color: var(--gold-main); font-size: 40px; margin-bottom: 15px;">متاهة سيفار</h1>
+    <p style="color: #aaa; font-size: 16px; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.8;">بوابة الصحراء تفتح أبوابها للرحالة الشجعان. اجمع الغنائم، حل الألغاز، وانجُ من فخاخ المتاهة لتصبح الإمبراطور.</p>
+    <a href="/login" style="display: inline-block; padding: 15px 40px; margin: 10px; font-size: 18px; font-weight: bold; color: #000; text-decoration: none; border-radius: 8px; background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); box-shadow: 0 0 20px rgba(212,175,55,0.4);">دخول المتاهة</a>
 </div>
-
 {% else %}
 
     {% if emperor and emperor.status == 'eliminated' %}
-    <div style="text-align: center; padding: 50px 20px; background: radial-gradient(circle, #2c3e50 0%, #000 100%); border-radius: 15px; border: 2px solid var(--zone-3-gold); box-shadow: 0 0 50px rgba(212,175,55,0.3);">
-        <div style="font-size: 80px; margin-bottom: 20px; text-shadow: 0 0 40px #f1c40f;">👑🔥</div>
-        <h1 style="color: var(--zone-3-gold); font-size: 35px; text-shadow: 0 0 20px #000;">سقط الإمبراطور!</h1>
-        <p style="color: #ccc; font-size: 18px; line-height: 1.6;">لقد انكسرت اللعنة واهتزت جدران المتاهة...<br>هناك حاكم جديد يجلس الآن على العرش.</p>
+    <div class="victory-screen">
+        <div class="gold-particles"></div>
+        <div style="font-size: 100px; margin-bottom: 20px; animation: scaleGlow 2s infinite alternate;">👑</div>
+        <h1 class="victory-title">سقط الإمبراطور!</h1>
+        <p class="victory-sub">لقد انكسرت اللعنة واهتزت جدران سيفار...<br>المتاهة تنحني الآن للحاكم الجديد الذي انتزع العرش بقوته.<br>المجد للمنتصر!</p>
     </div>
     {% else %}
 
-        {% if settings and settings.global_news_active and settings.global_news_text %}
-        <div style="background: var(--zone-2-red); color: #fff; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; white-space: nowrap;">
-            <div style="display: inline-block; padding-left: 100%; animation: ticker 15s linear infinite;">🚨 مرسوم إمبراطوري عاجل: {{ settings.global_news_text }} 🚨</div>
+        {% if settings and settings.banner_url %}
+        <div class="epic-banner" style="background-image: url('{{ settings.banner_url }}');">
+            <div class="banner-text">
+                <h1 class="banner-title">{{ settings.home_title if settings else 'المتاهة' }}</h1>
+                <div class="banner-subtitle">📍 {{ current_user.zone if current_user.zone else 'البوابات' }}</div>
+            </div>
         </div>
-        <style>@keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }</style>
         {% endif %}
 
-        <div class="player-card">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div class="avatar-circle">
-                    {% if current_user.avatar and 'data:image' in current_user.avatar %}
-                        <img src="{{ current_user.avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-                    {% else %}
-                        👤
-                    {% endif %}
+        <div class="dashboard-grid">
+            <div class="gold-card" style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); display: flex; justify-content: center; align-items: center; background: #000; font-size: 35px;">
+                    {{ current_user.avatar if current_user.avatar else '👤' }}
                 </div>
-                <div>
-                    <div style="font-size: 20px; font-weight: bold; color: #fff;">{{ current_user.username }}</div>
-                    <div style="color: var(--zone-3-gold); font-size: 13px;">{{ current_user.special_rank }} | {{ current_user.zone }}</div>
+                <div style="flex: 1;">
+                    <div style="font-size: 22px; font-weight: bold; color: #fff;">{{ current_user.username }}</div>
+                    <div style="color: var(--gold-main); font-size: 14px; margin-top: 5px;">{{ display_rank }} | الغنائم: {{ current_user.points }}</div>
                 </div>
             </div>
-            
-            <div class="stats-container">
-                <div class="stat-box">
-                    <div class="stat-val" style="color: var(--zone-3-gold);">{{ current_user.points }}</div>
-                    <div class="stat-name">الغنائم</div>
-                </div>
+
+            <div class="gold-card stats-flex">
                 <div class="stat-box">
                     <div class="stat-val" style="color: #2ecc71;">{{ alive_count }}</div>
-                    <div class="stat-name">الأحياء</div>
+                    <div class="stat-label">الأحياء</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-val" style="color: #e74c3c;">{{ dead_count }}</div>
-                    <div class="stat-name">الجثث</div>
+                    <div class="stat-val" style="color: var(--sand);">{{ dead_count }}</div>
+                    <div class="stat-label">الجثث</div>
                 </div>
-                {% if settings and (settings.war_mode or settings.final_battle_mode) %}
-                <div class="stat-box" style="border-right: 1px solid #333; padding-right: 15px;">
-                    <div class="stat-val" style="color: #e74c3c; animation: pulse 1.5s infinite;">{{ current_user.health }}%</div>
-                    <div class="stat-name">الصحة 🩸</div>
+                <div class="stat-box">
+                    <div class="stat-val" style="font-size: 18px; line-height: 35px;">👑</div>
+                    <div class="stat-label">{{ emperor.username if emperor else 'مجهول' }}</div>
                 </div>
-                {% endif %}
             </div>
         </div>
 
-        {% if settings and settings.gates_mode_active %}
-        <div class="event-alert" style="background: rgba(155,89,182,0.15); border: 1px solid #9b59b6; color: #d2b4de;">🚪 البوابات الملعونة مفتوحة! اختَر مصيرك.</div>
-        {% endif %}
-
-        {% if settings and settings.war_mode %}
-        <div class="event-alert alert-war">⚔️ الحرب الشاملة مشتعلة! الدماء تُسفك والطعن مسموح.</div>
-        {% endif %}
-
-        {% if settings and settings.floor3_mode_active %}
-        <div class="event-alert" style="background: rgba(52,152,219,0.15); border: 1px solid #3498db; color: #aed6f1;">🗳️ محكمة الأصوات منعقدة! وزع أصواتك للنجاة.</div>
-        {% endif %}
-
-        <div class="modules-grid">
-            <a href="/news" class="mod-card card-news">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; font-size: 18px; color: var(--zone-3-gold);">📜 المراسيم الملكية</h3>
-                    <span style="font-size: 20px; opacity: 0.5;">➔</span>
-                </div>
+        <div class="dashboard-grid">
+            <a href="/news" class="gold-card" style="text-decoration: none;">
+                <span class="mod-icon">📜</span>
+                <h3 class="mod-title">المراسيم الملكية</h3>
                 {% if news %}
-                    <strong style="color: #fff; display: block; margin-bottom: 5px; font-size: 15px;">{{ news.title }}</strong>
-                    <p style="color: #aaa; font-size: 13px; line-height: 1.5; margin: 0;">{{ news.content[:60] }}...</p>
-                {% else %}
-                    <p style="color: #555; font-size: 13px;">لا توجد مراسيم جديدة.</p>
-                {% endif %}
+                    <strong style="color: #fff; font-size: 14px;">{{ news.title }}</strong>
+                    <p class="mod-desc" style="margin-top: 5px;">{{ news.content[:50] }}...</p>
+                {% else %}<p class="mod-desc">لا توجد أخبار جديدة.</p>{% endif %}
             </a>
-
-            <a href="/declarations" class="mod-card card-decs">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3 style="margin: 0; font-size: 18px; color: var(--zone-4-blue);">📢 صدى الساحة</h3>
-                    <span style="font-size: 20px; opacity: 0.5;">➔</span>
-                </div>
+            
+            <a href="/declarations" class="gold-card" style="text-decoration: none;">
+                <span class="mod-icon">📢</span>
+                <h3 class="mod-title">صدى الساحة</h3>
                 {% if dec %}
-                    <strong style="color: #fff; display: block; margin-bottom: 5px; font-size: 14px;">👤 {{ dec.author }}</strong>
-                    <p style="color: #aaa; font-size: 13px; font-style: italic; margin: 0;">"{{ dec.content[:60] }}..."</p>
-                {% else %}
-                    <p style="color: #555; font-size: 13px;">الساحة صامتة كالقبور.</p>
-                {% endif %}
+                    <strong style="color: #fff; font-size: 13px;">👤 {{ dec.author }}</strong>
+                    <p class="mod-desc" style="margin-top: 5px; font-style: italic;">"{{ dec.content[:50] }}..."</p>
+                {% else %}<p class="mod-desc">الساحة صامتة حالياً.</p>{% endif %}
             </a>
-
-            <a href="/puzzles" class="mod-card card-puz">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0; font-size: 18px; color: #9b59b6;">🧩 النقوش والألغاز</h3>
-                    <span style="font-size: 20px; opacity: 0.5;">➔</span>
-                </div>
-                <p style="color: #aaa; font-size: 13px; margin: 0;">اكتشف الأسرار، حل الرموز، واجمع غنائم المتاهة قبل الآخرين.</p>
+            
+            <a href="/puzzles" class="gold-card" style="text-decoration: none;">
+                <span class="mod-icon">🧩</span>
+                <h3 class="mod-title">النقوش والألغاز</h3>
+                <p class="mod-desc">اكتشف الأسرار، حل الرموز، واجمع الغنائم الثمينة.</p>
             </a>
-
-            <a href="/store" class="mod-card card-store">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0; font-size: 18px; color: #e67e22;">🐪 السوق المظلم</h3>
-                    <span style="font-size: 20px; opacity: 0.5;">➔</span>
-                </div>
-                <p style="color: #aaa; font-size: 13px; margin: 0;">تسوق الأسلحة، الدروع، وأدوات النجاة بأموالك التي حصدتها.</p>
+            
+            <a href="/store" class="gold-card" style="text-decoration: none;">
+                <span class="mod-icon">🐪</span>
+                <h3 class="mod-title">السوق المظلم</h3>
+                <p class="mod-desc">استبدل غنائمك بأسلحة، دروع، وتعويذات للنجاة.</p>
             </a>
         </div>
-
-    {% endif %} {% endif %} {% endblock %}
-
+    {% endif %}
+{% endif %}
+{% endblock %}
