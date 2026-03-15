@@ -9,84 +9,94 @@
     
     /* مشهد النصر الأسطوري */
     .victory-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #2c3e50 0%, #000 80%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; }
-    .victory-title { font-size: 40px; color: var(--zone-3-gold); text-shadow: 0 0 20px var(--zone-3-gold); margin-bottom: 10px; animation: scaleUp 2s ease-in-out forwards; }
-    .victory-subtitle { font-size: 20px; color: #ccc; max-width: 600px; line-height: 1.6; }
+    .victory-title { font-size: 50px; color: var(--zone-3-gold); text-shadow: 0 0 30px var(--zone-3-gold); margin-bottom: 15px; animation: scaleUp 2s ease-in-out forwards; }
+    .victory-subtitle { font-size: 22px; color: #ccc; max-width: 600px; line-height: 1.6; }
     
     @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     @keyframes scaleUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     
     .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } }
+    
+    .global-news-ticker { background: #e74c3c; color: #fff; padding: 10px; font-weight: bold; font-size: 14px; border-radius: 5px; margin-bottom: 20px; overflow: hidden; white-space: nowrap; box-shadow: 0 0 10px rgba(231,76,60,0.5); }
+    .ticker-text { display: inline-block; padding-left: 100%; animation: ticker 15s linear infinite; }
+    @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 </style>
 
 {% if emperor and emperor.status == 'eliminated' %}
 <div class="victory-screen">
-    <div style="font-size: 80px; margin-bottom: 20px; text-shadow: 0 0 30px #f1c40f;">👑🔥</div>
+    <div style="font-size: 80px; margin-bottom: 20px; text-shadow: 0 0 40px #f1c40f;">👑🔥</div>
     <h1 class="victory-title">سقط الإمبراطور!</h1>
     <p class="victory-subtitle">لقد انكسرت اللعنة واهتزت جدران المتاهة...<br>هناك حاكم جديد يجلس الآن على العرش المظلم.<br>الحرب انتهت، والمتاهة تنحني لسيدها.</p>
 </div>
 {% else %}
 
-{% if current_user and current_user.status == 'active' %}
-<div style="background: linear-gradient(90deg, #1a1a1a, #000); border-left: 4px solid var(--zone-3-gold); padding: 15px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <strong style="color: #fff; font-size: 18px;">{{ current_user.username }}</strong>
-        <div style="color: var(--zone-3-gold); font-size: 13px; margin-top: 5px;">الثروة: {{ current_user.points }} نقطة</div>
+    {% if settings and settings.global_news_active and settings.global_news_text %}
+    <div class="global-news-ticker">
+        <span class="ticker-text">🚨 مرسوم إمبراطوري عاجل: {{ settings.global_news_text }} 🚨</span>
     </div>
-    <div style="text-align: right;">
-        {% if settings.war_mode or settings.final_battle_mode %}
-            <strong style="color: #e74c3c; font-size: 18px; animation: pulse 1.5s infinite;">🩸 {{ current_user.health }}%</strong>
-            <div style="color: #aaa; font-size: 11px; margin-top: 5px;">النزيف نشط</div>
-        {% else %}
-            <strong style="color: #7f8c8d; font-size: 14px;">الصحة مخفية (وقت السلم)</strong>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
+    {% endif %}
 
-<h3 style="color: #666; font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">حالة العالم (نبض المتاهة)</h3>
-<div class="maze-status-box">
-    <div class="status-item">
-        <span>الأرواح الحية:</span> <strong style="color: #2ecc71;">{{ alive_count }}</strong>
+    {% if current_user and current_user.status == 'active' %}
+    <div style="background: linear-gradient(90deg, #1a1a1a, #000); border-right: 4px solid var(--zone-3-gold); padding: 15px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <strong style="color: #fff; font-size: 18px;">{{ current_user.username }}</strong>
+            <div style="color: var(--zone-3-gold); font-size: 13px; margin-top: 5px;">الثروة: {{ current_user.points }} نقطة</div>
+        </div>
+        <div style="text-align: left;">
+            {% if settings and (settings.war_mode or settings.final_battle_mode) %}
+                <strong style="color: #e74c3c; font-size: 18px; animation: pulse 1.5s infinite;">🩸 {{ current_user.health }}%</strong>
+                <div style="color: #aaa; font-size: 11px; margin-top: 5px;">النزيف نشط بالمعركة</div>
+            {% else %}
+                <strong style="color: #7f8c8d; font-size: 14px;">الصحة مخفية (وقت السلم)</strong>
+            {% endif %}
+        </div>
     </div>
-    <div class="status-item">
-        <span>الجثث في المقبرة:</span> <strong style="color: #e74c3c;">{{ dead_count }}</strong>
-    </div>
-    <div class="status-item">
-        <span>البوابات الملعونة:</span> 
-        <strong class="{{ 'status-active' if settings.gates_mode_active else 'status-inactive' }}">{{ 'مفتوحة للابتلاع' if settings.gates_mode_active else 'مغلقة' }}</strong>
-    </div>
-    <div class="status-item">
-        <span>الحرب الشاملة (ضريبة الدم):</span> 
-        <strong class="{{ 'status-active' if settings.war_mode else 'status-inactive' }}">{{ 'مشتعلة (القتل مسموح)' if settings.war_mode else 'خاملة' }}</strong>
-    </div>
-    <div class="status-item">
-        <span>حالة الإمبراطور:</span> 
-        <strong style="color: {{ '#f1c40f' if settings.final_battle_mode else '#aaa' }};">{{ 'تُرفع الحصانة (يُمكن استهدافه)' if settings.final_battle_mode else 'محصن بالكامل' }}</strong>
-    </div>
-</div>
+    {% endif %}
 
-<div class="grid-container">
-    <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
-        <h3 style="color: var(--zone-3-gold); margin-top: 0; font-size: 16px;">آخر المراسيم الملكية</h3>
-        {% if news %}
-            <strong style="color: #fff;">{{ news.title }}</strong>
-            <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 10px 0;">{{ news.content }}</p>
-            <a href="/news" style="color: #3498db; font-size: 12px; text-decoration: none;">قراءة المزيد...</a>
-        {% else %}
-            <p style="color: #666; font-size: 12px;">المتاهة صامتة حالياً.</p>
-        {% endif %}
+    <h3 style="color: #666; font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">حالة العالم (نبض المتاهة)</h3>
+    <div class="maze-status-box">
+        <div class="status-item">
+            <span>الأرواح الحية:</span> <strong style="color: #2ecc71;">{{ alive_count }}</strong>
+        </div>
+        <div class="status-item">
+            <span>الجثث في المقبرة:</span> <strong style="color: #e74c3c;">{{ dead_count }}</strong>
+        </div>
+        <div class="status-item">
+            <span>البوابات الملعونة:</span> 
+            <strong class="{{ 'status-active' if settings and settings.gates_mode_active else 'status-inactive' }}">{{ 'مفتوحة للابتلاع' if settings and settings.gates_mode_active else 'مغلقة' }}</strong>
+        </div>
+        <div class="status-item">
+            <span>الحرب الشاملة (ضريبة الدم):</span> 
+            <strong class="{{ 'status-active' if settings and settings.war_mode else 'status-inactive' }}">{{ 'مشتعلة (القتل مسموح)' if settings and settings.war_mode else 'خاملة' }}</strong>
+        </div>
+        <div class="status-item">
+            <span>حالة الإمبراطور:</span> 
+            <strong style="color: {{ '#f1c40f' if settings and settings.final_battle_mode else '#aaa' }};">{{ 'تُرفع الحصانة (يُمكن استهدافه)' if settings and settings.final_battle_mode else 'محصن بالكامل' }}</strong>
+        </div>
     </div>
-    
-    <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
-        <h3 style="color: #3498db; margin-top: 0; font-size: 16px;">صدى الرحالة (تصريحات)</h3>
-        {% if dec %}
-            <strong style="color: #fff;">{{ dec.author }}</strong>
-            <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 10px 0;">"{{ dec.content[:60] }}..."</p>
-            <a href="/declarations" style="color: #3498db; font-size: 12px; text-decoration: none;">تصفح الساحة...</a>
-        {% else %}
-            <p style="color: #666; font-size: 12px;">لا توجد صرخات في الساحة.</p>
-        {% endif %}
+
+    <div class="grid-container">
+        <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            <h3 style="color: var(--zone-3-gold); margin-top: 0; font-size: 16px;">آخر المراسيم الملكية</h3>
+            {% if news %}
+                <strong style="color: #fff; display: block; margin-bottom: 8px;">{{ news.title }}</strong>
+                <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">{{ news.content }}</p>
+                <a href="/news" style="color: #3498db; font-size: 12px; text-decoration: none;">قراءة المزيد...</a>
+            {% else %}
+                <p style="color: #666; font-size: 12px;">المتاهة صامتة حالياً.</p>
+            {% endif %}
+        </div>
+        
+        <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+            <h3 style="color: #3498db; margin-top: 0; font-size: 16px;">صدى الرحالة (أحدث تصريح)</h3>
+            {% if dec %}
+                <strong style="color: #fff; display: block; margin-bottom: 8px;">👤 {{ dec.author }}</strong>
+                <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">"{{ dec.content[:60] }}..."</p>
+                <a href="/declarations" style="color: #3498db; font-size: 12px; text-decoration: none;">تصفح الساحة...</a>
+            {% else %}
+                <p style="color: #666; font-size: 12px;">لا توجد صرخات في الساحة.</p>
+            {% endif %}
+        </div>
     </div>
-</div>
 {% endif %} {% endblock %}
