@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .top-container { max-width: 800px; margin: auto; }
+    .top-section { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+    .top-title { color: #fff; font-size: 20px; margin-top: 0; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+    .top-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px dashed #222; color: #ccc; }
+    .top-row:nth-child(even) { background: #151515; }
+    .rank-1 { color: var(--zone-3-gold); font-weight: bold; font-size: 18px; }
+    .rank-2 { color: #bdc3c7; font-weight: bold; }
+    .rank-3 { color: #cd7f32; font-weight: bold; }
+</style>
+
+<div class="top-container">
+    <h2 style="color: #3498db; text-align: center; text-shadow: 0 0 10px rgba(52,152,219,0.5); margin-bottom: 40px;">🏆 قاعة الأساطير الأبدية</h2>
+
+    <div class="top-section">
+        <h3 class="top-title">🧠 حكماء المتاهة (الأكثر ذكاءً)</h3>
+        {% for u in top_iq %}
+        <div class="top-row">
+            <span class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">{{ loop.index }}. {{ u.username }}</span>
+            <span style="color: #3498db;">{{ u.intelligence_points }} IQ</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="top-section">
+        <h3 class="top-title">🤝 ميثاق الشرف (الأكثر وفاءً)</h3>
+        {% for u in top_loyal %}
+        <div class="top-row">
+            <span class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">{{ loop.index }}. {{ u.username }}</span>
+            <span style="color: #2ecc71;">{{ u.loyalty_points }} نقطة شرف</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="top-section">
+        <h3 class="top-title">💪 الجبابرة (أعلى صحة)</h3>
+        {% for u in top_hp %}
+        <div class="top-row">
+            <span class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">{{ loop.index }}. {{ u.username }}</span>
+            <span style="color: #e74c3c;">{{ u.health }}% HP</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
