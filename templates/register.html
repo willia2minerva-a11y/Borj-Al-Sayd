@@ -1,26 +1,64 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تجنيد الرحالة - متاهة سيفار</title>
+    <style>
+        body { background-color: #0a0a0a; color: #fff; font-family: Tahoma, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .auth-container { background: #1a1a1a; padding: 40px; border-radius: 10px; border: 1px solid #333; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+        .auth-container h2 { color: #f1c40f; margin-top: 0; }
+        .form-group { margin-bottom: 20px; text-align: right; }
+        .form-group label { display: block; margin-bottom: 8px; color: #ccc; font-size: 14px; }
+        .form-group input, .form-group select { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #444; border-radius: 5px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .form-group input:focus, .form-group select:focus { border-color: #3498db; }
+        .btn-auth { width: 100%; padding: 12px; background: #3498db; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; }
+        .btn-auth:hover { background: #2980b9; }
+        .auth-links { margin-top: 20px; font-size: 13px; }
+        .auth-links a { color: #3498db; text-decoration: none; }
+        .auth-links a:hover { text-decoration: underline; }
+        .flash-msg { padding: 10px; margin-bottom: 15px; border-radius: 5px; font-size: 14px; }
+        .error { background: rgba(231,76,60,0.2); color: #e74c3c; border: 1px solid #e74c3c; }
+    </style>
+</head>
+<body>
 
-{% block content %}
-<div class="hunter-card form-container">
-    <h3>تسجيل الدخول للبرج</h3>
-    <form method="POST" action="{{ url_for('register') }}">
+<div class="auth-container">
+    <h2>تجنيد المتاهة</h2>
+    <p style="color: #666; font-size: 13px; margin-bottom: 20px;">أدخل هويتك الحقيقية ليتم قبولك</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-msg {{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form action="/register" method="POST">
         <div class="form-group">
-            <label>اسم الصائد (بالموقع):</label>
-            <input type="text" name="username" required placeholder="اختر اسماً مرعباً...">
+            <label>اسم الرحالة (في المتاهة)</label>
+            <input type="text" name="username" required autocomplete="off">
         </div>
         <div class="form-group">
-            <label>رابط حسابك في فيسبوك:</label>
-            <input type="url" name="facebook_link" required placeholder="https://facebook.com/your.profile">
-            <small style="color: var(--text-muted); font-size: 12px;">*نحتاجه لنتأكد من هويتك ونفعل حسابك</small>
-        </div>
-        <div class="form-group">
-            <label>كلمة المرور:</label>
+            <label>كلمة السر</label>
             <input type="password" name="password" required>
         </div>
-        <button type="submit" class="btn-primary">طلب الانضمام (بوابة البرج)</button>
+        <div class="form-group">
+            <label>رابط حسابك على الفيسبوك (للتوثيق)</label>
+            <input type="url" name="facebook_link" placeholder="https://facebook.com/..." required>
+        </div>
+        <div class="form-group">
+            <label>المنطقة (المقاطعة)</label>
+            <input type="text" name="zone" placeholder="مثال: الشمال، طابق 1..." required>
+        </div>
+        <button type="submit" class="btn-auth">طلب الانضمام</button>
     </form>
-    <p style="text-align: center; margin-top: 15px;">
-        لديك حساب بالفعل؟ <a href="{{ url_for('login') }}">ادخل من هنا</a>
-    </p>
+
+    <div class="auth-links">
+        هل تملك ختماً مسبقاً؟ <a href="/login">ادخل للمتاهة</a>
+    </div>
 </div>
-{% endblock %}
+
+</body>
+</html>
