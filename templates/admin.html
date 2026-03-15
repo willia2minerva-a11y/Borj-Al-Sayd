@@ -15,7 +15,7 @@
     .log-system { color: #9b59b6; border-right: 2px solid #9b59b6; padding-right: 5px; }
 </style>
 
-<h2 style="color: var(--zone-3-gold); text-align: center;">👑 عرش الإمبراطور المطلق</h2>
+<h2 style="color: var(--zone-3-gold); text-align: center; margin-bottom: 30px;">👑 عرش الإمبراطور المطلق</h2>
 
 <button type="button" class="mod-btn" onclick="toggleMod('mod-banner')" style="border-right-color: #3498db;">🖼️ هوية المتاهة وتخصيص البوابة <span>▼</span></button>
 <div id="mod-banner" class="mod-content">
@@ -189,7 +189,7 @@
             <select name="bulk_type" id="bulkActionType" class="admin-form-group" style="margin-bottom:0;">
                 <option value="activate">إحياء / تفعيل الحسابات الجديدة</option>
                 <option value="eliminate">إعدام فوري (للمقبرة)</option>
-                <option value="hard_delete" style="color: #e74c3c; font-weight: bold;">⚠️ طمس نهائي (مسح الحساب وإتاحة الـ ID)</option>
+                <option value="hard_delete" style="color: #e74c3c; font-weight: bold;">⚠️ طمس نهائي (مسح الحساب)</option>
             </select>
             <input type="text" name="bulk_reason" placeholder="سبب الإعدام للمقبرة..." class="admin-form-group" style="margin-bottom:0;">
             <button type="submit" class="btn-danger" style="width: 100%;">تنفيذ الأمر الإمبراطوري</button>
@@ -336,3 +336,4 @@
     }
 </script>
 {% endblock %}
+
