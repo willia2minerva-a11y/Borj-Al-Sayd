@@ -12,58 +12,90 @@
             --zone-3-gold: #d4af37;
             --zone-4-blue: #1abc9c;
         }
-        body { margin: 0; padding: 0; background-color: var(--zone-0-black); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; padding-top: 60px; }
+        body { margin: 0; padding: 0; background-color: var(--zone-0-black); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; min-height: 100vh; }
         
-        /* الشريط العلوي الإمبراطوري */
-        .top-navbar { position: fixed; top: 0; left: 0; width: 100%; height: 60px; background: linear-gradient(to bottom, #000 0%, #111 100%); border-bottom: 2px solid var(--zone-2-red); display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 1000; box-shadow: 0 2px 15px rgba(139,0,0,0.5); }
-        .maze-logo { color: var(--zone-3-gold); font-size: 22px; font-weight: bold; text-shadow: 0 0 10px rgba(212,175,55,0.5); text-decoration: none; }
+        /* القائمة الجانبية الإمبراطورية */
+        .sidebar { width: 260px; background: linear-gradient(180deg, #111 0%, #000 100%); border-left: 2px solid var(--zone-2-red); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 2000; transition: transform 0.3s ease-in-out; height: 100vh; position: sticky; top: 0; overflow-y: auto; }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background: var(--zone-2-red); border-radius: 5px; }
         
-        /* قائمة الروابط */
-        .nav-links { display: flex; gap: 15px; overflow-x: auto; white-space: nowrap; padding: 10px 0; scrollbar-width: none; }
-        .nav-links::-webkit-scrollbar { display: none; }
-        .nav-item { color: #aaa; text-decoration: none; font-size: 14px; font-weight: bold; padding: 5px 10px; border-radius: 4px; transition: 0.3s; position: relative; }
-        .nav-item:hover, .nav-item.active { color: #fff; background: rgba(255,255,255,0.1); }
-        .badge { background: var(--zone-2-red); color: #fff; padding: 2px 6px; border-radius: 50%; font-size: 10px; position: absolute; top: -5px; right: -5px; box-shadow: 0 0 5px red; }
+        .content { flex: 1; padding: 0; box-sizing: border-box; position: relative; width: 100%; overflow-x: hidden; }
+        .content-inner { padding: 30px; max-width: 1200px; margin: auto; }
         
-        /* الغلاف الملحمي (Banner) */
-        .hero-banner { width: 100%; height: 200px; background-size: cover; background-position: center; border-bottom: 3px solid var(--zone-3-gold); position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; box-sizing: border-box; box-shadow: inset 0 -50px 50px -10px #000; }
-        .hero-title { font-size: 32px; color: #fff; text-shadow: 0 2px 10px #000, 0 0 20px var(--zone-3-gold); font-weight: 900; margin: 0; z-index: 2; }
+        /* أزرار القائمة */
+        .nav-link { display: block; padding: 12px 15px; color: #ccc; text-decoration: none; margin-bottom: 5px; border-radius: 5px; transition: 0.3s; position: relative; font-size: 15px; font-weight: bold; border-right: 3px solid transparent; }
+        .nav-link:hover { background-color: rgba(255,255,255,0.05); color: #fff; border-right-color: var(--zone-3-gold); transform: translateX(-5px); }
         
-        .content-container { padding: 20px; max-width: 1000px; margin: auto; }
+        .badge { background: var(--zone-2-red); color: #fff; padding: 2px 7px; border-radius: 50%; font-size: 11px; position: absolute; left: 15px; top: 12px; box-shadow: 0 0 5px red; }
         
+        /* الشريط العلوي للهواتف (زر القائمة) */
+        .mobile-header { display: none; background: #000; padding: 15px 20px; border-bottom: 2px solid var(--zone-2-red); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+        .menu-btn { font-size: 24px; color: var(--zone-3-gold); cursor: pointer; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+        .mobile-logo { font-size: 20px; color: #fff; font-weight: bold; text-decoration: none; }
+        
+        /* خلفية التعتيم للهاتف */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
+        
+        /* رسائل النظام */
         .flash-msg { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; animation: slideDown 0.5s ease; }
         .flash-success { background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; color: #2ecc71; }
         .flash-error { background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; color: #e74c3c; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* تعديلات شاشات الجوال */
+        /* التجاوب مع شاشات الجوال */
         @media (max-width: 768px) {
-            .nav-links { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; border-top: 1px solid #333; padding: 10px; justify-content: flex-start; z-index: 1000; border-bottom: none; }
-            body { padding-bottom: 60px; }
-            .hero-banner { height: 150px; }
+            body { flex-direction: column; }
+            .sidebar { position: fixed; right: 0; top: 0; transform: translateX(100%); }
+            .sidebar.open { transform: translateX(0); }
+            .overlay.open { display: block; }
+            .mobile-header { display: flex; }
+            .content-inner { padding: 15px; }
         }
     </style>
 </head>
 <body>
 
-    {% if current_user %}
-    <nav class="top-navbar">
-        <a href="/" class="maze-logo">{{ settings.maze_name if settings else 'متاهة سيفار' }}</a>
-        {% if current_user.role == 'admin' %}
-            <a href="/admin" style="color: var(--zone-2-red); font-weight: bold; text-decoration: none;">👑 الإدارة</a>
-        {% endif %}
-    </nav>
+    <div class="mobile-header">
+        <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+        <a href="/" class="mobile-logo">{{ settings.maze_name if settings else 'متاهة سيفار' }}</a>
+    </div>
 
-    <div class="nav-links">
-        <a href="/" class="nav-item">الرئيسية 🏰</a>
-        <a href="/profile" class="nav-item">البروفايل 👤</a>
-        <a href="/friends" class="nav-item">التحالفات 🤝</a>
-        <a href="/news" class="nav-item">المخطوطات 📜 {% if un_news %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
-        <a href="/puzzles" class="nav-item">النقوش 🧩 {% if un_puz %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
-        <a href="/store" class="nav-item">السوق 🐪 {% if un_store %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
-        <a href="/declarations" class="nav-item">التصريحات 📢 {% if un_dec %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
-        <a href="/graveyard" class="nav-item">المقبرة 💀</a>
-        <a href="/altar" class="nav-item" style="color:#9b59b6;">المذبح 🔮</a>
+    <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    {% if current_user %}
+    <div class="sidebar" id="mainSidebar">
+        <h2 style="color: var(--zone-3-gold); text-align: center; margin-top: 0; text-shadow: 0 0 10px rgba(212,175,55,0.3);">
+            {{ settings.maze_name if settings else 'متاهة سيفار' }}
+        </h2>
+        <hr style="border-color: #333; width: 100%; margin-bottom: 20px;">
+        
+        <a href="/" class="nav-link">{{ settings.nav_home if settings else 'الرئيسية 🏰' }}</a>
+        <a href="/profile" class="nav-link">{{ settings.nav_profile if settings else 'هويتي 👤' }}</a>
+        <a href="/friends" class="nav-link">{{ settings.nav_friends if settings else 'التحالفات 🤝' }}</a>
+        
+        <a href="/news" class="nav-link">
+            {{ settings.nav_news if settings else 'المخطوطات 📜' }}
+            {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}
+        </a>
+        
+        <a href="/puzzles" class="nav-link">
+            {{ settings.nav_puzzles if settings else 'النقوش 🧩' }}
+            {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}
+        </a>
+        
+        <a href="/declarations" class="nav-link">
+            {{ settings.nav_decs if settings else 'التصريحات 📢' }}
+            {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}
+        </a>
+        
+        <a href="/store" class="nav-link">
+            {{ settings.nav_store if settings else 'السوق 🐪' }}
+            {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}
+        </a>
+        
+        <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings else 'المقبرة 💀' }}</a>
+        
+        <a href="/altar" class="nav-link" style="color:#9b59b6; border-top: 1px dashed #333; margin-top: 15px; padding-top: 15px;">المذبح 🔮</a>
         
         {% if current_user.unlocked_lore_room %}
         <a href="/lore_room" class="nav-link" style="color:#f1c40f;">البونغلاف 📜</a>
@@ -71,27 +103,42 @@
         {% if current_user.unlocked_top_room %}
         <a href="/top_room" class="nav-link" style="color:#3498db;">الأساطير 🏆</a>
         {% endif %}
-        <a href="/logout" class="nav-item" style="color: #666;">خروج</a>
-    </div>
-    {% endif %}
 
-    {% if request.endpoint == 'home' and settings and settings.banner_url %}
-    <div class="hero-banner" style="background-image: url('{{ settings.banner_url }}');">
-        <h1 class="hero-title" style="color: {{ settings.home_color|default('#fff') }};">{{ settings.home_title if settings else 'بوابة المتاهة' }}</h1>
-    </div>
-    {% endif %}
-
-    <div class="content-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="flash-msg flash-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <div style="flex-grow: 1;"></div>
+        <hr style="border-color: #333; width: 100%; margin-top: 20px;">
         
-        {% block content %}{% endblock %}
+        {% if current_user.role == 'admin' %}
+        <a href="/admin" class="nav-link" style="color: var(--zone-2-red); text-shadow: 0 0 5px rgba(139,0,0,0.5);">👑 الإدارة</a>
+        {% endif %}
+        <a href="/logout" class="nav-link" style="color: #666;">خروج 🚪</a>
+    </div>
+    {% endif %}
+
+    <div class="content">
+        {% if request.endpoint == 'home' and settings and settings.banner_url %}
+        <div style="width: 100%; height: 250px; background-image: url('{{ settings.banner_url }}'); background-size: cover; background-position: center; border-bottom: 2px solid var(--zone-3-gold); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; box-shadow: inset 0 -60px 50px -10px #000;">
+            <h1 style="color: {{ settings.home_color|default('#fff') }}; font-size: 38px; font-weight: 900; text-shadow: 0 3px 15px #000, 0 0 25px var(--zone-3-gold); margin: 0; text-align: center;">{{ settings.home_title if settings else 'بوابة المتاهة' }}</h1>
+        </div>
+        {% endif %}
+
+        <div class="content-inner">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-msg flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
     </div>
 
+    <script>
+        function toggleSidebar() {
+            document.getElementById('mainSidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('open');
+        }
+    </script>
 </body>
 </html>
