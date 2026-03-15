@@ -800,6 +800,50 @@ def download_logs(log_date):
     out = f"--- سجلات المتاهة ليوم {log_date} ---\n\n"
     for l in logs: out += f"[{l.created_at.strftime('%H:%M:%S')}] ({l.category}): {l.action_text}\n"
     return Response(out, mimetype="text/plain", headers={"Content-disposition": f"attachment; filename=logs_{log_date}.txt"})
+# --- مسارات الغرف السرية (تُفتح بالتعاويذ فقط) ---
+@app.route('/lore_room')
+@login_required
+def lore_room():
+    user = User.objects(id=session['user_id']).first()
+    if getattr(user, 'status', '') != 'active' or not getattr(user, 'unlocked_lore_room', False): 
+        return redirect(url_for('home'))
+    return render_template('lore_room.html', logs=LoreLog.objects().order_by('-created_at'))
+
+@app.route('/top_room')
+@login_required
+def top_room():
+    user = User.objects(id=session['user_id']).first()
+    if getattr(user, 'status', '') != 'active' or not getattr(user, 'unlocked_top_room', False): 
+        return redirect(url_for('home'))
+    return render_template('top_room.html', 
+                           top_iq=User.objects(hunter_id__ne=1000, status='active').order_by('-intelligence_points')[:10],
+                           top_loyal=User.objects(hunter_id__ne=1000, status='active').order_by('-loyalty_points')[:10],
+                           top_hp=User.objects(hunter_id__ne=1000, status='active').order_by('-health')[:10])
+
+# --- تحديث دالة الرئيسية (Home) لتدعم مشهد النصر ---
+# ابحث عن دالة @app.route('/') الحالية واستبدلها بهذا الكود فقط:
+@app.route('/')
+def home():
+    settings = GlobalSettings.objects(setting_name='main_config').first()
+    user = User.objects(id=session.get('user_id')).first() if 'user_id' in session else None
+    
+    allowed_news = get_allowed_news(user)
+    latest_news = allowed_news[0] if allowed_news else None
+    latest_dec = News.objects(category='declaration', status='approved').order_by('-created_at').first()
+    
+    # إحصائيات المتاهة الحية
+    alive_count = User.objects(status='active', hunter_id__ne=1000).count()
+    dead_count = User.objects(status='eliminated', hunter_id__ne=1000).count()
+    emperor = User.objects(hunter_id=1000).first()
+    
+    hunters_list = []
+    if settings and getattr(settings, 'floor3_mode_active', False):
+        hunters = User.objects(status='active', role='hunter', hunter_id__ne=1000)
+        hunters_list = [{'id': h.hunter_id, 'name': h.username} for h in hunters]
+
+    return render_template('index.html', settings=settings, news=latest_news, dec=latest_dec, 
+                           alive_count=alive_count, dead_count=dead_count, emperor=emperor, 
+                           active_hunters_json=json.dumps(hunters_list))
 
 if __name__ == '__main__': 
     app.run(debug=True)
