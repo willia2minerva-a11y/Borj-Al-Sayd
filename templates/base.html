@@ -3,96 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متاهة سيفار</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>{{ settings.maze_name if settings else 'متاهة سيفار' }}</title>
     <style>
-        /* 🚨 ستايل الشريط الإخباري اللانهائي الاحترافي */
-        .ticker-wrap { width: 100%; background: linear-gradient(90deg, #2c0b0b, #611515, #2c0b0b); border-bottom: 2px solid #e74c3c; overflow: hidden; box-sizing: border-box; position: relative; z-index: 1000; padding: 10px 0; }
-        .ticker-move { display: inline-block; white-space: nowrap; animation: ticker 25s linear infinite; font-weight: bold; color: #e2e8f0; font-size: 14px; }
-        .ticker-move:hover { animation-play-state: paused; }
-        @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-        .flash-container { margin-top: 10px; }
-        main { margin-top: 10px; }
+        :root {
+            --zone-0-black: #0a0a0a;
+            --zone-1-gray: #1a1a1a;
+            --zone-2-red: #e74c3c;
+            --zone-3-gold: #f1c40f;
+            --zone-4-diamond: #3498db;
+        }
+        
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: var(--zone-0-black); 
+            color: #fff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            display: flex; 
+            min-height: 100vh; 
+        }
+        
+        /* القائمة الجانبية */
+        .sidebar { 
+            width: 260px; 
+            background-color: var(--zone-1-gray); 
+            border-left: 2px solid #222; 
+            padding: 20px; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: -5px 0 15px rgba(0,0,0,0.8);
+        }
+        
+        .content { 
+            flex: 1; 
+            padding: 30px; 
+            box-sizing: border-box; 
+            overflow-y: auto; 
+            position: relative;
+        }
+        
+        /* أزرار القائمة */
+        .nav-link { 
+            display: block; 
+            padding: 12px 15px; 
+            color: #ccc; 
+            text-decoration: none; 
+            margin-bottom: 5px; 
+            border-radius: 5px; 
+            transition: 0.3s; 
+            position: relative; 
+            font-size: 15px;
+            font-weight: bold;
+        }
+        
+        .nav-link:hover { 
+            background-color: #333; 
+            color: #fff; 
+            transform: translateX(-5px);
+        }
+        
+        /* دائرة الإشعارات الحمراء */
+        .badge { 
+            background: var(--zone-2-red); 
+            color: #fff; 
+            padding: 2px 7px; 
+            border-radius: 50%; 
+            font-size: 12px; 
+            position: absolute; 
+            left: 15px; 
+            top: 12px; 
+            box-shadow: 0 0 5px rgba(231, 76, 60, 0.8);
+        }
+        
+        /* رسائل النظام (Flash Messages) */
+        .flash-message { 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            text-align: center; 
+            font-weight: bold; 
+            animation: slideDown 0.5s ease-out;
+        }
+        .flash-success { background-color: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; color: #2ecc71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.2); }
+        .flash-error { background-color: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
+        
+        /* أزرار عامة للمحتوى الداخلي */
+        .btn-primary { background: #3498db; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-danger { background: #e74c3c; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .btn-danger:hover { background: #c0392b; }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* تجاوب مع الشاشات الصغيرة (الجوال) */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar { width: 100%; border-left: none; border-bottom: 2px solid #222; }
+            .content { padding: 15px; }
+        }
     </style>
 </head>
 <body>
-    
-    {% if war_settings and war_settings.global_news_active %}
-    <div class="ticker-wrap">
-        <div class="ticker-move">
-            ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ☠️ إعلان إمبراطوري عاجل: {{ war_settings.global_news_text }}
-        </div>
-    </div>
-    {% endif %}
 
-    <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px;">
-        <a href="/" class="logo translatable" data-ar="🏜️ متاهة سيفار" data-en="🏜️ Sephar Maze">🏜️ متاهة سيفار</a>
+    {% if current_user %}
+    <div class="sidebar">
+        <h2 style="color: var(--zone-3-gold); text-align: center; margin-top: 0; text-shadow: 0 0 10px rgba(241,196,15,0.4);">
+            {{ settings.maze_name if settings else 'متاهة سيفار' }}
+        </h2>
+        <hr style="border-color: #333; width: 100%; margin-bottom: 20px;">
         
-        <div style="display: flex; align-items: center; gap: 15px;">
-            {% if session.get('user_id') and current_user and war_settings and war_settings.war_mode and current_user.role != 'admin' %}
-            <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 2px 10px; border-radius: 8px; border: 1px solid #333;">
-                <span style="font-size: 10px; color: var(--text-muted); display: block; line-height: 1;">الدم</span>
-                <strong style="font-size: 14px; color: {% if current_user.health > 50 %}#2ecc71{% elif current_user.health > 20 %}#f1c40f{% else %}#e74c3c{% endif %};">
-                    {{ current_user.health }}%
-                </strong>
-            </div>
-            {% endif %}
-
-            <button id="lang-toggle" style="background:#222; color:#fff; border:1px solid #444; padding:5px; border-radius:5px; font-weight:bold; height: fit-content;">AR/EN</button>
-            
-            {% if session.get('user_id') %}
-                <button id="menu-toggle" class="menu-btn" style="position: relative;">
-                    ☰
-                    {% if (un_news and un_news > 0) or (un_puz and un_puz > 0) or (un_dec and un_dec > 0) or (un_store and un_store > 0) %}
-                        <span style="position: absolute; top: -5px; right: -5px; width: 10px; height: 10px; background: red; border-radius: 50%;"></span>
-                    {% endif %}
-                </button>
-            {% endif %}
-        </div>
-    </header>
-    
-    {% if session.get('user_id') %}
-    <nav id="side-nav">
-        {% if current_user and current_user.role == 'admin' %}
-        <a href="/admin" style="color: var(--zone-3-gold); font-weight: 900; border-right: 4px solid var(--zone-3-gold);">👑 كهف القيادة</a>
-        <hr style="border-color: #333; margin: 0; width: 100%;">
+        <a href="/" class="nav-link">{{ settings.nav_home if settings else 'الرئيسية 🏰' }}</a>
+        <a href="/profile" class="nav-link">{{ settings.nav_profile if settings else 'هويتي 👤' }}</a>
+        <a href="/friends" class="nav-link">{{ settings.nav_friends if settings else 'التحالفات 🤝' }}</a>
+        
+        <a href="/news" class="nav-link">
+            {{ settings.nav_news if settings else 'المخطوطات 📜' }}
+            {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}
+        </a>
+        
+        <a href="/puzzles" class="nav-link">
+            {{ settings.nav_puzzles if settings else 'النقوش 🧩' }}
+            {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}
+        </a>
+        
+        <a href="/declarations" class="nav-link">
+            {{ settings.nav_decs if settings else 'التصريحات 📢' }}
+            {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}
+        </a>
+        
+        <a href="/store" class="nav-link">
+            {{ settings.nav_store if settings else 'السوق المظلم 🐪' }}
+            {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}
+        </a>
+        
+        <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings else 'المقبرة 💀' }}</a>
+        
+        <a href="/altar" class="nav-link" style="color: #9b59b6; border-top: 1px solid #333; margin-top: 10px; padding-top: 15px;">مذبح الطلاسم 🔮</a>
+        
+        {% if current_user.unlocked_lore_room %}
+        <a href="/lore_room" class="nav-link" style="color: #f1c40f; text-shadow: 0 0 5px rgba(241,196,15,0.3);">غرفة البونغلاف 📜</a>
         {% endif %}
         
-        <a href="/"><span>🏠 بوابة سيفار (الرئيسية)</span></a>
-        <a href="/profile"><span>📜 مخطوطتي (الملف الشخصي)</span></a>
-        <a href="/friends"><span>🤝 التحالفات (الأصدقاء)</span></a>
+        {% if current_user.unlocked_top_room %}
+        <a href="/top_room" class="nav-link" style="color: #3498db; text-shadow: 0 0 5px rgba(52,152,219,0.3);">قاعة الأساطير 🏆</a>
+        {% endif %}
+
+        <div style="flex-grow: 1;"></div>
+        <hr style="border-color: #333; width: 100%; margin-top: 20px;">
         
-        <a href="/news">
-            <span>📜 أخبار المتاهة (الأخبار)</span>
-            {% if un_news and un_news > 0 %}<span class="notif-badge">{{ un_news }}</span>{% endif %}
-        </a>
-        <a href="/puzzles">
-            <span>🧩 مخطوطات سيفار (الألغاز)</span>
-            {% if un_puz and un_puz > 0 %}<span class="notif-badge">{{ un_puz }}</span>{% endif %}
-        </a>
-        <a href="/declarations">
-            <span>📢 تدوينات الرحالة (التصريحات)</span>
-            {% if un_dec and un_dec > 0 %}<span class="notif-badge">{{ un_dec }}</span>{% endif %}
-        </a>
-        <a href="/store">
-            <span>🐪 قافلة التجار (السوق)</span>
-            {% if un_store and un_store > 0 %}<span class="notif-badge">{{ un_store }}</span>{% endif %}
-        </a>
-        <a href="/graveyard" style="color: #e2e8f0;"><span>💀 المقبرة المنسية</span></a>
+        {% if current_user.role == 'admin' %}
+        <a href="/admin" class="nav-link" style="color: var(--zone-2-red); font-size: 16px; text-shadow: 0 0 5px rgba(231,76,60,0.5);">👑 عرش الإمبراطور</a>
+        {% endif %}
         
-        <hr style="border-color: #333; margin: 0; width: 100%;">
-        <a href="/logout" style="color: #ff4444;"><span>🚪 الهروب من المتاهة (خروج)</span></a>
-    </nav>
-    {% endif %}
-    
-    <div class="flash-container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}{% for c, m in messages %}<div class="flash {{ c }}">{{ m }}</div>{% endfor %}{% endif %}
-        {% endwith %}
+        <a href="/logout" class="nav-link" style="color: #888;">الخروج من المتاهة 🚪</a>
     </div>
-    
-    <main>{% block content %}{% endblock %}</main>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% endif %}
+
+    <div class="content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
 </body>
 </html>
