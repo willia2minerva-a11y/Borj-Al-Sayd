@@ -1,172 +1,92 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* 🚨 شريط الحرب المستمر */
-    .war-ticker-wrap { width: 100%; background: #8b0000; border: 1px solid #ff4d4d; box-shadow: 0 0 15px rgba(231,76,60,0.4); border-radius: 5px; margin-bottom: 20px; overflow: hidden; position: relative; padding: 10px 0; }
-    .war-ticker-move { display: inline-block; white-space: nowrap; animation: ticker 20s linear infinite; font-weight: bold; color: #fff; font-size: 14px; }
-    .war-ticker-move:hover { animation-play-state: paused; }
-    @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-
-    /* ستايلات المودات (تكون مخفية وتظهر عند التفعيل فقط) */
-    .gate-container { background: #0a0a0a; border: 2px solid #e74c3c; border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 0 20px rgba(231, 76, 60, 0.2); }
-    .gates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
-    .gate-card { background: #111; border: 2px solid #333; border-radius: 8px; padding: 15px; cursor: pointer; transition: all 0.3s; }
-    .gate-card:hover { border-color: #e74c3c; transform: translateY(-3px); }
-    .gate-card.locked { opacity: 0.5; cursor: not-allowed; border-color: #222 !important; transform: none !important; }
-    .floor3-container { background: rgba(142, 68, 173, 0.1); border: 2px solid #8e44ad; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
-    .vote-input-group { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #333; display: flex; gap: 10px; align-items: center; justify-content: space-between; position: relative; }
-    .vote-input-group input { padding: 8px; background: #111; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 13px; }
+    .maze-status-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+    .status-item { display: flex; justify-content: space-between; border-bottom: 1px dashed #222; padding: 8px 0; color: #ccc; font-size: 14px; }
+    .status-item:last-child { border-bottom: none; }
+    .status-active { color: #e74c3c; font-weight: bold; animation: pulse 2s infinite; }
+    .status-inactive { color: #7f8c8d; }
+    
+    /* مشهد النصر الأسطوري */
+    .victory-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, #2c3e50 0%, #000 80%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; text-align: center; }
+    .victory-title { font-size: 40px; color: var(--zone-3-gold); text-shadow: 0 0 20px var(--zone-3-gold); margin-bottom: 10px; animation: scaleUp 2s ease-in-out forwards; }
+    .victory-subtitle { font-size: 20px; color: #ccc; max-width: 600px; line-height: 1.6; }
+    
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    @keyframes scaleUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media (max-width: 768px) { .grid-container { grid-template-columns: 1fr; } }
 </style>
 
-{% if war_settings and war_settings.war_mode %}
-<div class="war-ticker-wrap">
-    <div class="war-ticker-move">
-        🚨 تنبيه المتاهة: حرب الإبادة مشتعلة! النزيف التلقائي مفعل. احمِ ظهرك! 🚨 &nbsp;&nbsp;&nbsp; 
-        {% for log in battle_logs %} ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة [{{ log.victim_name }}] بـ ({{ log.weapon_name }})! صحته: {{ log.remaining_hp }}% &nbsp;&nbsp;&nbsp; {% endfor %}
-        🚨 تنبيه المتاهة: حرب الإبادة مشتعلة! النزيف التلقائي مفعل. احمِ ظهرك! 🚨 &nbsp;&nbsp;&nbsp; 
-        {% for log in battle_logs %} ⚔️ | &nbsp;&nbsp;&nbsp; تم طعن الرحالة [{{ log.victim_name }}] بـ ({{ log.weapon_name }})! صحته: {{ log.remaining_hp }}% &nbsp;&nbsp;&nbsp; {% endfor %}
-    </div>
+{% if emperor and emperor.status == 'eliminated' %}
+<div class="victory-screen">
+    <div style="font-size: 80px; margin-bottom: 20px; text-shadow: 0 0 30px #f1c40f;">👑🔥</div>
+    <h1 class="victory-title">سقط الإمبراطور!</h1>
+    <p class="victory-subtitle">لقد انكسرت اللعنة واهتزت جدران المتاهة...<br>هناك حاكم جديد يجلس الآن على العرش المظلم.<br>الحرب انتهت، والمتاهة تنحني لسيدها.</p>
 </div>
-{% endif %}
-
-<div class="global-banner" style="background-image: url('{{ settings.banner_url if settings and settings.banner_url else '' }}'); background-size: cover; background-position: center; border-radius: 10px; padding: 40px 20px; text-align: center; border-bottom: 4px solid {{ settings.home_color if settings else 'var(--zone-0-black)' }}; margin-bottom: 25px; position: relative; overflow: hidden;">
-    <div style="background: rgba(0,0,0,0.7); position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div>
-    <h2 style="color: {{ settings.home_color if settings else 'var(--text-main)' }}; text-shadow: 0 0 10px {{ settings.home_color if settings else 'var(--zone-0-black)' }}; position: relative; z-index: 1; font-size: 28px; font-weight: 900; margin: 0;">
-        {{ settings.home_title if settings else 'البوابة' }}
-    </h2>
-</div>
-
-{% if session.get('user_id') and current_user %}
-    
-    {% if settings and settings.gates_mode_active %}
-    <div class="gate-container">
-        <h2 style="color: #e74c3c; margin-top: 0;">🛑 اختبار البوابات الملعونة 🛑</h2>
-        {% if current_user.chosen_gate == 0 %}
-            <p style="color: #e2e8f0; font-size: 14px; margin-bottom: 15px; font-style: italic;">{{ settings.gates_description }}</p>
-            {% if settings.gates_selection_locked %}<div class="flash error" style="margin-bottom: 15px;">أبواب الاختيار مُقلقة حالياً. تمهل وفكر.</div>{% endif %}
-            <div class="gates-grid">
-                <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(1, '{{ settings.gate_1_name }}')"><span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_1_name }}</span></div>
-                <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(2, '{{ settings.gate_2_name }}')"><span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_2_name }}</span></div>
-                <div class="gate-card {% if settings.gates_selection_locked %}locked{% endif %}" onclick="selectGate(3, '{{ settings.gate_3_name }}')"><span style="font-size:30px; display:block; margin-bottom:5px;">🚪</span><span style="color:#fff; font-weight:bold; font-size: 13px;">{{ settings.gate_3_name }}</span></div>
-            </div>
-            <form id="gateForm" action="/choose_gate" method="POST" style="display: none;"><input type="hidden" name="gate_num" id="gateNumInput"></form>
-        {% else %}
-            <div style="color: var(--zone-3-gold); font-size: 14px; font-weight: bold; padding: 15px; border: 1px dashed var(--zone-3-gold); border-radius: 8px;">تم تسجيل مسارك في المتاهة... لا تتحرك.</div>
-        {% endif %}
-    </div>
-    <script>
-        function selectGate(gateNum, gateName) {
-            if ({{ 'true' if settings.gates_selection_locked else 'false' }}) return;
-            if (confirm(`لقد اخترت مسار (${gateName}).\n\nهل أنت متأكد تماماً؟ لا يوجد طريق للعودة!`)) {
-                document.getElementById('gateNumInput').value = gateNum; document.getElementById('gateForm').submit();
-            }
-        }
-    </script>
-    {% endif %}
-
-    {% if settings and settings.floor3_mode_active and current_user.status == 'active' %}
-    <div class="floor3-container">
-        <h2 style="color: #8e44ad; text-align: center; margin-top: 0;">🗳️ محكمة أصوات النجاة (100)</h2>
-        {% if not current_user.has_voted %}
-            <p style="text-align: center; color: #aaa; font-size: 12px; font-style: italic;">وزع 100 صوت نجاة على 5 أشخاص مختلفين. (اكتب الاسم أو الـ ID)</p>
-            
-            <datalist id="hunters-list">
-                <script>
-                    const hunters = {{ active_hunters_json | safe }};
-                    document.write(hunters.map(h => `<option value="${h.id}">${h.name} (ID: ${h.id})</option>`).join(''));
-                </script>
-            </datalist>
-
-            <form action="/submit_floor3_votes" method="POST" id="voteForm">
-                {% for i in range(1, 6) %}
-                <div class="vote-input-group">
-                    <label style="color: #8e44ad; font-weight: bold; font-size:11px;">شخص {{ i }}:</label>
-                    <input type="number" name="target_{{ i }}" list="hunters-list" placeholder="ابحث بالاسم/ID" required style="width: 45%;">
-                    <input type="number" name="amount_{{ i }}" placeholder="أصوات" required style="width: 25%;" min="1" max="96" class="vote-amount">
-                </div>
-                {% endfor %}
-                <div style="text-align: center; margin-top: 15px;">
-                    <span style="color: #aaa; font-size: 13px;">المجموع: <strong id="totalVotes" style="color: #fff;">0</strong> / 100</span><br>
-                    <button type="submit" class="btn-primary" style="background: #8e44ad; width: 100%; margin-top: 10px;" id="submitVotesBtn" disabled>تثبيت الأصوات نهائياً</button>
-                </div>
-            </form>
-
-            <script>
-                const amountInputs = document.querySelectorAll('.vote-amount'); 
-                const totalDisplay = document.getElementById('totalVotes'); 
-                const submitBtn = document.getElementById('submitVotesBtn');
-                
-                amountInputs.forEach(input => {
-                    input.addEventListener('input', () => {
-                        let total = 0; amountInputs.forEach(i => total += (parseInt(i.value) || 0)); totalDisplay.innerText = total;
-                        if (total === 100) { totalDisplay.style.color = "#2ecc71"; submitBtn.disabled = false; } 
-                        else { totalDisplay.style.color = "#e74c3c"; submitBtn.disabled = true; }
-                    });
-                });
-
-                document.getElementById('voteForm').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    let targets = [];
-                    let isValid = true;
-                    let msg = '';
-                    const myId = {{ current_user.hunter_id }};
-                    
-                    for(let i=1; i<=5; i++){
-                        let t = parseInt(document.querySelector(`[name="target_${i}"]`).value);
-                        if(!t) continue;
-                        if(t === myId) { isValid = false; msg = 'لا يمكنك التصويت لنفسك!'; break; }
-                        if(targets.includes(t)) { isValid = false; msg = 'لقد قمت بتكرار التصويت لنفس الشخص! (اختر 5 أشخاص مختلفين)'; break; }
-                        targets.push(t);
-                    }
-                    if(!isValid) { alert('❌ ' + msg); return; }
-                    if(confirm('⚠️ هل أنت متأكد تماماً من اختياراتك؟ المتاهة لا تنسى ولا يمكن التراجع بعد التثبيت!')) {
-                        this.submit();
-                    }
-                });
-            </script>
-        {% else %}
-            <div style="border: 1px dashed #8e44ad; color: #fff; text-align: center; font-size: 13px; padding: 15px; border-radius: 8px;">لقد سلمت أرواح الرحالة للمحكمة.<br>انتظر حتى ينتهي الجميع لفرز الأصوات.</div>
-        {% endif %}
-    </div>
-    {% endif %}
-
-    <div class="top-squares">
-        <a href="/profile" class="square-card" style="border-color: var(--zone-3-gold);">
-            <div class="square-icon">🪪</div><strong class="translatable" data-ar="الرخصة" data-en="License">الرخصة</strong>
-        </a>
-        <a href="/friends" class="square-card" style="border-color: var(--zone-4-diamond);">
-            <div class="square-icon">🤝</div><strong class="translatable" data-ar="الأصدقاء" data-en="Friends">الأصدقاء</strong>
-        </a>
-    </div>
-
-    <div class="preview-grid">
-        <a href="/news" class="preview-card" style="border-top: 3px solid #8B5A2B;">
-            <h4 style="margin:0 0 5px 0; color:#8B5A2B;" class="translatable" data-ar="آخر خبر" data-en="Latest News">آخر خبر</h4>
-            <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ news.title if news else 'لا يوجد أخبار' }}</p>
-        </a>
-        <a href="/declarations" class="preview-card" style="border-top: 3px solid var(--zone-5-fire);">
-            <h4 style="margin:0 0 5px 0; color:var(--zone-5-fire);" class="translatable" data-ar="أحدث تصريح" data-en="Latest Declaration">أحدث تصريح</h4>
-            <p style="font-size:12px; margin:0; color: var(--text-muted);">{{ dec.author if dec else 'لا يوجد تصريحات' }}</p>
-        </a>
-        <a href="/store" class="preview-card" style="border-top: 3px solid var(--zone-3-gold);">
-            <h4 style="margin:0 0 5px 0; color:var(--zone-3-gold);" class="translatable" data-ar="السوق" data-en="Market">السوق</h4>
-            <p style="font-size:12px; margin:0; color: var(--text-muted);">اضغط للدخول والتسوق</p>
-        </a>
-    </div>
-
-    {% if last_frozen %}
-    <a href="/graveyard" class="preview-card ghost-card" style="display: block; text-align:center; padding: 20px; border-top: 3px solid #e74c3c; background: linear-gradient(180deg, #1a1a1a, #0a0a0a); margin-top: 20px; text-decoration: none;">
-        <h4 style="margin:0 0 10px 0; color:#e74c3c; font-size: 16px; text-shadow: 0 0 8px rgba(231,76,60,0.5);">💀 المقبرة المنسية (آخر الضحايا)</h4>
-        <strong style="color: #e2e8f0; font-size: 18px;">{{ last_frozen.username }}</strong>
-        <p style="font-size:13px; color:#aaa; margin-top:5px; font-style: italic;">"{{ last_frozen.freeze_reason }}"</p>
-    </a>
-    {% endif %}
-
 {% else %}
-    <div class="hunter-card" style="text-align: center;">
-        <h3>أهلاً بك في متاهة سيفار</h3>
-        <a href="{{ url_for('register') }}" class="btn-primary" style="margin-bottom:15px;">طلب الانضمام (تسجيل)</a>
-        <a href="{{ url_for('login') }}" class="btn-primary" style="background: #222; color: #fff; border: 1px solid var(--zone-3-gold);">تسجيل الدخول</a>
+
+{% if current_user and current_user.status == 'active' %}
+<div style="background: linear-gradient(90deg, #1a1a1a, #000); border-left: 4px solid var(--zone-3-gold); padding: 15px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <strong style="color: #fff; font-size: 18px;">{{ current_user.username }}</strong>
+        <div style="color: var(--zone-3-gold); font-size: 13px; margin-top: 5px;">الثروة: {{ current_user.points }} نقطة</div>
     </div>
+    <div style="text-align: right;">
+        {% if settings.war_mode or settings.final_battle_mode %}
+            <strong style="color: #e74c3c; font-size: 18px; animation: pulse 1.5s infinite;">🩸 {{ current_user.health }}%</strong>
+            <div style="color: #aaa; font-size: 11px; margin-top: 5px;">النزيف نشط</div>
+        {% else %}
+            <strong style="color: #7f8c8d; font-size: 14px;">الصحة مخفية (وقت السلم)</strong>
+        {% endif %}
+    </div>
+</div>
 {% endif %}
-{% endblock %}
+
+<h3 style="color: #666; font-size: 14px; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px;">حالة العالم (نبض المتاهة)</h3>
+<div class="maze-status-box">
+    <div class="status-item">
+        <span>الأرواح الحية:</span> <strong style="color: #2ecc71;">{{ alive_count }}</strong>
+    </div>
+    <div class="status-item">
+        <span>الجثث في المقبرة:</span> <strong style="color: #e74c3c;">{{ dead_count }}</strong>
+    </div>
+    <div class="status-item">
+        <span>البوابات الملعونة:</span> 
+        <strong class="{{ 'status-active' if settings.gates_mode_active else 'status-inactive' }}">{{ 'مفتوحة للابتلاع' if settings.gates_mode_active else 'مغلقة' }}</strong>
+    </div>
+    <div class="status-item">
+        <span>الحرب الشاملة (ضريبة الدم):</span> 
+        <strong class="{{ 'status-active' if settings.war_mode else 'status-inactive' }}">{{ 'مشتعلة (القتل مسموح)' if settings.war_mode else 'خاملة' }}</strong>
+    </div>
+    <div class="status-item">
+        <span>حالة الإمبراطور:</span> 
+        <strong style="color: {{ '#f1c40f' if settings.final_battle_mode else '#aaa' }};">{{ 'تُرفع الحصانة (يُمكن استهدافه)' if settings.final_battle_mode else 'محصن بالكامل' }}</strong>
+    </div>
+</div>
+
+<div class="grid-container">
+    <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+        <h3 style="color: var(--zone-3-gold); margin-top: 0; font-size: 16px;">آخر المراسيم الملكية</h3>
+        {% if news %}
+            <strong style="color: #fff;">{{ news.title }}</strong>
+            <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 10px 0;">{{ news.content }}</p>
+            <a href="/news" style="color: #3498db; font-size: 12px; text-decoration: none;">قراءة المزيد...</a>
+        {% else %}
+            <p style="color: #666; font-size: 12px;">المتاهة صامتة حالياً.</p>
+        {% endif %}
+    </div>
+    
+    <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+        <h3 style="color: #3498db; margin-top: 0; font-size: 16px;">صدى الرحالة (تصريحات)</h3>
+        {% if dec %}
+            <strong style="color: #fff;">{{ dec.author }}</strong>
+            <p style="color: #ccc; font-size: 13px; line-height: 1.5; margin: 10px 0;">"{{ dec.content[:60] }}..."</p>
+            <a href="/declarations" style="color: #3498db; font-size: 12px; text-decoration: none;">تصفح الساحة...</a>
+        {% else %}
+            <p style="color: #666; font-size: 12px;">لا توجد صرخات في الساحة.</p>
+        {% endif %}
+    </div>
+</div>
+{% endif %} {% endblock %}
