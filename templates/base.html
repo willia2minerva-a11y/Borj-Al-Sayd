@@ -6,130 +6,88 @@
     <title>{{ settings.maze_name if settings else 'متاهة سيفار' }}</title>
     <style>
         :root {
-            --zone-0-black: #0a0a0a;
-            --zone-1-gray: #151515;
-            --zone-2-red: #8b0000;
-            --zone-3-gold: #d4af37;
-            --zone-4-blue: #1abc9c;
+            --bg-dark: #0a0806;
+            --bg-card: #14100c;
+            --gold-light: #f1c40f;
+            --gold-main: #d4af37;
+            --gold-dark: #aa8222;
+            --sand: #e67e22;
         }
-        body { margin: 0; padding: 0; background-color: var(--zone-0-black); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; min-height: 100vh; }
+        body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         
-        /* القائمة الجانبية الإمبراطورية */
-        .sidebar { width: 260px; background: linear-gradient(180deg, #111 0%, #000 100%); border-left: 2px solid var(--zone-2-red); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 2000; transition: transform 0.3s ease-in-out; height: 100vh; position: sticky; top: 0; overflow-y: auto; }
-        .sidebar::-webkit-scrollbar { width: 5px; }
-        .sidebar::-webkit-scrollbar-thumb { background: var(--zone-2-red); border-radius: 5px; }
-        
-        .content { flex: 1; padding: 0; box-sizing: border-box; position: relative; width: 100%; overflow-x: hidden; }
-        .content-inner { padding: 30px; max-width: 1200px; margin: auto; }
-        
-        /* أزرار القائمة */
-        .nav-link { display: block; padding: 12px 15px; color: #ccc; text-decoration: none; margin-bottom: 5px; border-radius: 5px; transition: 0.3s; position: relative; font-size: 15px; font-weight: bold; border-right: 3px solid transparent; }
-        .nav-link:hover { background-color: rgba(255,255,255,0.05); color: #fff; border-right-color: var(--zone-3-gold); transform: translateX(-5px); }
-        
-        .badge { background: var(--zone-2-red); color: #fff; padding: 2px 7px; border-radius: 50%; font-size: 11px; position: absolute; left: 15px; top: 12px; box-shadow: 0 0 5px red; }
-        
-        /* الشريط العلوي للهواتف (زر القائمة) */
-        .mobile-header { display: none; background: #000; padding: 15px 20px; border-bottom: 2px solid var(--zone-2-red); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
-        .menu-btn { font-size: 24px; color: var(--zone-3-gold); cursor: pointer; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
-        .mobile-logo { font-size: 20px; color: #fff; font-weight: bold; text-decoration: none; }
-        
-        /* خلفية التعتيم للهاتف */
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; }
-        
-        /* رسائل النظام */
-        .flash-msg { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; animation: slideDown 0.5s ease; }
-        .flash-success { background: rgba(46,204,113,0.1); border: 1px solid #2ecc71; color: #2ecc71; }
-        .flash-error { background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; color: #e74c3c; }
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .top-header { display: flex; background: #050403; padding: 15px 20px; border-bottom: 2px solid var(--gold-dark); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(212,175,55,0.15); }
+        .menu-btn { font-size: 26px; color: var(--gold-main); cursor: pointer; text-shadow: 0 0 10px rgba(212,175,55,0.5); transition: 0.3s; }
+        .menu-btn:hover { transform: scale(1.1); color: var(--gold-light); }
+        .header-logo { font-size: 22px; color: var(--gold-main); font-weight: 900; text-decoration: none; letter-spacing: 1px; }
 
-        /* التجاوب مع شاشات الجوال */
-        @media (max-width: 768px) {
-            body { flex-direction: column; }
-            .sidebar { position: fixed; right: 0; top: 0; transform: translateX(100%); }
-            .sidebar.open { transform: translateX(0); }
-            .overlay.open { display: block; }
-            .mobile-header { display: flex; }
-            .content-inner { padding: 15px; }
-        }
+        .sidebar { position: fixed; right: 0; top: 0; height: 100vh; width: 280px; background: linear-gradient(180deg, #0f0c08 0%, #000 100%); border-left: 2px solid var(--gold-dark); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 2000; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto; }
+        .sidebar.open { transform: translateX(0); box-shadow: -10px 0 40px rgba(0,0,0,0.9); }
+        .close-btn { font-size: 30px; color: var(--gold-dark); cursor: pointer; text-align: left; margin-bottom: 10px; transition: 0.3s; }
+        .close-btn:hover { color: var(--gold-light); }
+
+        .nav-link { display: block; padding: 12px 15px; color: #cca; text-decoration: none; margin-bottom: 5px; border-radius: 5px; transition: 0.3s; font-size: 15px; font-weight: bold; border-right: 3px solid transparent; position: relative; }
+        .nav-link:hover { background-color: rgba(212,175,55,0.05); color: var(--gold-light); border-right-color: var(--gold-main); padding-right: 20px; }
+        .badge { background: var(--sand); color: #000; padding: 2px 7px; border-radius: 50%; font-size: 11px; position: absolute; left: 15px; top: 12px; box-shadow: 0 0 5px var(--sand); font-weight: bold;}
+        
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
+        .overlay.open { display: block; animation: fadeIn 0.3s; }
+        
+        .content { flex: 1; padding: 0; width: 100%; }
+        .content-inner { padding: 30px; max-width: 1000px; margin: auto; }
+        
+        .flash-msg { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; animation: slideDown 0.5s ease; border: 1px solid; }
+        .flash-success { background: rgba(212,175,55,0.1); border-color: var(--gold-main); color: var(--gold-light); box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+        .flash-error { background: rgba(230,126,34,0.1); border-color: var(--sand); color: var(--sand); box-shadow: 0 0 15px rgba(230,126,34,0.2); }
+        
+        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media (max-width: 768px) { .content-inner { padding: 15px; } }
     </style>
 </head>
 <body>
 
-    <div class="mobile-header">
+    <div class="top-header">
         <div class="menu-btn" onclick="toggleSidebar()">☰</div>
-        <a href="/" class="mobile-logo">{{ settings.maze_name if settings else 'متاهة سيفار' }}</a>
+        <a href="/" class="header-logo">{{ settings.maze_name if settings else 'متاهة سيفار' }}</a>
+        {% if current_user and current_user.role == 'admin' %}
+            <a href="/admin" style="color: var(--gold-light); font-weight: bold; text-decoration: none; font-size: 20px;">👑</a>
+        {% else %}<div></div>{% endif %}
     </div>
 
     <div class="overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     {% if current_user %}
     <div class="sidebar" id="mainSidebar">
-        <h2 style="color: var(--zone-3-gold); text-align: center; margin-top: 0; text-shadow: 0 0 10px rgba(212,175,55,0.3);">
-            {{ settings.maze_name if settings else 'متاهة سيفار' }}
-        </h2>
-        <hr style="border-color: #333; width: 100%; margin-bottom: 20px;">
+        <div class="close-btn" onclick="toggleSidebar()">&times;</div>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">{{ current_user.avatar if current_user.avatar else '👤' }}</div>
+            <strong style="color: var(--gold-main); font-size: 18px;">{{ current_user.username }}</strong>
+        </div>
+        <hr style="border-color: #332815; width: 100%; margin-bottom: 15px;">
         
-        <a href="/" class="nav-link">{{ settings.nav_home if settings else 'الرئيسية 🏰' }}</a>
-        <a href="/profile" class="nav-link">{{ settings.nav_profile if settings else 'هويتي 👤' }}</a>
-        <a href="/friends" class="nav-link">{{ settings.nav_friends if settings else 'التحالفات 🤝' }}</a>
-        
-        <a href="/news" class="nav-link">
-            {{ settings.nav_news if settings else 'المخطوطات 📜' }}
-            {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}
-        </a>
-        
-        <a href="/puzzles" class="nav-link">
-            {{ settings.nav_puzzles if settings else 'النقوش 🧩' }}
-            {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}
-        </a>
-        
-        <a href="/declarations" class="nav-link">
-            {{ settings.nav_decs if settings else 'التصريحات 📢' }}
-            {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}
-        </a>
-        
-        <a href="/store" class="nav-link">
-            {{ settings.nav_store if settings else 'السوق 🐪' }}
-            {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}
-        </a>
-        
-        <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings else 'المقبرة 💀' }}</a>
-        
-        <a href="/altar" class="nav-link" style="color:#9b59b6; border-top: 1px dashed #333; margin-top: 15px; padding-top: 15px;">المذبح 🔮</a>
-        
-        {% if current_user.unlocked_lore_room %}
-        <a href="/lore_room" class="nav-link" style="color:#f1c40f;">البونغلاف 📜</a>
-        {% endif %}
-        {% if current_user.unlocked_top_room %}
-        <a href="/top_room" class="nav-link" style="color:#3498db;">الأساطير 🏆</a>
-        {% endif %}
-
-        <div style="flex-grow: 1;"></div>
-        <hr style="border-color: #333; width: 100%; margin-top: 20px;">
+        <a href="/" class="nav-link">الرئيسية 🏰</a>
+        <a href="/profile" class="nav-link">هويتي 👤</a>
+        <a href="/friends" class="nav-link">التحالفات 🤝</a>
+        <a href="/news" class="nav-link">المخطوطات 📜 {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
+        <a href="/puzzles" class="nav-link">النقوش 🧩 {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
+        <a href="/declarations" class="nav-link">التصريحات 📢 {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
+        <a href="/store" class="nav-link">السوق المظلم 🐪 {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
+        <a href="/graveyard" class="nav-link">المقبرة 💀</a>
+        <a href="/altar" class="nav-link" style="color:#d35400; border-top: 1px dashed #332815; margin-top: 15px; padding-top: 15px;">المذبح 🔮</a>
         
         {% if current_user.role == 'admin' %}
-        <a href="/admin" class="nav-link" style="color: var(--zone-2-red); text-shadow: 0 0 5px rgba(139,0,0,0.5);">👑 الإدارة</a>
+        <div style="flex-grow: 1;"></div>
+        <a href="/admin" class="nav-link" style="color: var(--gold-light); text-align: center; border: 1px solid var(--gold-main); border-radius: 8px;">👑 عرش الإمبراطور</a>
         {% endif %}
-        <a href="/logout" class="nav-link" style="color: #666;">خروج 🚪</a>
+        <a href="/logout" class="nav-link" style="color: #888; text-align: center; margin-top: 10px;">خروج 🚪</a>
     </div>
     {% endif %}
 
     <div class="content">
-        {% if request.endpoint == 'home' and settings and settings.banner_url %}
-        <div style="width: 100%; height: 250px; background-image: url('{{ settings.banner_url }}'); background-size: cover; background-position: center; border-bottom: 2px solid var(--zone-3-gold); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; box-shadow: inset 0 -60px 50px -10px #000;">
-            <h1 style="color: {{ settings.home_color|default('#fff') }}; font-size: 38px; font-weight: 900; text-shadow: 0 3px 15px #000, 0 0 25px var(--zone-3-gold); margin: 0; text-align: center;">{{ settings.home_title if settings else 'بوابة المتاهة' }}</h1>
-        </div>
-        {% endif %}
-
         <div class="content-inner">
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-msg flash-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                {% endif %}
+                {% if messages %}{% for category, message in messages %}<div class="flash-msg flash-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}
             {% endwith %}
-            
             {% block content %}{% endblock %}
         </div>
     </div>
