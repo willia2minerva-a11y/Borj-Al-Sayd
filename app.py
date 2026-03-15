@@ -14,19 +14,18 @@ app.config['MONGODB_SETTINGS'] = {
     'serverSelectionTimeoutMS': 2000,
     'connect': False  # يمنع انهيار السيرفر عند الإقلاع
 }
-
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 db.init_app(app)
 
-# 🚨 كاشف الأخطاء الجذري: يظهر سبب العطل في الموقع مباشرة
+# 🚨 كاشف الأخطاء الجذري
 @app.errorhandler(Exception)
 def handle_exception(e):
     err = traceback.format_exc()
     return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 System Crash Report</h2><pre>{err}</pre></div>", 500
 
-# 📜 نظام تدوين السجلات الإمبراطوري والسرد القصصي
+# 📜 نظام تدوين السجلات الإمبراطوري
 class ActionLog(db.Document):
     meta = {'strict': False}
     action_text = db.StringField()
@@ -116,7 +115,7 @@ def check_lazy_death_and_bleed(user, settings):
                         
                         if getattr(settings, 'war_mode', False) and settings.dead_count >= getattr(settings, 'war_kill_target', 15):
                             settings.war_mode = False
-                            log_action(f"🛑 اكتفت المتاهة من الدماء. سقط {settings.dead_count} ضحية، وتوقفت الحرب الشاملة لتبدأ محكمة الأصوات!", "system", is_epic=True)
+                            log_action(f"🛑 اكتفت المتاهة من الدماء. توقفت الحرب الشاملة لتبدأ محكمة الأصوات!", "system", is_epic=True)
                             
                         settings.save()
                     user.save()
@@ -286,11 +285,12 @@ def register():
             role='admin' if new_id == 1000 else 'hunter', 
             status=initial_status,
             facebook_link=request.form.get('facebook_link', ''),
-            zone=request.form.get('zone', '')
+            zone='البوابات', 
+            special_rank='مستكشف'
         ).save()
         
-        log_action(f"✨ رحالة جديد انضم (ينتظر التفعيل): {request.form['username']} (#{new_id})", "system")
-        flash('تم تسجيلك بنجاح! حسابك الآن "قيد المراجعة" ولن تتمكن من اللعب حتى توافق الإدارة.', 'success')
+        log_action(f"✨ رحالة جديد انضم للمتاهة: {request.form['username']}", "system")
+        flash('تم تسجيلك بنجاح! أنت الآن عند البوابات في انتظار موافقة الإدارة.', 'success')
         return redirect(url_for('login'))
         
     return render_template('register.html')
@@ -433,6 +433,7 @@ def admin_update_profile(target_id):
             pass
             
     return redirect(url_for('hunter_profile', target_id=target_id))
+
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
 def transfer(target_id):
@@ -512,7 +513,7 @@ def use_item(target_id):
     
     if item_type == 'weapon' and is_combat_active and target.hunter_id not in getattr(attacker, 'friends', []):
         if getattr(target, 'role', '') == 'admin' and not getattr(settings, 'final_battle_mode', False):
-            flash('🛡️ الإمبراطور محصن في الحرب الشاملة! فقط في المعركة الأخيرة يمكنك استهدافه.', 'error')
+            flash('🛡️ الإمبراطور محصن في الحرب الشاملة!', 'error')
             return redirect(request.referrer or url_for('home'))
             
         has_shield = False
@@ -540,7 +541,7 @@ def use_item(target_id):
                 
                 if has_totem:
                     target.health = 50 
-                    log_action(f"🌟 طوطم الخلود أعاد {target.username} للحياة بعد أن قتله {attacker.username}!", "system", is_epic=True)
+                    log_action(f"🌟 طوطم الخلود أعاد {target.username} للحياة!", "system", is_epic=True)
                     flash('استيقظ الهدف من الموت باستخدام طوطم الخلود!', 'error')
                 else:
                     target.health = 0
@@ -549,13 +550,16 @@ def use_item(target_id):
                     log_action(f"💀 {target.username} هلك على يد {attacker.username}", "combat")
                     
                     if getattr(target, 'role', '') == 'admin':
-                        log_action(f"👑 سقط الإمبراطور! {attacker.username} هو الحاكم الجديد للمتاهة!", "system", is_epic=True)
+                        log_action(f"👑 سقط الإمبراطور! {attacker.username} هو الحاكم الجديد!", "system", is_epic=True)
                         settings.final_battle_mode = False
                         settings.war_mode = False
                         
+                    # 🚨 نظام الترقية الآلي عند انتهاء الحرب
                     if getattr(settings, 'war_mode', False) and settings.dead_count >= getattr(settings, 'war_kill_target', 15):
                         settings.war_mode = False
-                        log_action(f"🛑 اكتفت المتاهة من الدماء. توقفت الحرب الشاملة لتبدأ محكمة الأصوات!", "system", is_epic=True)
+                        log_action(f"🛑 اكتفت المتاهة من الدماء. الناجون يصعدون للطابق 2!", "system", is_epic=True)
+                        # ترقية جميع الأحياء للطابق الثاني
+                        User.objects(status='active', role='hunter', hunter_id__ne=1000).update(set__zone='الطابق 2')
                         
                     settings.save()
                     
@@ -681,7 +685,7 @@ def altar():
                     settings.final_battle_mode = False
                     settings.war_mode = False
                     settings.save()
-                    log_action(f"👑 {user.username} تلا تعويذة الموت المحتم وأسقط الإمبراطور!", "system", is_epic=True)
+                    log_action(f"👑 {user.username} تلا تعويذة الموت وأسقط الإمبراطور!", "system", is_epic=True)
                     flash('سقط الإمبراطور! أنت الحاكم الجديد!', 'success')
             else:
                 flash('التعويذة صحيحة، لكن الإمبراطور محصن حالياً.', 'error')
@@ -924,6 +928,7 @@ def declarations():
             img = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"
             
         News(
+            title=f"تصريح من {user.username}",
             content=request.form.get('content', '').strip(), 
             image_data=img, 
             category='declaration', 
@@ -932,7 +937,7 @@ def declarations():
         ).save()
         
         log_action(f"📢 {user.username} أرسل تصريحاً", "social")
-        flash('تم الإرسال للمراجعة', 'success')
+        flash('تم الإرسال بنجاح', 'success')
         return redirect(url_for('declarations'))
         
     try: 
@@ -1203,6 +1208,9 @@ def admin_panel():
                             u.status = 'eliminated'
                             u.freeze_reason = request.form.get('bulk_reason', 'بأمر الإدارة')
                             u.save()
+                        elif bt == 'move_zone': # 🚨 النقل الآلي المخصص
+                            u.zone = request.form.get('bulk_zone', 'الطابق 1')
+                            u.save()
                             
             elif act == 'setup_gates':
                 settings.gates_mode_active = True
@@ -1226,6 +1234,7 @@ def admin_panel():
                     fate = fates.get(str(getattr(u, 'chosen_gate', 0))) 
                     if fate == 'pass': 
                         u.gate_status = 'passed'
+                        u.zone = 'الطابق 1' # 🚨 الترقية الآلية
                     elif fate == 'kill': 
                         u.status = 'eliminated'
                         u.freeze_reason = 'البوابة التهمته'
@@ -1238,6 +1247,7 @@ def admin_panel():
                 if u: 
                     if request.form.get('decision') == 'pass': 
                         u.gate_status = 'passed'
+                        u.zone = 'الطابق 1' # 🚨 الترقية الآلية
                     else: 
                         u.status = 'eliminated'
                         u.freeze_reason = 'فشل في الاختبار'
@@ -1259,6 +1269,15 @@ def admin_panel():
                     s_user.freeze_reason = 'لم يصوت'
                     s_user.save()
                     
+            elif act == 'advance_voters': # 🚨 زر إنهاء التصويت ونقل النخبة
+                top_n = int(request.form.get('top_n', 5))
+                leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:top_n]
+                for l in leaders:
+                    l.zone = 'المعركة الأخيرة'
+                    l.save()
+                settings.floor3_mode_active = False
+                log_action(f"أُغلقت محكمة الأصوات، وصعد أعلى {top_n} لاعبين للمعركة الأخيرة!", "system", True)
+                
             elif act == 'update_war_settings':
                 settings.bleed_rate_minutes = int(request.form.get('bleed_rate_minutes') or 60)
                 settings.bleed_amount = int(request.form.get('bleed_amount') or 1)
@@ -1327,7 +1346,6 @@ def download_logs(log_date):
     return Response(out, mimetype="text/plain", headers={"Content-disposition": f"attachment; filename=logs_{log_date}.txt"})
 
 if __name__ == '__main__': 
-    # يتم تشغيل التطبيق في بيئة Render تلقائياً عبر Gunicorn
-    # يستخدم هذا السطر فقط للتطوير المحلي (Local Development)
+    # يستخدم هذا السطر فقط للتطوير المحلي، Gunicorn في Render يتكفل بالباقي
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 
