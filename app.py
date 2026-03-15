@@ -7,13 +7,14 @@ import os, base64, random, math, json, traceback
 
 app = Flask(__name__)
 
-# 🚨 إعدادات قاعدة البيانات المحسنة لمنع تجمد السيرفر (Timeout Fix)
+# 🚨 إعدادات قاعدة البيانات المحسنة لمنع تجمد السيرفر والشاشة البيضاء
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db'),
-    'connectTimeoutMS': 10000,
-    'serverSelectionTimeoutMS': 10000,
+    'connectTimeoutMS': 2000,
+    'serverSelectionTimeoutMS': 2000,
     'connect': False  # يمنع انهيار السيرفر عند الإقلاع
 }
+
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
