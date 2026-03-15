@@ -8,7 +8,7 @@ import os, base64, random, math, json
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db')}
-app.config['SECRET_KEY'] = 'sephar-maze-emperor-ultimate-v10-final'
+app.config['SECRET_KEY'] = 'sephar-maze-emperor-ultimate-final-v10'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
@@ -172,7 +172,7 @@ def get_allowed_news(user):
         return allowed
     except: return []
 
-# --- الواجهة التفاعلية ومشهد النصر ---
+# --- الواجهة الرئيسية (ومشهد النصر) ---
 @app.route('/')
 def home():
     settings = GlobalSettings.objects(setting_name='main_config').first()
@@ -304,7 +304,7 @@ def transfer(target_id):
             amt = int(request.form.get('amount') or 0)
             if 0 < amt <= sender.points: 
                 sender.points -= amt; receiver.points += amt
-                sender.loyalty_points = getattr(sender, 'loyalty_points', 0) + 2
+                sender.loyalty_points = getattr(sender, 'loyalty_points', 0) + 2 # مكافأة وفاء
                 sender.save(); receiver.save()
                 log_action(f"📦 {sender.username} هرّب {amt} نقطة إلى {receiver.username}", "social"); flash('تم التحويل!', 'success')
         except: pass
@@ -312,7 +312,7 @@ def transfer(target_id):
         itm = request.form.get('item_name')
         if itm in getattr(sender, 'inventory', []): 
             sender.inventory.remove(itm); receiver.inventory.append(itm)
-            sender.loyalty_points = getattr(sender, 'loyalty_points', 0) + 5
+            sender.loyalty_points = getattr(sender, 'loyalty_points', 0) + 5 # مكافأة وفاء
             sender.save(); receiver.save()
             log_action(f"📦 {sender.username} أرسل أداة ({itm}) إلى {receiver.username}", "social"); flash('تم الإرسال!', 'success')
     return redirect(request.referrer or url_for('home'))
@@ -360,6 +360,7 @@ def use_item(target_id):
             
             if target.health <= 0: 
                 has_totem = False
+                # الطوطم لا يعمل في التصويت ولا في المعركة الأخيرة
                 if not getattr(settings, 'final_battle_mode', False) and not getattr(settings, 'floor3_mode_active', False):
                     for inv_item in getattr(target, 'inventory', []):
                         if 'طوطم' in inv_item or 'totem' in inv_item.lower():
@@ -380,7 +381,7 @@ def use_item(target_id):
                         
                     if getattr(settings, 'war_mode', False) and settings.dead_count >= getattr(settings, 'war_kill_target', 15):
                         settings.war_mode = False
-                        log_action(f"🛑 اكتفت المتاهة من الدماء. توقفت الحرب الشاملة لتبدأ محكمة الأصوات!", "system", is_epic=True)
+                        log_action(f"🛑 اكتفت المتاهة من الدماء. سقطت {settings.dead_count} ضحية، توقفت الحرب لتبدأ المحكمة!", "system", is_epic=True)
                     settings.save()
                     
             BattleLog(victim_name=target.username, weapon_name=item.name, remaining_hp=target.health).save()
@@ -813,3 +814,4 @@ def download_logs(log_date):
 
 if __name__ == '__main__': 
     app.run(debug=True)
+
