@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .altar-container { 
+        height: 65vh; 
+        display: flex; 
+        flex-direction: column; 
+        justify-content: center; 
+        align-items: center; 
+        text-align: center; 
+        animation: fadeIn 2s ease-in-out;
+    }
+    .altar-text { 
+        color: #666; 
+        font-size: 20px; 
+        margin-bottom: 40px; 
+        letter-spacing: 2px; 
+        text-shadow: 0 0 15px rgba(0,0,0,0.9); 
+        font-family: 'Courier New', Courier, monospace;
+    }
+    .altar-input { 
+        background: transparent; 
+        border: none; 
+        border-bottom: 1px solid #333; 
+        color: var(--zone-4-diamond); 
+        font-size: 28px; 
+        text-align: center; 
+        padding: 10px; 
+        outline: none; 
+        width: 80%; 
+        max-width: 400px;
+        transition: 0.4s; 
+    }
+    .altar-input:focus { 
+        border-bottom: 1px solid #8e44ad; 
+        box-shadow: 0 15px 15px -15px #8e44ad; 
+    }
+    .altar-input::placeholder { color: #1a1a1a; font-size: 20px; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+
+<div class="altar-container">
+    <p class="altar-text">"انطق الكلمة المنسية لتنير بصيرتك، أو التزم الصمت"</p>
+    <form action="/altar" method="POST">
+        <input type="text" name="spell_word" class="altar-input" placeholder="..." autocomplete="off" autofocus required>
+    </form>
+</div>
+{% endblock %}
+
