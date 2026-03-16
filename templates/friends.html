@@ -1,62 +1,68 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-3-gold); text-align: center;">🤝 ساحة التحالفات</h2>
+<style>
+    .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+    .form-control { flex: 1; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline: none; }
+    .form-control:focus { border-color: var(--gold-main); }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; }
+    .user-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .avatar-sm { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; }
+</style>
 
-<div class="hunter-card" style="margin-bottom: 20px; background: #111; border-color: var(--zone-3-gold);">
-    <form action="/friends" method="GET" style="display: flex; gap: 10px;">
-        <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID..." required style="flex-grow: 1; padding: 10px; background: #000; color: #fff; border: 1px solid #333; border-radius: 5px; outline: none;">
-        <button type="submit" class="btn-primary" style="width: auto; padding: 0 20px;">بحث 🔍</button>
-    </form>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); margin: 0;">🤝 التحالفات</h2>
+    <p style="color: #aaa; font-size: 14px;">ابحث عن حلفاء أو خونة في المتاهة بالاسم أو الـ ID.</p>
 </div>
+
+<form action="/friends" method="GET" class="search-box">
+    <input type="text" name="search" placeholder="ابحث عن رحالة..." class="form-control" required>
+    <button type="submit" class="btn-gold">بحث 🔍</button>
+</form>
 
 {% if search_result %}
-<div class="hunter-card floor-1" style="margin-bottom: 25px; border-color: #3498db;">
-    <h3 style="margin-top: 0; color: #3498db;">نتيجة البحث:</h3>
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 30px;">{{ search_result.avatar if not search_result.avatar.startswith('data:') else '👤' }}</div>
-            <div>
-                <strong style="color: #fff;">{{ search_result.username }}</strong> <small style="color: #aaa;">#{{ search_result.hunter_id }}</small><br>
-                <span style="font-size: 12px; color: {{ '#2ecc71' if search_result.status == 'active' else '#e74c3c' }};">
-                    {{ 'نشط' if search_result.status == 'active' else 'مقصي' }}
-                </span>
-            </div>
+<div class="user-card" style="border-color: var(--gold-main); box-shadow: 0 0 15px rgba(212,175,55,0.2);">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="/avatar/{{ search_result.hunter_id }}" class="avatar-sm">
+        <div>
+            <strong style="color: #fff; font-size: 16px;">{{ search_result.username }}</strong>
+            <div style="color: #888; font-size: 12px;">ID: {{ search_result.hunter_id }}</div>
         </div>
-        <a href="/hunter/{{ search_result.hunter_id }}" class="btn-primary" style="padding: 5px 15px; text-decoration: none; width: auto;">ملفه 📜</a>
     </div>
+    <form action="/add_friend" method="POST" style="margin: 0;">
+        <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
+        <button type="submit" class="btn-gold" style="padding: 8px 15px; font-size: 13px;">طلب تحالف</button>
+    </form>
 </div>
-{% elif request.args.get('search') %}
-<div class="flash error" style="text-align: center; margin-bottom: 20px;">لم يتم العثور على هذا الرحالة!</div>
 {% endif %}
 
 {% if friend_requests %}
-<h3 style="color: #e67e22; border-bottom: 1px solid #333; padding-bottom: 5px;">📥 طلبات التحالف (تحتاج قرارك)</h3>
+<h3 style="color: #e67e22; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">📩 طلبات التحالف</h3>
 {% for req in friend_requests %}
-<div class="hunter-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; margin-bottom: 10px;">
-    <span style="color: #fff; font-weight: bold;">{{ req.username }} <small style="color:#aaa;">#{{ req.hunter_id }}</small></span>
-    <div style="display: flex; gap: 5px;">
-        <form action="/accept_friend/{{ req.hunter_id }}" method="POST" style="margin: 0;"><button type="submit" class="btn-primary" style="background: #2ecc71; padding: 5px 10px;">قبول ✔️</button></form>
-        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin: 0;"><button type="submit" class="btn-danger" style="padding: 5px 10px;">رفض ❌</button></form>
+<div class="user-card">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="/avatar/{{ req.hunter_id }}" class="avatar-sm">
+        <strong style="color: #fff;">{{ req.username }}</strong>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <a href="/accept_friend/{{ req.hunter_id }}" class="btn-gold" style="text-decoration: none; padding: 8px 15px; font-size: 13px; background: #2ecc71;">قبول</a>
+        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin: 0;"><button type="submit" class="btn-gold" style="background: #e74c3c; color: #fff; padding: 8px 15px; font-size: 13px;">رفض</button></form>
     </div>
 </div>
 {% endfor %}
 {% endif %}
 
-<h3 style="color: var(--zone-3-gold); border-bottom: 1px solid #333; padding-bottom: 5px; margin-top: 30px;">🛡️ حلفائي الموثوقون</h3>
-{% if friends %}
-<div style="display: grid; gap: 10px;">
-    {% for friend in friends %}
-    <div class="hunter-card" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="font-size: 20px;">{{ friend.avatar if not friend.avatar.startswith('data:') else '👤' }}</div>
-            <strong style="color: #fff;">{{ friend.username }} <span style="color: {{ '#2ecc71' if friend.status == 'active' else '#e74c3c' }}; font-size: 11px;">({{ 'نشط' if friend.status == 'active' else 'مقصي' }})</span></strong>
-        </div>
-        <a href="/hunter/{{ friend.hunter_id }}" class="btn-primary" style="width: auto; padding: 5px 15px; text-decoration: none;">زيارة الملف</a>
+<h3 style="color: #3498db; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">🛡️ الحلفاء</h3>
+{% for friend in friends %}
+<div class="user-card">
+    <div style="display: flex; align-items: center; gap: 15px;">
+        <img src="/avatar/{{ friend.hunter_id }}" class="avatar-sm">
+        <a href="/hunter/{{ friend.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold;">{{ friend.username }}</a>
     </div>
-    {% endfor %}
+    <form action="/cancel_friend/{{ friend.hunter_id }}" method="POST" style="margin: 0;">
+        <button type="submit" class="btn-gold" style="background: #333; color: #fff; padding: 8px 15px; font-size: 13px;">خيانة (إلغاء)</button>
+    </form>
 </div>
 {% else %}
-<p style="text-align: center; color: #aaa; font-style: italic;">أنت وحيد في هذه المتاهة المظلمة...</p>
-{% endif %}
-
+<p style="color: #666; text-align: center;">أنت وحيد في هذه المتاهة الموحشة.</p>
+{% endfor %}
 {% endblock %}
