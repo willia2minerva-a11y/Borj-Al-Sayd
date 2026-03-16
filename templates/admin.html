@@ -16,7 +16,7 @@
     .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,175,55,0.4); }
     .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 16px; transition: 0.3s; width: 100%; }
 
-    .log-box { background: #000; border: 1px solid #332815; padding: 15px; height: 400px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 8px; }
+    .log-box { background: #000; border: 1px solid #332815; padding: 15px; height: 300px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 8px; }
     .log-item { margin-bottom: 8px; border-bottom: 1px dashed #222; padding-bottom: 5px; line-height: 1.5; }
     .c-system { color: #9b59b6; } .c-combat { color: #e74c3c; } .c-social { color: #3498db; } .c-puzzle { color: #f1c40f; }
 </style>
@@ -46,13 +46,13 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" {% if search_query %}onload="toggleMod('mod-users')"{% endif %}>👥 2. إدارة الأرواح وتجربة التتويج <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" id="btn-mod-users">👥 2. إدارة الأرواح وتجربة التتويج <span>▼</span></button>
 <div id="mod-users" class="mod-content" {% if search_query %}style="display:block;"{% endif %}>
     
     <div style="background: rgba(212,175,55,0.1); border: 1px dashed var(--gold-main); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-        <strong style="color: var(--gold-main); display: block; margin-bottom: 10px;">👑 تجربة مشهد التتويج (بدون إنهاء اللعبة):</strong>
+        <strong style="color: var(--gold-main); display: block; margin-bottom: 10px;">👑 تجربة مشهد التتويج:</strong>
         <form action="/" method="GET" style="display: flex; gap: 10px;">
-            <input type="number" name="test_victory" placeholder="أدخل ID اللاعب (مثال: 1000 أو 1001)" class="form-control" style="margin:0;" required>
+            <input type="number" name="test_victory" placeholder="أدخل ID اللاعب (مثال: 1000)" class="form-control" style="margin:0;" required>
             <button type="submit" class="btn-gold" style="width: auto;">جرب المشهد ➔</button>
         </form>
     </div>
@@ -87,6 +87,7 @@
             <option value="hard_delete">⚠️ مسح نهائي للحساب</option>
         </select>
         <input type="text" name="bulk_zone" placeholder="اسم الطابق (لو اخترت نقل)" class="form-control">
+        <input type="text" name="bulk_reason" placeholder="سبب الإعدام (اختياري)" class="form-control">
         <button type="submit" class="btn-gold">تنفيذ الأمر الجماعي</button>
     </form>
 </div>
@@ -105,7 +106,10 @@
             <option value="word_order">لغز ترتيب الكلمات (اكتب الترتيب الصحيح في الإجابة)</option>
         </select>
         <input type="text" name="puzzle_answer" placeholder="الإجابة الصحيحة" class="form-control">
-        <input type="number" name="reward_points" placeholder="النقاط المكافأة" class="form-control">
+        <div style="display: flex; gap: 10px;">
+            <input type="number" name="reward_points" placeholder="النقاط المكافأة" class="form-control">
+            <input type="number" name="max_winners" placeholder="عدد الفائزين المسموح" class="form-control" value="1">
+        </div>
         <button type="submit" class="btn-gold">نشر للعامة</button>
     </form>
 
@@ -119,6 +123,10 @@
             <option value="cursed_ghost">شبح ملعون (يسرق نقاط)</option>
         </select>
         <input type="text" name="puzzle_answer" placeholder="الكود السري أو ID الشبح" class="form-control" required>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" name="reward_points" placeholder="مكافأة النقاط" class="form-control">
+            <input type="number" name="trap_duration" placeholder="مدة الإيقاف (بالدقائق للفخ)" class="form-control">
+        </div>
         <button type="submit" class="btn-danger">زرع الفخ في المتاهة</button>
     </form>
 </div>
@@ -137,7 +145,7 @@
     </form>
     
     <hr style="border-color:#332815; margin: 20px 0;">
-    <strong style="color: #fff; display:block; margin-bottom:10px;">إصدار الحكم ونقلهم للطابق 1:</strong>
+    <strong style="color: #fff; display:block; margin-bottom:10px;">إصدار الحكم ونقلهم للطابق 1 آلياً:</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="judge_gates">
         <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -150,16 +158,21 @@
     <form action="/admin" method="POST" style="margin-top:10px;"><input type="hidden" name="action" value="close_gates_mode"><button type="submit" class="btn-gold" style="background:#333; color:#fff;">إيقاف مود البوابات</button></form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-war')">⚔️ 5. إعدادات الحرب ونزيف الدم <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-war')">⚔️ 5. إعدادات الحرب الشاملة والمؤقت <span>▼</span></button>
 <div id="mod-war" class="mod-content">
-    <form action="/admin" method="POST" style="margin-bottom: 20px;">
+    <form action="/admin" method="POST" style="margin-bottom: 20px; background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px;">
         <input type="hidden" name="action" value="toggle_war">
-        <button type="submit" class="btn-danger">{{ 'إعلان السلام' if settings.war_mode else 'إشعال فتيل الحرب' }}</button>
+        <label style="color:#e74c3c; display:block; margin-bottom:10px; font-weight:bold;">مدة الحرب قبل أن تنتهي آلياً:</label>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="number" name="war_hours" placeholder="عدد الساعات" class="form-control" style="margin:0;">
+            <button type="submit" class="btn-danger" style="white-space: nowrap; width: auto;">{{ 'إعلان السلام الفوري' if settings.war_mode else 'إشعال الحرب وبدء المؤقت' }}</button>
+        </div>
     </form>
-    <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">إعدادات ضريبة الدم والنقل التلقائي:</strong>
+
+    <strong style="color: var(--gold-main); display: block; margin-bottom: 10px;">إعدادات ضريبة الدم والنقل التلقائي للطابق 2:</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_war_settings">
-        <label style="color:#aaa; font-size:12px;">عدد الجثث لإنهاء الحرب آلياً ونقلهم للطابق 2:</label>
+        <label style="color:#aaa; font-size:12px;">العدد المستهدف للجثث لإنهاء الحرب آلياً ونقل الناجين للطابق 2:</label>
         <input type="number" name="war_kill_target" value="{{ settings.war_kill_target }}" class="form-control">
         <div style="display:flex; gap:10px;">
             <input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes }}" placeholder="ينزف كل (دقيقة)" class="form-control">
@@ -169,19 +182,23 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-vote')">🗳️ 6. محكمة الأصوات والتصويت <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-vote')">🗳️ 6. محكمة الأصوات والمؤقت <span>▼</span></button>
 <div id="mod-vote" class="mod-content">
-    <form action="/admin" method="POST" style="margin-bottom: 20px;">
+    <form action="/admin" method="POST" style="margin-bottom: 20px; background: rgba(52,152,219,0.1); padding: 15px; border-radius: 8px;">
         <input type="hidden" name="action" value="toggle_floor3">
-        <button type="submit" class="btn-gold" style="background: #3498db; color: #fff;">{{ 'إغلاق المحكمة' if settings.floor3_mode_active else 'فتح التصويت' }}</button>
+        <label style="color:#3498db; display:block; margin-bottom:10px; font-weight:bold;">إعدادات التصويت والنقل التلقائي للمصوتين:</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" name="vote_hours" placeholder="المدة (بالساعات)" class="form-control" style="margin:0;">
+            <input type="number" name="top_n" placeholder="عدد الناجين للمعركة الأخيرة" class="form-control" style="margin:0;" value="5">
+        </div>
+        <button type="submit" class="btn-gold" style="background: #3498db; color: #fff; margin-top: 10px;">{{ 'إغلاق المحكمة' if settings.floor3_mode_active else 'فتح التصويت وبدء المؤقت' }}</button>
     </form>
+
     {% if settings.floor3_mode_active %}
-    <form action="/admin" method="POST" style="display: flex; gap: 10px; align-items: center;">
+    <form action="/admin" method="POST" style="border-top: 1px solid #332815; padding-top: 15px;">
         <input type="hidden" name="action" value="advance_voters">
-        <label style="color: #ccc; font-size: 13px;">نقل أعلى:</label>
-        <input type="number" name="top_n" value="5" class="form-control" style="width: 80px; margin: 0;">
-        <label style="color: #ccc; font-size: 13px;">إلى المعركة الأخيرة.</label>
-        <button type="submit" class="btn-gold" style="background: #2ecc71;">إنهاء ونقل النخبة 🚀</button>
+        <input type="hidden" name="top_n" value="{{ settings.vote_top_n }}">
+        <button type="submit" class="btn-gold" style="background: #2ecc71;">إنهاء مبكر ونقل النخبة فوراً 🚀</button>
     </form>
     {% endif %}
 </div>
@@ -195,17 +212,23 @@
     <form action="/admin" method="POST" style="display: flex; gap: 10px;">
         <input type="hidden" name="action" value="set_admin_hp">
         <input type="number" name="admin_hp" placeholder="نقاط صحة الإمبراطور..." class="form-control" style="margin: 0;" required>
-        <button type="submit" class="btn-danger" style="width: auto;">شحن</button>
+        <button type="submit" class="btn-danger" style="width: auto;">شحن الصحة</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')">👁️ 8. عين سيفار (سجلات المتاهة) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')">👁️ 8. عين سيفار وتطهير السجلات <span>▼</span></button>
 <div id="mod-logs" class="mod-content">
+    <form action="/admin" method="POST" style="margin-bottom: 20px;">
+        <input type="hidden" name="action" value="clear_all_logs">
+        <button type="submit" class="btn-danger" onclick="return confirm('هل أنت متأكد؟ سيتم مسح كل سجلات المتاهة لتخفيف قاعدة البيانات!');">⚠️ تطهير جميع السجلات بالكامل</button>
+    </form>
+
     <div style="display: flex; gap: 10px; margin-bottom: 15px;">
         <input type="date" id="logDatePicker" value="{{ current_date }}" class="form-control" style="margin: 0;">
         <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-gold" style="width: auto;">جلب</button>
         <a href="/download_logs/{{ current_date }}" class="btn-gold" style="background: #34495e; color: #fff; text-decoration: none; padding-top: 13px;">تحميل TXT</a>
     </div>
+    
     <div class="log-box">
         {% for log in logs %}
         <div class="log-item">
@@ -213,7 +236,7 @@
             <span class="c-{{ log.category }}">{{ log.action_text }}</span>
         </div>
         {% else %}
-        <div style="text-align: center; color: #444; margin-top: 150px;">السجلات فارغة.</div>
+        <div style="text-align: center; color: #444; margin-top: 100px;">السجلات فارغة.</div>
         {% endfor %}
     </div>
 </div>
@@ -223,12 +246,5 @@
         var el = document.getElementById(id);
         el.style.display = (el.style.display === "block") ? "none" : "block";
     }
-    // فتح قسم الإدارة تلقائياً إذا كان هناك بحث نشط
-    {% if search_query %}
-    document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById('mod-users').style.display = 'block';
-    });
-    {% endif %}
 </script>
 {% endblock %}
-
