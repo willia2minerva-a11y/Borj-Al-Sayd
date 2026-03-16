@@ -11,12 +11,12 @@
     .stat-val { font-size: 28px; font-weight: 900; color: var(--gold-light); margin-bottom: 5px; }
     .stat-label { color: #888; font-size: 13px; }
 
-    .action-card { background: #050403; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .action-card { background: #050403; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center; }
     .action-title { color: var(--gold-main); font-size: 18px; margin: 0 0 15px 0; border-bottom: 1px solid #332815; padding-bottom: 10px; }
     
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; margin-top: 10px; }
     .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; }
-    .form-control { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline:none; box-sizing: border-box; }
+    .form-control { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline:none; box-sizing: border-box; margin-bottom: 10px; }
 </style>
 
 <div class="hunter-header">
@@ -25,63 +25,78 @@
     <div class="hunter-id">ID: {{ target_user.hunter_id }} | 📍 {{ target_user.zone }}</div>
 </div>
 
+{% if current_user.role == 'admin' %}
+<div class="action-card" style="border-color: #9b59b6; background: rgba(155, 89, 182, 0.05);">
+    <h3 class="action-title" style="color: #9b59b6;">👑 التعديل الإمبراطوري</h3>
+    <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <input type="hidden" name="action" id="admin_action" value="edit_details">
+        <input type="text" name="new_name" value="{{ target_user.username }}" class="form-control" placeholder="الاسم">
+        <input type="number" name="new_points" value="{{ target_user.points }}" class="form-control" placeholder="النقاط">
+        <input type="number" name="new_hp" value="{{ target_user.health }}" class="form-control" placeholder="الصحة">
+        <input type="text" name="zone" value="{{ target_user.zone }}" class="form-control" placeholder="الطابق">
+        <div style="grid-column: span 2; display: flex; gap: 10px;">
+            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_action').value='edit_name';">تغيير الاسم</button>
+            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_action').value='edit_points';">تعديل النقاط</button>
+            <button type="submit" class="btn-gold" style="background: #e74c3c; color: #fff;" onclick="document.getElementById('admin_action').value='edit_hp';">تعديل الصحة</button>
+        </div>
+    </form>
+</div>
+{% endif %}
+
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-val" style="color: #2ecc71;">{{ target_user.health }}%</div>
-        <div class="stat-label">الصحة 🩸</div>
+        <div class="stat-val" style="color: #2ecc71;">
+            {% if war_settings and (war_settings.war_mode or war_settings.final_battle_mode) or current_user.role == 'admin' %}
+                {{ target_user.health }}%
+            {% else %}
+                مخفي 🛡️
+            {% endif %}
+        </div>
+        <div class="stat-label">الصحة</div>
     </div>
     <div class="stat-card">
         <div class="stat-val">{{ target_user.points }}</div>
-        <div class="stat-label">الغنائم 💰</div>
+        <div class="stat-label">الغنائم</div>
     </div>
     <div class="stat-card">
         <div class="stat-val" style="color: #3498db;">{{ target_user.loyalty_points }}</div>
-        <div class="stat-label">الولاء 🤝</div>
+        <div class="stat-label">الولاء</div>
     </div>
-</div>
-
-<div class="action-card" style="text-align: center;">
-    {% if current_user.hunter_id in target_user.friends %}
-        <h3 style="color: #2ecc71; margin-top:0;">أنتما حلفاء ✔️</h3>
-        <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin: 0;">
-            <button type="submit" class="btn-danger" style="max-width: 200px;">خيانة (إلغاء التحالف)</button>
-        </form>
-    {% elif current_user.hunter_id in target_user.friend_requests %}
-        <h3 style="color: #e67e22; margin-top:0;">طلب التحالف معلق ⏳</h3>
-        <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin: 0;">
-            <button type="submit" class="btn-danger" style="max-width: 200px;">سحب الطلب</button>
-        </form>
-    {% else %}
-        <h3 style="color: #aaa; margin-top:0;">لا يوجد تحالف ❌</h3>
-        <form action="/add_friend" method="POST" style="margin: 0;">
-            <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
-            <button type="submit" class="btn-gold" style="max-width: 200px;">طلب تحالف</button>
-        </form>
-    {% endif %}
 </div>
 
 <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
     <div class="action-card">
+        <h3 class="action-title">التحالف</h3>
+        {% if current_user.hunter_id in target_user.friends %}
+            <p style="color: #2ecc71;">أنتما حلفاء ✔️</p>
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">خيانة (إلغاء)</button></form>
+        {% elif current_user.hunter_id in target_user.friend_requests %}
+            <p style="color: #e67e22;">طلب معلق ⏳</p>
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">سحب الطلب</button></form>
+        {% else %}
+            <form action="/add_friend" method="POST"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-gold">طلب تحالف</button></form>
+        {% endif %}
+    </div>
+
+    <div class="action-card">
         <h3 class="action-title">📦 إرسال دعم</h3>
         <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
-            <input type="hidden" name="transfer_type" value="points">
-            <input type="number" name="amount" placeholder="عدد الغنائم..." class="form-control" required min="1">
+            <select name="transfer_type" class="form-control" onchange="document.getElementById('amt_div').style.display = this.value == 'points' ? 'block' : 'none'; document.getElementById('itm_div').style.display = this.value == 'item' ? 'block' : 'none';">
+                <option value="points" selected>إرسال غنائم (نقاط)</option>
+                <option value="item">إعطاء أداة من حقيبتي</option>
+            </select>
+            <div id="amt_div"><input type="number" name="amount" placeholder="عدد الغنائم..." class="form-control" min="1"></div>
+            <div id="itm_div" style="display:none;">
+                <select name="item_name" class="form-control">
+                    {% for item in current_user.inventory %}
+                    <option value="{{ item }}">{{ item }}</option>
+                    {% else %}
+                    <option value="" disabled selected>حقيبتك فارغة!</option>
+                    {% endfor %}
+                </select>
+            </div>
             <button type="submit" class="btn-gold">إرسال ➔</button>
         </form>
     </div>
-
-    {% if war_settings and (war_settings.war_mode or war_settings.final_battle_mode) %}
-    <div class="action-card" style="border-color: #e74c3c; background: rgba(231,76,60,0.05);">
-        <h3 class="action-title" style="color: #e74c3c;">⚔️ هجوم!</h3>
-        <form action="/use_item/{{ target_user.hunter_id }}" method="POST">
-            <select name="item_name" class="form-control" required>
-                <option value="" disabled selected>اختر سلاحاً من حقيبتك...</option>
-                {% for w in my_weapons %}<option value="{{ w.name }}">{{ w.name }} (ضرر: {{ w.effect_amount }})</option>{% endfor %}
-            </select>
-            <button type="submit" class="btn-danger">توجيه ضربة 🗡️</button>
-        </form>
-    </div>
-    {% endif %}
 </div>
-
 {% endblock %}
