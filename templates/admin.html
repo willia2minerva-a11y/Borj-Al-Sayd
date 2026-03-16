@@ -15,12 +15,16 @@
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 16px; transition: 0.3s; width: 100%; }
     .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,175,55,0.4); }
     .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 16px; transition: 0.3s; width: 100%; }
+
+    .log-box { background: #000; border: 1px solid #332815; padding: 15px; height: 400px; overflow-y: auto; font-family: monospace; font-size: 13px; border-radius: 8px; }
+    .log-item { margin-bottom: 8px; border-bottom: 1px dashed #222; padding-bottom: 5px; line-height: 1.5; }
+    .c-system { color: #9b59b6; } .c-combat { color: #e74c3c; } .c-social { color: #3498db; } .c-puzzle { color: #f1c40f; }
 </style>
 
 <div class="admin-header">
     <div style="font-size: 50px; margin-bottom: 10px; text-shadow: 0 0 30px var(--gold-main);">👑</div>
     <h1 class="admin-title">لوحة تحكم الإمبراطور</h1>
-    <p style="color: #aaa; font-size: 14px;">كل مود وكل إعداد مفصول لراحتك يا سيدي.</p>
+    <p style="color: #aaa; font-size: 14px;">أدر المتاهة، تحكم باللاعبين، وحدد مصائرهم بسهولة.</p>
 </div>
 
 <button type="button" class="mod-btn" onclick="toggleMod('mod-theme')">🖼️ 1. المظهر والغلاف والشريط <span>▼</span></button>
@@ -42,8 +46,9 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('mod-users')">👥 2. إدارة الأرواح وتجربة التتويج <span>▼</span></button>
-<div id="mod-users" class="mod-content">
+<button type="button" class="mod-btn" onclick="toggleMod('mod-users')" {% if search_query %}onload="toggleMod('mod-users')"{% endif %}>👥 2. إدارة الأرواح وتجربة التتويج <span>▼</span></button>
+<div id="mod-users" class="mod-content" {% if search_query %}style="display:block;"{% endif %}>
+    
     <div style="background: rgba(212,175,55,0.1); border: 1px dashed var(--gold-main); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         <strong style="color: var(--gold-main); display: block; margin-bottom: 10px;">👑 تجربة مشهد التتويج (بدون إنهاء اللعبة):</strong>
         <form action="/" method="GET" style="display: flex; gap: 10px;">
@@ -52,7 +57,15 @@
         </form>
     </div>
 
-    <strong style="color: #fff; display: block; margin-bottom: 10px;">إدارة وحذف ونقل اللاعبين:</strong>
+    <strong style="color: #fff; display: block; margin-bottom: 10px;">بحث وإدارة اللاعبين:</strong>
+    <form action="/admin" method="GET" style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" name="search_user" value="{{ search_query }}" placeholder="ابحث بالاسم أو الـ ID..." class="form-control" style="margin:0;">
+        <button type="submit" class="btn-gold" style="width: auto;">بحث 🔍</button>
+        {% if search_query %}
+        <a href="/admin" class="btn-danger" style="text-decoration:none; padding-top:12px; width:auto; text-align:center;">إلغاء</a>
+        {% endif %}
+    </form>
+
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="bulk_action">
         <div style="max-height: 250px; overflow-y: auto; background: #000; border: 1px solid #332815; padding: 10px; border-radius: 8px; margin-bottom: 15px;">
@@ -60,8 +73,11 @@
             <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #111;">
                 <input type="checkbox" name="selected_users" value="{{ u.id }}" style="margin-left: 10px; transform: scale(1.3);">
                 <span style="color: {{ 'var(--gold-main)' if u.status=='inactive' else ('#2ecc71' if u.status=='active' else '#e74c3c') }}; font-size: 12px; min-width: 80px;">[{{ u.status }}]</span>
-                <span style="color: #fff; font-weight: bold; flex-grow: 1;">{{ u.username }} ({{ u.zone }})</span>
+                <span style="color: #888; font-size:12px; margin-left:10px;">ID: {{ u.hunter_id }}</span>
+                <a href="/hunter/{{ u.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold; flex-grow: 1;" target="_blank">{{ u.username }} ({{ u.zone }})</a>
             </div>
+            {% else %}
+            <div style="text-align:center; padding:20px; color:#888;">لم يتم العثور على أي لاعب.</div>
             {% endfor %}
         </div>
         <select name="bulk_type" class="form-control">
@@ -140,7 +156,7 @@
         <input type="hidden" name="action" value="toggle_war">
         <button type="submit" class="btn-danger">{{ 'إعلان السلام' if settings.war_mode else 'إشعال فتيل الحرب' }}</button>
     </form>
-    <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">إعدادات ضريبة الدم:</strong>
+    <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">إعدادات ضريبة الدم والنقل التلقائي:</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_war_settings">
         <label style="color:#aaa; font-size:12px;">عدد الجثث لإنهاء الحرب آلياً ونقلهم للطابق 2:</label>
@@ -183,11 +199,36 @@
     </form>
 </div>
 
+<button type="button" class="mod-btn" onclick="toggleMod('mod-logs')">👁️ 8. عين سيفار (سجلات المتاهة) <span>▼</span></button>
+<div id="mod-logs" class="mod-content">
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="date" id="logDatePicker" value="{{ current_date }}" class="form-control" style="margin: 0;">
+        <button onclick="window.location.href='/admin?date='+document.getElementById('logDatePicker').value" class="btn-gold" style="width: auto;">جلب</button>
+        <a href="/download_logs/{{ current_date }}" class="btn-gold" style="background: #34495e; color: #fff; text-decoration: none; padding-top: 13px;">تحميل TXT</a>
+    </div>
+    <div class="log-box">
+        {% for log in logs %}
+        <div class="log-item">
+            <span style="color: #666;">[{{ log.created_at.strftime('%H:%M:%S') }}]</span>
+            <span class="c-{{ log.category }}">{{ log.action_text }}</span>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: #444; margin-top: 150px;">السجلات فارغة.</div>
+        {% endfor %}
+    </div>
+</div>
+
 <script>
     function toggleMod(id) {
         var el = document.getElementById(id);
         el.style.display = (el.style.display === "block") ? "none" : "block";
     }
+    // فتح قسم الإدارة تلقائياً إذا كان هناك بحث نشط
+    {% if search_query %}
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('mod-users').style.display = 'block';
+    });
+    {% endif %}
 </script>
 {% endblock %}
 
