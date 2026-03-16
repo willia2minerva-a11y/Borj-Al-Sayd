@@ -117,15 +117,20 @@ class LoreLog(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
     is_epic = db.BooleanField(default=False)
 
-# 5. مستودع التعاويذ
+#التعاويذ
 class SpellConfig(db.Document):
     meta = {'strict': False}
-    spell_word = db.StringField(unique=True, required=True)
+    spell_word = db.StringField(required=True, unique=True)
     spell_type = db.StringField(required=True)
     effect_value = db.IntField(default=0)
     is_percentage = db.BooleanField(default=False)
-    item_name = db.StringField()
-    lore_message = db.StringField()
+    item_name = db.StringField(default='')
+    lore_message = db.StringField(default='[user] ألقى تعويذة غامضة')
+    # 🚨 الإضافات الجديدة للتحكم بالتعاويذ
+    max_uses = db.IntField(default=0) # 0 يعني عدد غير محدود
+    used_by = db.ListField(db.StringField(), default=list) # من استخدمها؟
+    expires_at = db.DateTimeField(null=True) # متى تنتهي صلاحيتها؟
+
 
 # 6. السوق المظلم
 class StoreItem(db.Document):
