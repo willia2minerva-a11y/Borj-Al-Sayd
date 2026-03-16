@@ -1,13 +1,24 @@
 {% extends 'base.html' %}
 {% block content %}
 
+{% set display_rank = current_user.special_rank if current_user else '' %}
+{% if current_user and current_user.zone %}
+    {% if current_user.zone == 'البوابات' %}{% set display_rank = 'مستكشف' %}
+    {% elif 'طابق الأول' in current_user.zone or 'الطابق 1' in current_user.zone %}
+        {% if current_user.points < 50 %}{% set display_rank = 'صياد مبتدئ' %}
+        {% elif current_user.points < 150 %}{% set display_rank = 'صياد متمرس' %}
+        {% elif current_user.points < 300 %}{% set display_rank = 'صياد نخبة' %}
+        {% elif current_user.points < 500 %}{% set display_rank = 'صياد محترف' %}
+        {% else %}{% set display_rank = 'نيتيرو 👑' %}{% endif %}
+    {% endif %}
+{% endif %}
+
 <style>
     .epic-banner { position: relative; width: 100%; height: 220px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 25px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
     
-    /* أنيميشن الفوز المتسلسل */
-    .cinematic-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 9999; overflow-y: auto; color: #fff; padding-bottom: 100px; }
+    .cinematic-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 9999; overflow-y: auto; color: #fff; padding-bottom: 100px; scroll-behavior: smooth; }
     .scene { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; opacity: 0; transform: translateY(30px); transition: all 1.5s ease-out; padding: 20px; }
     .scene.visible { opacity: 1; transform: translateY(0); }
     .v-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.8); margin-bottom: 20px; object-fit: cover; }
@@ -42,9 +53,9 @@
         </div>
         <div class="scene" id="scene-3">
             <div style="font-size: 80px; margin-bottom:20px;">👑</div>
-            <p style="font-size: 24px; max-width: 600px; line-height: 1.8; color: #ddd; font-style: italic;">"لقد صمدت حتى النهاية... أنت الإمبراطور الجديد."</p>
+            <p style="font-size: 24px; max-width: 600px; line-height: 1.8; color: #ddd; font-style: italic;">"لقد صمدت حتى النهاية... أنت الإمبراطور الجديد لسيفار."</p>
             {% if test_winner and current_user.role == 'admin' %}
-            <a href="/admin" style="margin-top:30px; padding:15px; background:#e74c3c; color:#fff; text-decoration:none; border-radius:8px;">عودة للإدارة ➔</a>
+            <a href="/admin" style="margin-top:30px; padding:15px 30px; background:#e74c3c; color:#fff; text-decoration:none; border-radius:8px; font-weight:bold;">عودة للإدارة ➔</a>
             {% endif %}
         </div>
     </div>
@@ -53,20 +64,20 @@
         setTimeout(() => { 
             let s2 = document.getElementById('scene-2');
             s2.classList.add('visible'); 
-            window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+            s2.scrollIntoView({ behavior: 'smooth' });
         }, 4000);
         setTimeout(() => { 
             let s3 = document.getElementById('scene-3');
             s3.classList.add('visible'); 
-            window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+            s3.scrollIntoView({ behavior: 'smooth' });
         }, 8000);
     </script>
     {% else %}
 
-        <div class="epic-banner" style="background-image: url('/banner.png');">
+        <div class="epic-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
             <div class="banner-text">
                 <h1 style="color:#fff; font-size:32px; font-weight:900; text-shadow:0 0 25px var(--gold-main); margin:0;">{{ settings.home_title if settings else 'البوابة' }}</h1>
-                <div style="color:var(--gold-main); background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:5px;">📍 {{ current_user.zone }}</div>
+                <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:5px;">📍 {{ current_user.zone }}</div>
             </div>
         </div>
 
