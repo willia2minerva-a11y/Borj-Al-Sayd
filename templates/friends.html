@@ -2,20 +2,21 @@
 {% block content %}
 <style>
     .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
-    .form-control { flex: 1; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline: none; }
-    .form-control:focus { border-color: var(--gold-main); }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; }
+    /* إصلاح خط خانة البحث وظهوره بوضوح */
+    .form-control-search { flex: 1; padding: 15px; background: #000; color: #fff; border: 2px solid var(--gold-dark); border-radius: 8px; outline: none; font-size: 16px; font-weight: bold; transition: 0.3s; }
+    .form-control-search:focus { border-color: var(--gold-light); box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 900; }
     .user-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-    .avatar-sm { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; }
+    .avatar-sm { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
     <h2 style="color: var(--gold-main); margin: 0;">🤝 التحالفات</h2>
-    <p style="color: #aaa; font-size: 14px;">ابحث عن حلفاء أو خونة في المتاهة بالاسم أو الـ ID.</p>
+    <p style="color: #aaa; font-size: 14px;">ابحث عن حلفاء أو خونة في المتاهة.</p>
 </div>
 
 <form action="/friends" method="GET" class="search-box">
-    <input type="text" name="search" placeholder="ابحث عن رحالة..." class="form-control" required>
+    <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID..." class="form-control-search" required>
     <button type="submit" class="btn-gold">بحث 🔍</button>
 </form>
 
@@ -35,34 +36,4 @@
 </div>
 {% endif %}
 
-{% if friend_requests %}
-<h3 style="color: #e67e22; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">📩 طلبات التحالف</h3>
-{% for req in friend_requests %}
-<div class="user-card">
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <img src="/avatar/{{ req.hunter_id }}" class="avatar-sm">
-        <strong style="color: #fff;">{{ req.username }}</strong>
-    </div>
-    <div style="display: flex; gap: 10px;">
-        <a href="/accept_friend/{{ req.hunter_id }}" class="btn-gold" style="text-decoration: none; padding: 8px 15px; font-size: 13px; background: #2ecc71;">قبول</a>
-        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin: 0;"><button type="submit" class="btn-gold" style="background: #e74c3c; color: #fff; padding: 8px 15px; font-size: 13px;">رفض</button></form>
-    </div>
-</div>
-{% endfor %}
-{% endif %}
-
-<h3 style="color: #3498db; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">🛡️ الحلفاء</h3>
-{% for friend in friends %}
-<div class="user-card">
-    <div style="display: flex; align-items: center; gap: 15px;">
-        <img src="/avatar/{{ friend.hunter_id }}" class="avatar-sm">
-        <a href="/hunter/{{ friend.hunter_id }}" style="color: #fff; text-decoration: none; font-weight: bold;">{{ friend.username }}</a>
-    </div>
-    <form action="/cancel_friend/{{ friend.hunter_id }}" method="POST" style="margin: 0;">
-        <button type="submit" class="btn-gold" style="background: #333; color: #fff; padding: 8px 15px; font-size: 13px;">خيانة (إلغاء)</button>
-    </form>
-</div>
-{% else %}
-<p style="color: #666; text-align: center;">أنت وحيد في هذه المتاهة الموحشة.</p>
-{% endfor %}
 {% endblock %}
