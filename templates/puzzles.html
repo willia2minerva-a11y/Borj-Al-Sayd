@@ -1,61 +1,132 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: var(--zone-4-diamond); text-align: center;">🧩 جدار الألغاز والنقوش</h2>
+<style>
+    .puzzle-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .puzzle-title { color: var(--gold-main); font-size: 22px; margin-top: 0; border-bottom: 1px dashed #332815; padding-bottom: 10px; }
+    .puzzle-text { color: #ccc; font-size: 15px; line-height: 1.8; margin-bottom: 20px; }
+    
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
+    .form-control:focus { border-color: var(--gold-main); outline: none; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 16px; transition: 0.3s; width: 100%; }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,175,55,0.4); }
 
-<div class="puzzles-grid">
-    {% for puzzle in puzzles_list %}
-    <div class="hunter-card puzzle-card" style="border-top: 3px solid var(--zone-4-diamond);">
-        {% if session.role == 'admin' %}
-        <form action="/delete_puzzle/{{ puzzle.id }}" method="POST" style="text-align: right; margin-bottom: 10px;">
-            <button type="submit" style="background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px;" title="حذف اللغز">🗑️</button>
+    /* ستايل لغز الضغط */
+    .btn-clicker { background: #8b0000; color: #fff; border: 2px solid #e74c3c; border-radius: 50%; width: 120px; height: 120px; font-size: 20px; font-weight: bold; cursor: pointer; margin: 20px auto; display: flex; align-items: center; justify-content: center; user-select: none; transition: transform 0.1s; box-shadow: inset 0 0 20px #000, 0 0 15px rgba(231,76,60,0.5); }
+    .btn-clicker:active { transform: scale(0.9); background: #600000; }
+    .clicks-left { color: var(--gold-main); font-size: 18px; text-align: center; font-weight: bold; }
+
+    /* ستايل لغز ترتيب الكلمات */
+    .word-btn { background: #1a140c; color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-block; transition: 0.2s; }
+    .word-btn.selected { background: var(--gold-main); color: #000; opacity: 0.5; cursor: not-allowed; }
+    .selected-words-area { min-height: 50px; background: #000; border: 1px dashed #44351c; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center; color: #fff; font-size: 18px; font-weight: bold; }
+</style>
+
+<div style="text-align: center; margin-bottom: 40px;">
+    <div style="font-size: 50px; text-shadow: 0 0 20px var(--gold-main);">🧩</div>
+    <h2 style="color: var(--gold-main); margin: 10px 0;">النقوش المنسية</h2>
+    <p style="color: #aaa;">من يحل اللغز أولاً، يحصد الغنيمة بأكملها.</p>
+</div>
+
+{% for puz in puzzles_list %}
+<div class="puzzle-card">
+    <h3 class="puzzle-title">{{ puz.title }}</h3>
+    <div class="puzzle-text">{{ puz.content }}</div>
+
+    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 15px;">
+        <span>المكافأة: <strong style="color: var(--gold-light);">{{ puz.reward_points }} نقطة</strong></span>
+        <span>الفائزون: {{ puz.current_winners }}/{{ puz.max_winners }}</span>
+    </div>
+
+    {% if current_user.id|string in puz.winners_list %}
+        <div style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 15px; text-align: center; border-radius: 6px; border: 1px solid #2ecc71;">لقد حصدت غنيمة هذا اللغز مسبقاً! ✔️</div>
+    {% elif puz.current_winners >= puz.max_winners %}
+        <div style="background: rgba(231,76,60,0.1); color: #e74c3c; padding: 15px; text-align: center; border-radius: 6px; border: 1px solid #e74c3c;">نفدت جوائز هذا اللغز، لقد سبقوك! ❌</div>
+    {% else %}
+        
+        {% if puz.puzzle_type == 'text' or puz.puzzle_type == 'none' %}
+        <form action="/puzzles" method="POST">
+            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
+            <input type="text" name="guess" class="form-control" placeholder="اكتب الإجابة هنا..." required>
+            <button type="submit" class="btn-gold">تحقق من النقش</button>
+        </form>
+
+        {% elif puz.puzzle_type == 'click_count' %}
+        <div id="click-container-{{ puz.id }}">
+            <div class="clicks-left">اضغط لكسر الختم!</div>
+            <div class="btn-clicker" onclick="handlePuzzleClick('{{ puz.id }}', {{ puz.puzzle_answer }})">كسر!</div>
+        </div>
+        <form id="form-{{ puz.id }}" action="/puzzles" method="POST" style="display: none;">
+            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
+            <input type="hidden" name="guess" id="guess-{{ puz.id }}" value="">
+        </form>
+
+        {% elif puz.puzzle_type == 'word_order' %}
+        <div id="word-order-container-{{ puz.id }}">
+            <div class="selected-words-area" id="selected-{{ puz.id }}">... رتب الكلمات هنا ...</div>
+            <div style="text-align: center; margin-bottom: 15px;">
+                {% set words = puz.content.split(' ') %}
+                {% for w in words %}
+                    <span class="word-btn" onclick="selectWord(this, '{{ puz.id }}')">{{ w }}</span>
+                {% endfor %}
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-gold" style="background: #333; color: #fff;" onclick="resetWords('{{ puz.id }}')">إعادة ترتيب</button>
+                <button type="button" class="btn-gold" onclick="submitWordOrder('{{ puz.id }}')">تحقق</button>
+            </div>
+        </div>
+        <form id="form-order-{{ puz.id }}" action="/puzzles" method="POST" style="display: none;">
+            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
+            <input type="hidden" name="guess" id="guess-order-{{ puz.id }}" value="">
         </form>
         {% endif %}
-
-        <h3 style="margin-top: 0; color: #fff;">{{ puzzle.title }}</h3>
-        <p style="color: #ccc; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ puzzle.content }}</p>
         
-        <div style="background: #111; padding: 10px; border-radius: 5px; margin: 15px 0; border: 1px solid #333; font-size: 13px;">
-            <span style="color: var(--zone-3-gold);">المكافأة: {{ puzzle.reward_points }} نقطة</span> | 
-            <span style="color: #3498db;">الفائزون: {{ puzzle.current_winners }}/{{ puzzle.max_winners }}</span>
-        </div>
-
-        {% if session.user_id|string in puzzle.winners_list %}
-            <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; color: #2ecc71; padding: 10px; text-align: center; border-radius: 5px;">لقد حللت هذا اللغز مسبقاً. ✔️</div>
-        {% elif puzzle.current_winners >= puzzle.max_winners %}
-            <div style="background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 10px; text-align: center; border-radius: 5px;">انتهت الجوائز لهذا اللغز. ❌</div>
-        {% else %}
-            
-            {% if puzzle.puzzle_type == 'text' %}
-            <form action="/puzzles" method="POST" style="display: flex; gap: 5px;">
-                <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
-                <input type="text" name="guess" placeholder="اكتب الإجابة هنا..." required style="flex: 1; padding: 8px; background: #000; color: #fff; border: 1px solid #444; border-radius: 4px;">
-                <button type="submit" class="btn-primary" style="width: auto;">تحقق</button>
-            </form>
-            
-            {% elif puzzle.puzzle_type == 'click_count' %}
-            <form action="/puzzles" method="POST" id="clickForm_{{ puzzle.id }}">
-                <input type="hidden" name="puzzle_id" value="{{ puzzle.id }}">
-                <input type="hidden" name="guess" id="clickGuess_{{ puzzle.id }}" value="0">
-                <div style="text-align: center;">
-                    <button type="button" class="btn-primary" style="background: #e67e22; padding: 15px 30px; font-size: 20px; border-radius: 50%;" onclick="incrementClick('{{ puzzle.id }}')">اضغطني!</button>
-                    <div style="margin-top: 10px; color: #aaa; font-size: 12px;">الضغطات: <span id="clickCountDisplay_{{ puzzle.id }}" style="color: #fff; font-weight: bold;">0</span></div>
-                    <button type="submit" class="btn-primary" style="margin-top: 10px; width: 100%;">تأكيد وتسليم</button>
-                </div>
-            </form>
-            <script>
-                function incrementClick(pid) {
-                    let input = document.getElementById('clickGuess_' + pid);
-                    let display = document.getElementById('clickCountDisplay_' + pid);
-                    let count = parseInt(input.value) + 1;
-                    input.value = count; display.innerText = count;
-                }
-            </script>
-            {% endif %}
-            
-        {% endif %}
-    </div>
-    {% else %}
-    <p style="text-align: center; color: #aaa; width: 100%;">لا توجد ألغاز مطروحة حالياً.</p>
-    {% endfor %}
+    {% endif %}
 </div>
+{% else %}
+    <p style="text-align: center; color: #666;">لا توجد نقوش للبحث عنها حالياً.</p>
+{% endfor %}
+
+<script>
+    // سكربت لغز الضغط
+    let clickCounts = {};
+    function handlePuzzleClick(puzId, target) {
+        if(!clickCounts[puzId]) clickCounts[puzId] = 0;
+        clickCounts[puzId]++;
+        
+        let btn = document.querySelector(`#click-container-${puzId} .btn-clicker`);
+        btn.style.transform = `scale(${1 - (clickCounts[puzId] * 0.005)})`;
+        
+        if(clickCounts[puzId] >= target) {
+            document.getElementById(`guess-${puzId}`).value = target;
+            document.getElementById(`form-${puzId}`).submit();
+        }
+    }
+
+    // سكربت ترتيب الكلمات
+    let selectedWords = {};
+    function selectWord(btn, puzId) {
+        if(btn.classList.contains('selected')) return;
+        btn.classList.add('selected');
+        
+        if(!selectedWords[puzId]) selectedWords[puzId] = [];
+        selectedWords[puzId].push(btn.innerText);
+        
+        let displayArea = document.getElementById(`selected-${puzId}`);
+        displayArea.innerText = selectedWords[puzId].join(' ');
+    }
+    
+    function resetWords(puzId) {
+        selectedWords[puzId] = [];
+        document.getElementById(`selected-${puzId}`).innerText = '... رتب الكلمات هنا ...';
+        let btns = document.querySelectorAll(`#word-order-container-${puzId} .word-btn`);
+        btns.forEach(b => b.classList.remove('selected'));
+    }
+    
+    function submitWordOrder(puzId) {
+        if(!selectedWords[puzId]) return;
+        let finalAnswer = selectedWords[puzId].join(' ');
+        document.getElementById(`guess-order-${puzId}`).value = finalAnswer;
+        document.getElementById(`form-order-${puzId}`).submit();
+    }
+</script>
 {% endblock %}
