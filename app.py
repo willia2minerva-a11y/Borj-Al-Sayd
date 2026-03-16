@@ -7,15 +7,15 @@ import os, base64, random, math, json, traceback
 
 app = Flask(__name__)
 
-# 🚨 إعدادات قاعدة البيانات - تم تسريعها لدرجة القصوى
+# 🚨 إعدادات قاعدة البيانات - تم ضبطها لتحمل الضغط العالي بدون اختناق
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017/borj_db'),
-    'connectTimeoutMS': 2000,
-    'socketTimeoutMS': 2000,
-    'serverSelectionTimeoutMS': 2000,
-    'maxPoolSize': 50, 
+    'connectTimeoutMS': 30000,
+    'socketTimeoutMS': 30000,
+    'serverSelectionTimeoutMS': 30000,
     'connect': False  
 }
+
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
