@@ -65,6 +65,7 @@
         <a href="/puzzles" class="nav-link">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'الألغاز' }} {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
         <a href="/declarations" class="nav-link">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات' }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
         <a href="/store" class="nav-link">{{ settings.nav_store if settings and settings.nav_store else 'المتجر' }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
+        <a href="/altar" class="nav-link">{{ getattr(settings, 'nav_altar', 'مذبح الطلاسم 🔮') }}</a>
         <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</a>
         
         {% if current_user.role == 'admin' %}
