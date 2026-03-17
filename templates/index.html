@@ -18,12 +18,26 @@
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
     
-    .cinematic-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 9999; overflow-y: auto; color: #fff; padding-bottom: 100px; scroll-behavior: smooth; }
-    .scene { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; opacity: 0; transform: translateY(30px); transition: all 1.5s ease-out; padding: 20px; }
-    .scene.visible { opacity: 1; transform: translateY(0); }
-    .v-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.8); margin-bottom: 20px; object-fit: cover; }
-    .v-stat-box { background: rgba(0,0,0,0.8); border: 1px solid var(--gold-dark); padding: 20px; border-radius: 12px; margin: 15px; width: 250px; display: inline-block; }
+    /* 🎬 أنيميشن الفوز السينمائي المتسلسل */
+    .cinematic-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; color: #fff; }
     
+    .cine-text { font-size: 26px; font-weight: bold; color: var(--gold-light); text-align: center; max-width: 80%; line-height: 1.8; position: absolute; opacity: 0; transform: translateY(30px); transition: all 1s ease; text-shadow: 0 0 15px rgba(212,175,55,0.5); }
+    .cine-text.active { opacity: 1; transform: translateY(0); }
+    .cine-text.done { opacity: 0; transform: translateY(-30px); }
+    
+    .cine-profile { position: absolute; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(50px) scale(0.8); transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+    .cine-profile.active { opacity: 1; transform: translateY(0) scale(1); }
+    .cine-profile.slide-up { transform: translateY(-120px) scale(0.9); } /* يصعد للأعلى ليفسح المجال */
+    
+    .v-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.8); margin-bottom: 20px; object-fit: cover; }
+    
+    .cine-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; position: absolute; top: 60%; opacity: 0; transform: translateY(30px); transition: all 1s ease 0.5s; width: 100%; max-width: 800px; }
+    .cine-stats.active { opacity: 1; transform: translateY(0); }
+    .v-stat-box { background: rgba(0,0,0,0.8); border: 1px solid var(--gold-dark); padding: 15px; border-radius: 12px; text-align: center; flex: 1; min-width: 120px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    
+    .cine-final { position: absolute; bottom: 10%; opacity: 0; font-size: 30px; font-weight: 900; color: #2ecc71; text-shadow: 0 0 20px rgba(46,204,113,0.6); transition: all 1.5s ease; transform: scale(0.8); text-align: center; }
+    .cine-final.active { opacity: 1; transform: scale(1); }
+
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
     .gold-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px; text-decoration: none; color: #fff; display: block; transition: 0.3s; }
     .gold-card:hover { border-color: var(--gold-dark); transform: translateY(-5px); }
@@ -39,38 +53,45 @@
     {% if test_winner or (emperor and emperor.status == 'eliminated') %}
     {% set winner = test_winner if test_winner else current_user %}
     <div class="cinematic-bg" id="victory-bg">
-        <div class="scene" id="scene-1">
-            <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar" loading="eager">
-            <h1 style="font-size: 50px; color: var(--gold-light); margin:0;">الناجي الوحيد</h1>
-            <h2 style="font-size: 35px; color:#fff;">{{ winner.username }}</h2>
+        <div class="cine-text" id="ct-1">من تخطى جميع عراقيل المتاهة...<br>وفاز في معركة الدماء...</div>
+        <div class="cine-text" id="ct-2">من ارتقى باسمه لأعلى البرج؟<br>ما هو إلا سيّد المتاهة الجديد!</div>
+        
+        <div class="cine-profile" id="c-prof">
+            <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar">
+            <h1 style="font-size: 45px; color:#fff; margin:0; text-shadow:0 5px 15px #000;">{{ winner.username }}</h1>
         </div>
-        <div class="scene" id="scene-2">
-            <h2 style="color:var(--gold-main); font-size: 40px; margin-bottom:20px;">حصاد الدماء</h2>
-            <div>
-                <div class="v-stat-box"><div style="font-size:50px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa;">سقطوا في المتاهة</div></div>
-                <div class="v-stat-box"><div style="font-size:50px; color:#2ecc71;">{{ winner.points }}</div><div style="color:#aaa;">غنائم جمعها</div></div>
-            </div>
+        
+        <div class="cine-stats" id="c-stats">
+            <div class="v-stat-box"><div style="font-size:35px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa; font-size:14px;">أرواح أُزهقت</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#3498db;">{{ getattr(winner, 'intelligence_points', 0) }}</div><div style="color:#aaa; font-size:14px;">نقاط الذكاء</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#2ecc71;">{{ winner.points }}</div><div style="color:#aaa; font-size:14px;">إجمالي الغنائم</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#e67e22;">{{ getattr(winner, 'stats_items_bought', 0) }}</div><div style="color:#aaa; font-size:14px;">مشتريات من السوق</div></div>
         </div>
-        <div class="scene" id="scene-3">
-            <div style="font-size: 80px; margin-bottom:20px;">👑</div>
-            <p style="font-size: 24px; max-width: 600px; line-height: 1.8; color: #ddd; font-style: italic;">"لقد صمدت حتى النهاية... أنت الإمبراطور الجديد لسيفار."</p>
+
+        <div class="cine-final" id="c-final">
+            لقد خضعت المتاهة لإرادتك بالكامل! 👑
             {% if test_winner and current_user.role == 'admin' %}
-            <a href="/admin" style="margin-top:30px; padding:15px 30px; background:#e74c3c; color:#fff; text-decoration:none; border-radius:8px; font-weight:bold;">عودة للإدارة ➔</a>
+            <br><a href="/admin" style="display:inline-block; margin-top:20px; padding:10px 25px; background:#e74c3c; color:#fff; font-size:16px; border-radius:6px; text-decoration:none;">إنهاء التجربة والعودة</a>
             {% endif %}
         </div>
     </div>
+    
     <script>
-        setTimeout(() => { document.getElementById('scene-1').classList.add('visible'); }, 500);
+        // المخرج السينمائي (التسلسل الزمني)
+        setTimeout(() => { document.getElementById('ct-1').classList.add('active'); }, 500);
+        setTimeout(() => { document.getElementById('ct-1').classList.replace('active', 'done'); }, 3500);
+        
+        setTimeout(() => { document.getElementById('ct-2').classList.add('active'); }, 4500);
+        setTimeout(() => { document.getElementById('ct-2').classList.replace('active', 'done'); }, 7500);
+        
+        setTimeout(() => { document.getElementById('c-prof').classList.add('active'); }, 8500);
+        
         setTimeout(() => { 
-            let s2 = document.getElementById('scene-2');
-            s2.classList.add('visible'); 
-            s2.scrollIntoView({ behavior: 'smooth' });
-        }, 4000);
-        setTimeout(() => { 
-            let s3 = document.getElementById('scene-3');
-            s3.classList.add('visible'); 
-            s3.scrollIntoView({ behavior: 'smooth' });
-        }, 8000);
+            document.getElementById('c-prof').classList.add('slide-up'); 
+            document.getElementById('c-stats').classList.add('active');
+        }, 11500);
+
+        setTimeout(() => { document.getElementById('c-final').classList.add('active'); }, 13000);
     </script>
     {% else %}
 
@@ -97,10 +118,10 @@
         </div>
         
         <div class="dashboard-grid">
-            <a href="/news" class="gold-card"><span style="font-size:30px;">📜</span><h3 style="color:var(--gold-main); margin:10px 0;">المراسيم</h3></a>
-            <a href="/puzzles" class="gold-card"><span style="font-size:30px;">🧩</span><h3 style="color:var(--gold-main); margin:10px 0;">الألغاز</h3></a>
-            <a href="/store" class="gold-card"><span style="font-size:30px;">🐪</span><h3 style="color:var(--gold-main); margin:10px 0;">المتجر</h3></a>
-            <a href="/friends" class="gold-card"><span style="font-size:30px;">🤝</span><h3 style="color:var(--gold-main); margin:10px 0;">التحالفات</h3></a>
+            <a href="/news" class="gold-card"><span style="font-size:30px;">📜</span><h3 style="color:var(--gold-main); margin:10px 0;">{{ settings.nav_news if settings and settings.nav_news else 'الأخبار' }}</h3></a>
+            <a href="/puzzles" class="gold-card"><span style="font-size:30px;">🧩</span><h3 style="color:var(--gold-main); margin:10px 0;">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'الألغاز' }}</h3></a>
+            <a href="/store" class="gold-card"><span style="font-size:30px;">🐪</span><h3 style="color:var(--gold-main); margin:10px 0;">{{ settings.nav_store if settings and settings.nav_store else 'المتجر' }}</h3></a>
+            <a href="/friends" class="gold-card"><span style="font-size:30px;">🤝</span><h3 style="color:var(--gold-main); margin:10px 0;">{{ settings.nav_friends if settings and settings.nav_friends else 'التحالفات' }}</h3></a>
         </div>
     {% endif %}
 {% endif %}
