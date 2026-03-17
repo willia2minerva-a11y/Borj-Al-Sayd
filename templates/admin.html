@@ -17,15 +17,15 @@
 <div id="m1" class="mod-content">
     <form action="/admin" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="update_home_settings">
-        <input type="text" name="home_title" value="{{ settings.home_title }}" class="form-control" placeholder="اسم الطابق (يظهر في البانر)">
+        <input type="text" name="home_title" value="{{ settings.home_title if settings and settings.home_title else '' }}" class="form-control" placeholder="اسم الطابق (يظهر في البانر)">
         <label style="color:#aaa;">صورة البانر (الغلاف):</label>
         <input type="file" name="banner_file" accept="image/*" class="form-control">
         <hr style="border-color:#332815; margin:15px 0;">
         <label style="color:#aaa;">الخبر العاجل (يظهر للجميع):</label>
-        <input type="text" name="global_news_text" value="{{ settings.global_news_text }}" class="form-control" placeholder="نص الإعلان...">
+        <input type="text" name="global_news_text" value="{{ settings.global_news_text if settings and settings.global_news_text else '' }}" class="form-control" placeholder="نص الإعلان...">
         <select name="global_news_active" class="form-control">
-            <option value="1" {% if settings.global_news_active %}selected{% endif %}>تشغيل الشريط الإخباري</option>
-            <option value="" {% if not settings.global_news_active %}selected{% endif %}>إيقاف الشريط</option>
+            <option value="1" {% if settings and settings.global_news_active %}selected{% endif %}>تشغيل الشريط الإخباري</option>
+            <option value="" {% if not settings or not settings.global_news_active %}selected{% endif %}>إيقاف الشريط</option>
         </select>
         <button type="submit" class="btn-gold">حفظ التخصيص</button>
     </form>
@@ -68,16 +68,16 @@
 <div id="m3" class="mod-content">
     <form action="/admin" method="POST" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <input type="hidden" name="action" value="update_nav_names">
-        <input type="text" name="maze_name" value="{{ settings.maze_name }}" class="form-control" placeholder="اسم الموقع">
-        <input type="text" name="nav_home" value="{{ settings.nav_home }}" class="form-control" placeholder="اسم الرئيسية">
-        <input type="text" name="nav_profile" value="{{ settings.nav_profile }}" class="form-control" placeholder="اسم الملف الشخصي">
-        <input type="text" name="nav_friends" value="{{ settings.nav_friends }}" class="form-control" placeholder="اسم التحالفات">
-        <input type="text" name="nav_news" value="{{ settings.nav_news }}" class="form-control" placeholder="اسم الأخبار">
-        <input type="text" name="nav_puzzles" value="{{ settings.nav_puzzles }}" class="form-control" placeholder="اسم الألغاز">
-        <input type="text" name="nav_decs" value="{{ settings.nav_decs }}" class="form-control" placeholder="اسم التصريحات">
-        <input type="text" name="nav_store" value="{{ settings.nav_store }}" class="form-control" placeholder="اسم المتجر">
-        <input type="text" name="nav_altar" value="{{ getattr(settings, 'nav_altar', 'مذبح الطلاسم 🔮') }}" class="form-control" placeholder="اسم المذبح">
-        <input type="text" name="nav_grave" value="{{ settings.nav_grave }}" class="form-control" placeholder="اسم المقبرة">
+        <input type="text" name="maze_name" value="{{ settings.maze_name if settings and settings.maze_name else '' }}" class="form-control" placeholder="اسم الموقع">
+        <input type="text" name="nav_home" value="{{ settings.nav_home if settings and settings.nav_home else '' }}" class="form-control" placeholder="اسم الرئيسية">
+        <input type="text" name="nav_profile" value="{{ settings.nav_profile if settings and settings.nav_profile else '' }}" class="form-control" placeholder="اسم الملف الشخصي">
+        <input type="text" name="nav_friends" value="{{ settings.nav_friends if settings and settings.nav_friends else '' }}" class="form-control" placeholder="اسم التحالفات">
+        <input type="text" name="nav_news" value="{{ settings.nav_news if settings and settings.nav_news else '' }}" class="form-control" placeholder="اسم الأخبار">
+        <input type="text" name="nav_puzzles" value="{{ settings.nav_puzzles if settings and settings.nav_puzzles else '' }}" class="form-control" placeholder="اسم الألغاز">
+        <input type="text" name="nav_decs" value="{{ settings.nav_decs if settings and settings.nav_decs else '' }}" class="form-control" placeholder="اسم التصريحات">
+        <input type="text" name="nav_store" value="{{ settings.nav_store if settings and settings.nav_store else '' }}" class="form-control" placeholder="اسم المتجر">
+        <input type="text" name="nav_altar" value="{{ settings.nav_altar if settings and settings.nav_altar else '' }}" class="form-control" placeholder="اسم المذبح">
+        <input type="text" name="nav_grave" value="{{ settings.nav_grave if settings and settings.nav_grave else '' }}" class="form-control" placeholder="اسم المقبرة">
         <button type="submit" class="btn-gold" style="grid-column: span 2;">حفظ الأسماء</button>
     </form>
 </div>
@@ -103,7 +103,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m5')">🔮 5. منصة التعاويذ <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m5')">🔮 5. منصة التعاويذ والمذبح <span>▼</span></button>
 <div id="m5" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_spell">
@@ -127,11 +127,11 @@
 <div id="m6" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="setup_gates">
-        <textarea name="desc" placeholder="قصة البوابات..." class="form-control">{{ settings.gates_description }}</textarea>
+        <textarea name="desc" placeholder="قصة البوابات..." class="form-control">{{ settings.gates_description if settings and settings.gates_description else '' }}</textarea>
         <div style="display:flex; gap:10px;">
-            <input type="text" name="g1" value="{{ settings.gate_1_name }}" placeholder="بوابة 1" class="form-control">
-            <input type="text" name="g2" value="{{ settings.gate_2_name }}" placeholder="بوابة 2" class="form-control">
-            <input type="text" name="g3" value="{{ settings.gate_3_name }}" placeholder="بوابة 3" class="form-control">
+            <input type="text" name="g1" value="{{ settings.gate_1_name if settings and settings.gate_1_name else '' }}" placeholder="بوابة 1" class="form-control">
+            <input type="text" name="g2" value="{{ settings.gate_2_name if settings and settings.gate_2_name else '' }}" placeholder="بوابة 2" class="form-control">
+            <input type="text" name="g3" value="{{ settings.gate_3_name if settings and settings.gate_3_name else '' }}" placeholder="بوابة 3" class="form-control">
         </div>
         <button type="submit" class="btn-gold">تفعيل البوابات</button>
     </form>
@@ -152,14 +152,14 @@
     <form action="/admin" method="POST" style="margin-bottom:15px;">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="مؤقت الحرب (ساعات)" class="form-control">
-        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب' if settings.war_mode else 'إشعال الحرب' }}</button>
+        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب' if settings and settings.war_mode else 'إشعال الحرب' }}</button>
     </form>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_war_settings">
-        <input type="number" name="war_kill_target" value="{{ settings.war_kill_target }}" placeholder="العدد لإنهاء الحرب آلياً" class="form-control">
+        <input type="number" name="war_kill_target" value="{{ settings.war_kill_target if settings and settings.war_kill_target else '' }}" placeholder="العدد لإنهاء الحرب آلياً" class="form-control">
         <div style="display:flex; gap:10px;">
-            <input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes }}" placeholder="ينزف كل (دقيقة)" class="form-control">
-            <input type="number" name="bleed_amount" value="{{ settings.bleed_amount }}" placeholder="مقدار النزيف" class="form-control">
+            <input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes if settings and settings.bleed_rate_minutes else '' }}" placeholder="ينزف كل (دقيقة)" class="form-control">
+            <input type="number" name="bleed_amount" value="{{ settings.bleed_amount if settings and settings.bleed_amount else '' }}" placeholder="مقدار النزيف" class="form-control">
         </div>
         <button type="submit" class="btn-gold">حفظ القوانين</button>
     </form>
@@ -173,7 +173,7 @@
             <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control">
             <input type="number" name="top_n" placeholder="عدد الناجين" class="form-control" value="5">
         </div>
-        <button type="submit" class="btn-gold" style="background:#3498db; color:#fff; margin-top:10px;">{{ 'إغلاق المحكمة' if settings.floor3_mode_active else 'فتح التصويت' }}</button>
+        <button type="submit" class="btn-gold" style="background:#3498db; color:#fff; margin-top:10px;">{{ 'إغلاق المحكمة' if settings and settings.floor3_mode_active else 'فتح التصويت' }}</button>
     </form>
 </div>
 
@@ -181,7 +181,7 @@
 <div id="m9" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_poneglyph">
-        <textarea name="poneglyph_text" class="form-control" rows="6" placeholder="اكتب التعليمات السرية هنا...">{{ settings.poneglyph_text }}</textarea>
+        <textarea name="poneglyph_text" class="form-control" rows="6" placeholder="اكتب التعليمات السرية هنا...">{{ settings.poneglyph_text if settings and settings.poneglyph_text else '' }}</textarea>
         <button type="submit" class="btn-gold">نقش البونغليف</button>
     </form>
 </div>
