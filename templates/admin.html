@@ -4,8 +4,8 @@
     .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
     .mod-btn { background: linear-gradient(135deg, #15100a 0%, #000 100%); color: var(--gold-light); cursor: pointer; padding: 15px; width: 100%; border: 1px solid #332815; border-right: 4px solid var(--gold-main); text-align: right; outline: none; font-size: 16px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; }
     .mod-content { padding: 20px; display: none; background: #0a0806; border: 1px solid #332815; border-radius: 0 0 8px 8px; margin-top: -15px; margin-bottom: 20px; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
-    .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+    .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -13,7 +13,7 @@
     <h1 style="color: var(--gold-main); margin: 0;">لوحة تحكم الإمبراطور</h1>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m1')">🖼️ 1. تخصيص الرئيسية (البانر والأخبار) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m1')">🖼️ 1. تخصيص الرئيسية <span>▼</span></button>
 <div id="m1" class="mod-content">
     <form action="/admin" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="update_home_settings">
@@ -57,6 +57,7 @@
             <option value="freeze">تجميد مؤقت ❄️</option>
             <option value="eliminate">إرسال للمقبرة 💀</option>
             <option value="move_zone">نقل إلى طابق...</option>
+            <option value="hard_delete">مسح نهائي ⚠️</option>
         </select>
         <input type="text" name="bulk_zone" placeholder="اسم الطابق (في حال النقل)" class="form-control">
         <button type="submit" class="btn-danger">تنفيذ الإجراء</button>
@@ -67,7 +68,7 @@
 <div id="m3" class="mod-content">
     <form action="/admin" method="POST" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <input type="hidden" name="action" value="update_nav_names">
-        <input type="text" name="maze_name" value="{{ settings.maze_name }}" class="form-control" placeholder="اسم الموقع (متاهة سيفار)">
+        <input type="text" name="maze_name" value="{{ settings.maze_name }}" class="form-control" placeholder="اسم الموقع">
         <input type="text" name="nav_home" value="{{ settings.nav_home }}" class="form-control" placeholder="اسم الرئيسية">
         <input type="text" name="nav_profile" value="{{ settings.nav_profile }}" class="form-control" placeholder="اسم الملف الشخصي">
         <input type="text" name="nav_friends" value="{{ settings.nav_friends }}" class="form-control" placeholder="اسم التحالفات">
@@ -75,6 +76,7 @@
         <input type="text" name="nav_puzzles" value="{{ settings.nav_puzzles }}" class="form-control" placeholder="اسم الألغاز">
         <input type="text" name="nav_decs" value="{{ settings.nav_decs }}" class="form-control" placeholder="اسم التصريحات">
         <input type="text" name="nav_store" value="{{ settings.nav_store }}" class="form-control" placeholder="اسم المتجر">
+        <input type="text" name="nav_altar" value="{{ getattr(settings, 'nav_altar', 'مذبح الطلاسم 🔮') }}" class="form-control" placeholder="اسم المذبح">
         <input type="text" name="nav_grave" value="{{ settings.nav_grave }}" class="form-control" placeholder="اسم المقبرة">
         <button type="submit" class="btn-gold" style="grid-column: span 2;">حفظ الأسماء</button>
     </form>
@@ -101,7 +103,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m5')">🔮 5. منصة التعاويذ والمذبح <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m5')">🔮 5. منصة التعاويذ <span>▼</span></button>
 <div id="m5" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_spell">
@@ -145,7 +147,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m7')">⚔️ 7. مود الحرب الشاملة والنزيف <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m7')">⚔️ 7. مود الحرب الشاملة <span>▼</span></button>
 <div id="m7" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom:15px;">
         <input type="hidden" name="action" value="toggle_war">
@@ -163,7 +165,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m8')">🗳️ 8. مود التصويت والمحكمة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m8')">🗳️ 8. مود التصويت (الطابق 3) <span>▼</span></button>
 <div id="m8" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor3">
@@ -175,7 +177,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m9')">🗿 9. البونغليف (التعليمات المخفية) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m9')">🗿 9. البونغليف <span>▼</span></button>
 <div id="m9" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_poneglyph">
@@ -207,3 +209,4 @@
     {% if search_query %} document.getElementById('m2').style.display = 'block'; {% endif %}
 </script>
 {% endblock %}
+
