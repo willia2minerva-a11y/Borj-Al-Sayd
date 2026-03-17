@@ -18,7 +18,6 @@
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
     
-    /* 🎬 أنيميشن الفوز السينمائي المتسلسل */
     .cinematic-bg { position: fixed; inset: 0; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; color: #fff; }
     
     .cine-text { font-size: 26px; font-weight: bold; color: var(--gold-light); text-align: center; max-width: 80%; line-height: 1.8; position: absolute; opacity: 0; transform: translateY(30px); transition: all 1s ease; text-shadow: 0 0 15px rgba(212,175,55,0.5); }
@@ -27,7 +26,7 @@
     
     .cine-profile { position: absolute; display: flex; flex-direction: column; align-items: center; opacity: 0; transform: translateY(50px) scale(0.8); transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
     .cine-profile.active { opacity: 1; transform: translateY(0) scale(1); }
-    .cine-profile.slide-up { transform: translateY(-120px) scale(0.9); } /* يصعد للأعلى ليفسح المجال */
+    .cine-profile.slide-up { transform: translateY(-120px) scale(0.9); }
     
     .v-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.8); margin-bottom: 20px; object-fit: cover; }
     
@@ -63,9 +62,9 @@
         
         <div class="cine-stats" id="c-stats">
             <div class="v-stat-box"><div style="font-size:35px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa; font-size:14px;">أرواح أُزهقت</div></div>
-            <div class="v-stat-box"><div style="font-size:35px; color:#3498db;">{{ getattr(winner, 'intelligence_points', 0) }}</div><div style="color:#aaa; font-size:14px;">نقاط الذكاء</div></div>
-            <div class="v-stat-box"><div style="font-size:35px; color:#2ecc71;">{{ winner.points }}</div><div style="color:#aaa; font-size:14px;">إجمالي الغنائم</div></div>
-            <div class="v-stat-box"><div style="font-size:35px; color:#e67e22;">{{ getattr(winner, 'stats_items_bought', 0) }}</div><div style="color:#aaa; font-size:14px;">مشتريات من السوق</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#3498db;">{{ winner.intelligence_points if winner.intelligence_points else 0 }}</div><div style="color:#aaa; font-size:14px;">نقاط الذكاء</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#2ecc71;">{{ winner.points if winner.points else 0 }}</div><div style="color:#aaa; font-size:14px;">إجمالي الغنائم</div></div>
+            <div class="v-stat-box"><div style="font-size:35px; color:#e67e22;">{{ winner.stats_items_bought if winner.stats_items_bought else 0 }}</div><div style="color:#aaa; font-size:14px;">مشتريات من السوق</div></div>
         </div>
 
         <div class="cine-final" id="c-final">
@@ -77,20 +76,15 @@
     </div>
     
     <script>
-        // المخرج السينمائي (التسلسل الزمني)
         setTimeout(() => { document.getElementById('ct-1').classList.add('active'); }, 500);
         setTimeout(() => { document.getElementById('ct-1').classList.replace('active', 'done'); }, 3500);
-        
         setTimeout(() => { document.getElementById('ct-2').classList.add('active'); }, 4500);
         setTimeout(() => { document.getElementById('ct-2').classList.replace('active', 'done'); }, 7500);
-        
         setTimeout(() => { document.getElementById('c-prof').classList.add('active'); }, 8500);
-        
         setTimeout(() => { 
             document.getElementById('c-prof').classList.add('slide-up'); 
             document.getElementById('c-stats').classList.add('active');
         }, 11500);
-
         setTimeout(() => { document.getElementById('c-final').classList.add('active'); }, 13000);
     </script>
     {% else %}
