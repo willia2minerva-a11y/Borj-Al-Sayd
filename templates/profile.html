@@ -1,83 +1,98 @@
 {% extends 'base.html' %}
 {% block content %}
-
-{% set display_rank = user.special_rank %}
-{% if user.zone == 'البوابات' %}
-    {% set display_rank = 'مستكشف' %}
-{% elif 'طابق الأول' in user.zone or 'الطابق 1' in user.zone %}
-    {% if user.points < 50 %}{% set display_rank = 'صياد مبتدئ' %}
-    {% elif user.points < 150 %}{% set display_rank = 'صياد متمرس' %}
-    {% elif user.points < 300 %}{% set display_rank = 'صياد نخبة' %}
-    {% elif user.points < 500 %}{% set display_rank = 'صياد محترف' %}
-    {% else %}{% set display_rank = 'نيتيرو 👑' %}{% endif %}
-{% endif %}
-
 <style>
-    .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px 12px 0 0; border: 2px solid var(--gold-dark); border-bottom: none; overflow: hidden; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 50px; }
-    .epic-banner::after { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to top, #000 10%, transparent 100%); }
+    .profile-header { text-align: center; margin-bottom: 30px; position: relative; }
+    .profile-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
+    .profile-name { color: #fff; font-size: 35px; font-weight: 900; margin: 0; text-shadow: 0 2px 10px #000; }
+    .profile-badge { color: var(--gold-main); font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold-dark); margin-top: 10px; }
     
-    .profile-card { background: var(--bg-card); border: 2px solid var(--gold-dark); border-top: none; border-radius: 0 0 12px 12px; padding: 0 20px 30px 20px; text-align: center; margin-bottom: 30px; box-shadow: 0 15px 30px rgba(0,0,0,0.6); position: relative; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; }
+    .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
+    .stat-val { font-size: 28px; font-weight: 900; color: var(--gold-light); margin-bottom: 5px; }
+    .stat-label { color: #888; font-size: 13px; }
+
+    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+    .section-title { color: var(--gold-main); font-size: 20px; margin: 0 0 20px 0; border-bottom: 1px dashed #332815; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
     
-    .avatar-large { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--gold-main); display: flex; justify-content: center; align-items: center; background: #000; font-size: 50px; overflow: hidden; position: absolute; top: -55px; left: 50%; transform: translateX(-50%); z-index: 5; box-shadow: 0 0 20px rgba(0,0,0,0.8); }
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline:none; box-sizing: border-box; margin-bottom: 15px; transition: 0.3s; }
+    .form-control:focus { border-color: var(--gold-light); box-shadow: 0 0 10px rgba(212,175,55,0.2); }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 16px; }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
     
-    .settings-box { background: rgba(20, 16, 12, 0.8); border: 1px solid #332815; border-radius: 10px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
-    .settings-box:hover { border-color: var(--gold-dark); }
-    
-    .form-group { margin-bottom: 15px; text-align: right; }
-    .form-group input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; }
-    .form-group input:focus { border-color: var(--gold-main); outline: none; }
-    
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 900; width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(212,175,55,0.2); }
+    .item-badge { background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 5px; font-size: 14px; }
+    .seal-badge { background: rgba(155, 89, 182, 0.1); color: #9b59b6; border: 1px solid #9b59b6; padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 5px; font-size: 14px; font-weight: bold; }
+    .achieve-badge { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border: 1px solid #2ecc71; padding: 8px 15px; border-radius: 20px; display: inline-block; margin: 5px; font-size: 13px; }
 </style>
 
-<div class="epic-banner" style="background-image: url('{{ banner_url if banner_url else '' }}');">
-    <div style="position: relative; z-index: 2; text-align: center;">
-        <div style="color: var(--gold-light); font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.7); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold-dark);">📍 {{ user.zone if user.zone else 'البوابات' }}</div>
-    </div>
+<div class="profile-header">
+    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" loading="eager">
+    <h1 class="profile-name">{{ user.username }}</h1>
+    <div class="profile-badge">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
+    {% if user.special_rank %}<div class="profile-badge" style="border-color:#e74c3c; color:#e74c3c;">👑 {{ user.special_rank }}</div>{% endif %}
 </div>
 
-<div class="profile-card">
-    <div class="avatar-large">
-        {% if user.avatar and 'data:image' in user.avatar %}
-            <img src="{{ user.avatar }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
-        {% else %}
-            {{ user.avatar if user.avatar else '👤' }}
-        {% endif %}
-    </div>
+<div class="stats-grid">
+    <div class="stat-card"><div class="stat-val" style="color: #2ecc71;">{{ user.health }}%</div><div class="stat-label">الصحة 🩸</div></div>
+    <div class="stat-card"><div class="stat-val">{{ user.points }}</div><div class="stat-label">الغنائم 💰</div></div>
+    <div class="stat-card"><div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">الولاء 🤝</div></div>
+    <div class="stat-card"><div class="stat-val" style="color: #9b59b6;">{{ getattr(user, 'intelligence_points', 0) }}</div><div class="stat-label">الذكاء 🧠</div></div>
+</div>
+
+<div class="section-card">
+    <h3 class="section-title">🎒 حقيبة الأغراض</h3>
+    {% if current_user.inventory %}
+        {% for item in current_user.inventory %}
+            {% set is_seal = False %}
+            {% for s in my_seals %}{% if s.name == item %}{% set is_seal = True %}{% endif %}{% endfor %}
+            <span class="{{ 'seal-badge' if is_seal else 'item-badge' }}">{{ item }}</span>
+        {% endfor %}
+    {% else %}
+        <p style="color: #888; text-align: center;">حقيبتك فارغة، اذهب للسوق المظلم للتجهّز.</p>
+    {% endif %}
+</div>
+
+<div class="section-card">
+    <h3 class="section-title">🏆 الإنجازات</h3>
+    {% if current_user.achievements %}
+        {% for ach in current_user.achievements %}
+            <span class="achieve-badge">{{ ach }}</span>
+        {% endfor %}
+    {% else %}
+        <p style="color: #888; text-align: center;">لم تحقق أي إنجاز في المتاهة بعد.</p>
+    {% endif %}
+</div>
+
+<div class="section-card">
+    <h3 class="section-title">⚙️ إعدادات الهوية</h3>
     
-    <div style="margin-top: 65px;">
-        <h2 style="color: #fff; font-size: 26px; margin: 0 0 5px 0;">{{ user.username }}</h2>
-        <div style="color: var(--gold-main); font-size: 15px; font-weight: bold; letter-spacing: 1px;">{{ display_rank }}</div>
-        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 20px;">
-            <div style="background: #000; padding: 10px 20px; border-radius: 8px; border: 1px solid #332815;">
-                <span style="color: #aaa; font-size: 12px; display: block;">النقاط</span>
-                <span style="color: var(--gold-light); font-size: 20px; font-weight: bold;">{{ user.points }}</span>
-            </div>
-            <div style="background: #000; padding: 10px 20px; border-radius: 8px; border: 1px solid #332815;">
-                <span style="color: #aaa; font-size: 12px; display: block;">الذكاء</span>
-                <span style="color: #3498db; font-size: 20px; font-weight: bold;">{{ user.intelligence_points }}</span>
-            </div>
+    <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 25px; border-bottom: 1px dashed #332815; padding-bottom: 20px;">
+        <input type="hidden" name="action" value="change_avatar">
+        <label style="color:#aaa; font-size:13px; display:block; margin-bottom:8px;">تحديث النقش (الصورة الشخصية):</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="file" name="avatar_file" accept="image/*" class="form-control" style="margin:0; padding:9px;" required>
+            <button type="submit" class="btn-gold" style="width: auto; white-space: nowrap;">رفع</button>
         </div>
-    </div>
-</div>
+    </form>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-    <div class="settings-box">
-        <h3 style="color: var(--gold-main); margin-top: 0; border-bottom: 1px dashed #332815; padding-bottom: 10px;">🖼️ نقش الوجه (الصورة الرمزية)</h3>
-        <form action="/settings" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="action" value="change_avatar">
-            <div class="form-group"><input type="file" name="avatar_file" accept="image/*" required style="padding: 8px; border: 1px dashed var(--gold-dark);"></div>
-            <button type="submit" class="btn-gold">تحديث النقش</button>
-        </form>
-    </div>
+    <form action="/settings" method="POST" style="margin-bottom: 25px; border-bottom: 1px dashed #332815; padding-bottom: 20px;">
+        <input type="hidden" name="action" value="change_name">
+        <label style="color:#aaa; font-size:13px; display:block; margin-bottom:8px;">تغيير الاسم (مرة كل 15 يوماً):</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control" style="margin:0;" required>
+            <button type="submit" class="btn-gold" style="width: auto; white-space: nowrap;">تغيير</button>
+        </div>
+    </form>
 
-    <div class="settings-box">
-        <h3 style="color: var(--sand); margin-top: 0; border-bottom: 1px dashed #332815; padding-bottom: 10px;">🏷️ تغيير اسم الرحالة</h3>
-        <form action="/settings" method="POST">
-            <input type="hidden" name="action" value="change_name">
-            <div class="form-group"><input type="text" name="new_name" placeholder="الاسم الجديد..." required></div>
-            <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #a04000, #e67e22); color: #fff;">تغيير الاسم (كل 15 يوم)</button>
-        </form>
-    </div>
+    <form action="/settings" method="POST">
+        <input type="hidden" name="action" value="change_password">
+        <label style="color:#aaa; font-size:13px; display:block; margin-bottom:8px;">تغيير كلمة المرور السرية:</label>
+        <input type="password" name="old_password" placeholder="كلمة المرور الحالية" class="form-control" required>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <input type="password" name="new_password" placeholder="الكلمة الجديدة" class="form-control" style="margin:0;" required>
+            <input type="password" name="confirm_password" placeholder="تأكيد الكلمة" class="form-control" style="margin:0;" required>
+        </div>
+        <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #8b0000, #e74c3c); color:#fff;">تحديث الكلمة السرية</button>
+    </form>
 </div>
 {% endblock %}
