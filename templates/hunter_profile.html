@@ -1,77 +1,110 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .hunter-avatar { width: 150px; height: 150px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; margin-bottom: 15px; }
-    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; }
-    .action-card { background: #050403; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .form-control { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 10px; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; cursor:pointer; }
-    .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; cursor:pointer; }
+    .hunter-header { text-align: center; margin-bottom: 30px; position: relative; }
+    .hunter-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
+    .hunter-name { color: #fff; font-size: 35px; font-weight: 900; margin: 0; text-shadow: 0 2px 10px #000; }
+    .hunter-badge { color: var(--gold-main); font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold-dark); margin-top: 10px; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; }
+    .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
+    .stat-val { font-size: 28px; font-weight: 900; color: var(--gold-light); margin-bottom: 5px; }
+    .stat-label { color: #888; font-size: 13px; }
+
+    .action-card { background: #050403; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 25px; margin-bottom: 20px; text-align: center; }
+    .action-title { color: var(--gold-main); font-size: 20px; margin: 0 0 20px 0; border-bottom: 1px solid #332815; padding-bottom: 10px; }
+    
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; margin-top: 10px; font-size: 16px; }
+    .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; font-size: 16px; }
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline:none; box-sizing: border-box; margin-bottom: 10px; }
+    
+    /* 👑 تنسيق لوحة الإدارة */
+    .admin-panel { background: rgba(155, 89, 182, 0.05); border: 2px dashed #9b59b6; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: inset 0 0 20px rgba(155, 89, 182, 0.1); }
 </style>
 
-<div style="text-align: center; margin-bottom: 30px;">
+<div class="hunter-header">
     <img src="/avatar/{{ target_user.hunter_id }}" class="hunter-avatar" loading="eager">
-    <h1 style="color:#fff; margin:0;">{{ target_user.username }}</h1>
-    <div style="color:var(--gold-main); font-family:monospace; margin-top:10px;">ID: {{ target_user.hunter_id }} | 📍 {{ target_user.zone }}</div>
+    <h1 class="hunter-name">{{ target_user.username }}</h1>
+    <div class="hunter-badge">ID: {{ target_user.hunter_id }} | 📍 {{ target_user.zone }}</div>
+    {% if target_user.special_rank %}<div class="hunter-badge" style="border-color:#e74c3c; color:#e74c3c;">👑 {{ target_user.special_rank }}</div>{% endif %}
 </div>
 
 {% if current_user.role == 'admin' %}
-<div class="action-card" style="border-color: #9b59b6;">
-    <h3 style="color: #9b59b6; margin-top:0;">👑 التعديل الإمبراطوري السريع</h3>
-    <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-        <input type="hidden" name="action" id="admin_act" value="edit_details">
-        <input type="text" name="new_name" value="{{ target_user.username }}" class="form-control" placeholder="الاسم">
-        <input type="number" name="new_points" value="{{ target_user.points }}" class="form-control" placeholder="النقاط">
-        <input type="number" name="new_hp" value="{{ target_user.health }}" class="form-control" placeholder="الصحة">
-        <input type="text" name="zone" value="{{ target_user.zone }}" class="form-control" placeholder="الطابق">
-        <div style="grid-column: span 2; display:flex; gap:10px;">
-            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_act').value='edit_name';">تغيير الاسم</button>
-            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_act').value='edit_points';">تعديل النقاط</button>
-            <button type="submit" class="btn-gold" style="background:#e74c3c; color:#fff;" onclick="document.getElementById('admin_act').value='edit_hp';">تعديل الصحة</button>
+<div class="admin-panel">
+    <h3 style="color: #9b59b6; margin-top:0; text-align: center;">👑 التعديل الإمبراطوري السريع</h3>
+    <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <input type="hidden" name="action" id="admin_action" value="edit_details">
+        
+        <div><label style="color:#aaa; font-size:12px;">تعديل الاسم:</label><input type="text" name="new_name" value="{{ target_user.username }}" class="form-control"></div>
+        <div><label style="color:#aaa; font-size:12px;">تعديل النقاط:</label><input type="number" name="new_points" value="{{ target_user.points }}" class="form-control"></div>
+        <div><label style="color:#aaa; font-size:12px;">تعديل الصحة (%):</label><input type="number" name="new_hp" value="{{ target_user.health }}" class="form-control"></div>
+        <div><label style="color:#aaa; font-size:12px;">تعديل الطابق:</label><input type="text" name="zone" value="{{ target_user.zone }}" class="form-control"></div>
+        
+        <div style="grid-column: span 2; display: flex; gap: 10px; margin-top: 10px;">
+            <button type="submit" class="btn-gold" style="margin:0;" onclick="document.getElementById('admin_action').value='edit_name';">تغيير الاسم</button>
+            <button type="submit" class="btn-gold" style="margin:0;" onclick="document.getElementById('admin_action').value='edit_points';">تحديث النقاط</button>
+            <button type="submit" class="btn-gold" style="margin:0; background: #e74c3c; color: #fff;" onclick="document.getElementById('admin_action').value='edit_hp';">تحديث الصحة</button>
+            <button type="submit" class="btn-gold" style="margin:0; background: #3498db; color: #fff;" onclick="document.getElementById('admin_action').value='edit_details';">حفظ الطابق</button>
         </div>
     </form>
 </div>
 {% endif %}
 
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:15px; margin-bottom:30px;">
+<div class="stats-grid">
     <div class="stat-card">
-        <div style="font-size:28px; font-weight:bold; color:#2ecc71;">
-            {% if current_user.role == 'admin' or (war_settings and war_settings.war_mode) %} {{ target_user.health }}% {% else %} مخفي 🛡️ {% endif %}
+        <div class="stat-val" style="color: #2ecc71;">
+            {% if current_user.role == 'admin' or (war_settings and war_settings.war_mode) or (war_settings and war_settings.final_battle_mode) %}
+                {{ target_user.health }}%
+            {% else %}
+                <span style="font-size: 20px;">مخفي 🛡️</span>
+            {% endif %}
         </div>
-        <div style="color:#888; font-size:13px;">الصحة</div>
+        <div class="stat-label">الصحة</div>
     </div>
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:var(--gold-light);">{{ target_user.points }}</div><div style="color:#888; font-size:13px;">الغنائم</div></div>
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#3498db;">{{ target_user.loyalty_points }}</div><div style="color:#888; font-size:13px;">الولاء</div></div>
+    <div class="stat-card"><div class="stat-val">{{ target_user.points }}</div><div class="stat-label">الغنائم</div></div>
+    <div class="stat-card"><div class="stat-val" style="color: #3498db;">{{ target_user.loyalty_points }}</div><div class="stat-label">الولاء</div></div>
 </div>
 
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
-    <div class="action-card" style="text-align:center;">
-        <h3 style="color:var(--gold-main); margin-top:0;">🤝 التحالف</h3>
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+    <div class="action-card">
+        <h3 class="action-title">🤝 حالة التحالف</h3>
         {% if current_user.hunter_id in target_user.friends %}
-            <p style="color:#2ecc71;">أنتما حلفاء ✔️</p>
-            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">خيانة (إلغاء)</button></form>
+            <p style="color: #2ecc71; font-weight: bold; font-size: 18px;">أنتما حلفاء ✔️</p>
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">خيانة (إلغاء التحالف)</button></form>
         {% elif current_user.hunter_id in target_user.friend_requests %}
-            <p style="color:#e67e22;">طلب معلق ⏳</p>
+            <p style="color: #e67e22; font-weight: bold; font-size: 18px;">طلبك معلق ⏳</p>
             <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">سحب الطلب</button></form>
         {% else %}
-            <form action="/add_friend" method="POST"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-gold">طلب تحالف</button></form>
+            <p style="color: #888; margin-bottom: 15px;">أنتما غريبان في المتاهة.</p>
+            <form action="/add_friend" method="POST"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-gold">إرسال طلب تحالف</button></form>
         {% endif %}
     </div>
 
     <div class="action-card">
-        <h3 style="color:var(--gold-main); margin-top:0;">📦 إرسال دعم</h3>
+        <h3 class="action-title">📦 إرسال دعم للرحالة</h3>
         <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
+            <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px; text-align:right;">نوع الدعم:</label>
             <select name="transfer_type" class="form-control" onchange="document.getElementById('amt_div').style.display = this.value == 'points' ? 'block' : 'none'; document.getElementById('itm_div').style.display = this.value == 'item' ? 'block' : 'none';">
-                <option value="points" selected>إرسال غنائم</option>
-                <option value="item">إعطاء أداة</option>
+                <option value="points" selected>إرسال غنائم (نقاط)</option>
+                <option value="item">إعطاء أداة من حقيبتي</option>
             </select>
-            <div id="amt_div"><input type="number" name="amount" placeholder="العدد..." class="form-control" min="1"></div>
+            
+            <div id="amt_div">
+                <input type="number" name="amount" placeholder="حدد عدد الغنائم..." class="form-control" min="1">
+            </div>
+            
             <div id="itm_div" style="display:none;">
                 <select name="item_name" class="form-control">
-                    {% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% else %}<option value="" disabled>حقيبتك فارغة!</option>{% endfor %}
+                    {% for item in current_user.inventory %}
+                        <option value="{{ item }}">{{ item }}</option>
+                    {% else %}
+                        <option value="" disabled selected>حقيبتك فارغة! لا يوجد ما تعطيه.</option>
+                    {% endfor %}
                 </select>
             </div>
-            <button type="submit" class="btn-gold">إرسال</button>
+            
+            <button type="submit" class="btn-gold">إرسال الآن ➔</button>
         </form>
     </div>
 </div>
