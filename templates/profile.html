@@ -1,70 +1,50 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .profile-header { text-align: center; margin-bottom: 30px; position: relative; }
     .profile-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
-    .profile-name { color: #fff; font-size: 35px; font-weight: 900; margin: 0; text-shadow: 0 2px 10px #000; }
-    .profile-badge { color: var(--gold-main); font-size: 15px; font-weight: bold; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; display: inline-block; border: 1px solid var(--gold-dark); margin-top: 10px; }
-    
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); transition: 0.3s; }
+    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; transition: 0.3s; }
     .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
-    .stat-val { font-size: 28px; font-weight: 900; color: var(--gold-light); margin-bottom: 5px; }
-    .stat-label { color: #888; font-size: 13px; }
-
-    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-    .section-title { color: var(--gold-main); font-size: 20px; margin: 0 0 20px 0; border-bottom: 1px dashed #332815; padding-bottom: 10px; display: flex; align-items: center; gap: 10px; }
-    
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; outline:none; box-sizing: border-box; margin-bottom: 15px; transition: 0.3s; }
-    .form-control:focus { border-color: var(--gold-light); box-shadow: 0 0 10px rgba(212,175,55,0.2); }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 16px; }
-    
-    .item-badge { background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 5px; font-size: 14px; }
+    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
+    .item-badge { background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 5px; }
 </style>
 
-<div class="profile-header">
-    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" loading="eager">
-    <h1 class="profile-name">{{ user.username }}</h1>
-    <div class="profile-badge">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
+<div style="text-align: center; margin-bottom: 30px;">
+    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar">
+    <h1 style="color:#fff; margin:0;">{{ user.username }}</h1>
+    <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:10px; display:inline-block;">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
 </div>
 
-<div class="stats-grid">
-    <div class="stat-card"><div class="stat-val" style="color: #2ecc71;">{{ user.health }}%</div><div class="stat-label">الصحة 🩸</div></div>
-    <div class="stat-card"><div class="stat-val">{{ user.points }}</div><div class="stat-label">الغنائم 💰</div></div>
-    <div class="stat-card"><div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">الولاء 🤝</div></div>
-    <div class="stat-card"><div class="stat-val" style="color: #9b59b6;">{{ user.intelligence_points if user.intelligence_points else 0 }}</div><div class="stat-label">الذكاء 🧠</div></div>
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px; margin-bottom:30px;">
+    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#2ecc71;">{{ user.health }}%</div><div style="color:#888; font-size:13px;">الصحة 🩸</div></div>
+    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:var(--gold-light);">{{ user.points }}</div><div style="color:#888; font-size:13px;">الغنائم 💰</div></div>
+    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#3498db;">{{ user.loyalty_points }}</div><div style="color:#888; font-size:13px;">الولاء 🤝</div></div>
+    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#9b59b6;">{{ getattr(user, 'intelligence_points', 0) }}</div><div style="color:#888; font-size:13px;">الذكاء 🧠</div></div>
 </div>
 
 <div class="section-card">
-    <h3 class="section-title">🎒 حقيبة الأغراض</h3>
+    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">🎒 حقيبة الأغراض</h3>
     {% if current_user.inventory %}
-        {% for item in current_user.inventory %}
-            <span class="item-badge">{{ item }}</span>
-        {% endfor %}
+        {% for item in current_user.inventory %}<span class="item-badge">{{ item }}</span>{% endfor %}
     {% else %}
-        <p style="color: #888; text-align: center;">حقيبتك فارغة، اذهب للسوق للتجهّز.</p>
+        <p style="color:#888; text-align:center;">حقيبتك فارغة، اذهب للسوق للتجهّز.</p>
     {% endif %}
 </div>
 
 <div class="section-card">
-    <h3 class="section-title">⚙️ إعدادات الهوية</h3>
-    <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 25px; border-bottom: 1px dashed #332815; padding-bottom: 20px;">
+    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">⚙️ إعدادات الهوية</h3>
+    <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom:25px;">
         <input type="hidden" name="action" value="change_avatar">
-        <label style="color:#aaa; font-size:13px; display:block; margin-bottom:8px;">تحديث النقش (الصورة الشخصية):</label>
-        <div style="display: flex; gap: 10px;">
-            <input type="file" name="avatar_file" accept="image/*" class="form-control" style="margin:0; padding:9px;" required>
-            <button type="submit" class="btn-gold" style="width: auto; white-space: nowrap;">رفع</button>
-        </div>
+        <label style="color:#aaa; font-size:13px;">تحديث النقش (الصورة):</label>
+        <div style="display:flex; gap:10px;"><input type="file" name="avatar_file" accept="image/*" class="form-control" style="margin:0; padding:9px;" required><button type="submit" class="btn-gold" style="width:auto;">رفع</button></div>
     </form>
     <form action="/settings" method="POST">
         <input type="hidden" name="action" value="change_password">
-        <label style="color:#aaa; font-size:13px; display:block; margin-bottom:8px;">تغيير كلمة المرور السرية:</label>
-        <input type="password" name="old_password" placeholder="كلمة المرور الحالية" class="form-control" required>
-        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <input type="password" name="new_password" placeholder="الكلمة الجديدة" class="form-control" style="margin:0;" required>
-            <input type="password" name="confirm_password" placeholder="تأكيد الكلمة" class="form-control" style="margin:0;" required>
-        </div>
-        <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #8b0000, #e74c3c); color:#fff;">تحديث الكلمة السرية</button>
+        <label style="color:#aaa; font-size:13px;">تغيير كلمة المرور السرية:</label>
+        <input type="password" name="old_password" placeholder="الحالية" class="form-control" required>
+        <div style="display:flex; gap:10px; margin-bottom:15px;"><input type="password" name="new_password" placeholder="الجديدة" class="form-control" style="margin:0;" required><input type="password" name="confirm_password" placeholder="تأكيد" class="form-control" style="margin:0;" required></div>
+        <button type="submit" class="btn-gold" style="background:#e74c3c; color:#fff;">تحديث الكلمة</button>
     </form>
 </div>
 {% endblock %}
