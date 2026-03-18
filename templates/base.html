@@ -53,20 +53,20 @@
     <div class="sidebar" id="mainSidebar">
         <div class="close-btn" onclick="toggleSidebar()">&times;</div>
         <div style="text-align: center; margin-bottom: 20px;">
-            <img src="/avatar/{{ current_user.hunter_id }}" loading="eager" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; margin-bottom: 10px;">
+            <img src="/avatar/{{ current_user.hunter_id }}" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; margin-bottom: 10px;">
             <strong style="color: var(--gold-main); font-size: 18px; display:block;">{{ current_user.username }}</strong>
         </div>
         <hr style="border-color: #332815; margin-bottom: 15px;">
         
-        <a href="/" class="nav-link">{{ settings.nav_home if settings and settings.nav_home else 'الرئيسية' }}</a>
-        <a href="/profile" class="nav-link">{{ settings.nav_profile if settings and settings.nav_profile else 'هويتي' }}</a>
-        <a href="/friends" class="nav-link">{{ settings.nav_friends if settings and settings.nav_friends else 'التحالفات' }}</a>
-        <a href="/news" class="nav-link">{{ settings.nav_news if settings and settings.nav_news else 'الأخبار' }} {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
-        <a href="/puzzles" class="nav-link">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'الألغاز' }} {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
-        <a href="/declarations" class="nav-link">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات' }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
-        <a href="/store" class="nav-link">{{ settings.nav_store if settings and settings.nav_store else 'المتجر' }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
+        <a href="/" class="nav-link">{{ settings.nav_home if settings and settings.nav_home else 'الرئيسية 🏰' }}</a>
+        <a href="/profile" class="nav-link">{{ settings.nav_profile if settings and settings.nav_profile else 'هويتي 👤' }}</a>
+        <a href="/friends" class="nav-link">{{ settings.nav_friends if settings and settings.nav_friends else 'التحالفات 🤝' }}</a>
+        <a href="/news" class="nav-link">{{ settings.nav_news if settings and settings.nav_news else 'المراسيم 📜' }} {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
+        <a href="/puzzles" class="nav-link">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'النقوش 🧩' }} {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
+        <a href="/declarations" class="nav-link">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات 📢' }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
+        <a href="/store" class="nav-link">{{ settings.nav_store if settings and settings.nav_store else 'السوق المظلم 🐪' }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
         <a href="/altar" class="nav-link">{{ settings.nav_altar if settings and settings.nav_altar else 'مذبح الطلاسم 🔮' }}</a>
-        <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</a>
+        <a href="/graveyard" class="nav-link">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة 💀' }}</a>
         
         {% if current_user.role == 'admin' %}
         <div style="flex-grow: 1;"></div>
