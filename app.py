@@ -7,7 +7,7 @@ import os, base64, random, math, json, traceback
 
 app = Flask(__name__)
 
-# 🚨 إعدادات قاعدة البيانات - تم ضبطها للسرعة القصوى
+# 🚨 إعدادات قاعدة البيانات - السرعة القصوى
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI'),
     'connect': False  
@@ -21,8 +21,7 @@ db.init_app(app)
 def handle_exception(e):
     return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 System Crash</h2><pre>{traceback.format_exc()}</pre></div>", 200
 
-# ⚠️ تم حذف السجلات (Logs) نهائياً من الكود لتخفيف قاعدة البيانات إلى الصفر!
-
+# 🚀 تم استعادة الحقن المباشر للصور لضمان السرعة الصاروخية للموقع
 def check_achievements(user):
     try:
         new_ach = []
@@ -100,31 +99,27 @@ def check_locks_and_status():
             GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=False, set__maintenance_pages=[])
         elif not user or getattr(user, 'role', '') != 'admin':
             m_pages = getattr(settings, 'maintenance_pages', []) or []
-            if 'all' in m_pages or request.endpoint in m_pages: return render_template('locked.html', message='المتاهة قيد الترميم ⏳')
+            if 'all' in m_pages or request.endpoint in m_pages: return render_template('locked.html', message='المتاهة قيد الصيانة ⏳')
 
     if user:
         try: 
             now = datetime.utcnow()
             last_act = getattr(user, 'last_active', None)
-            if not last_act or (now - last_act).total_seconds() > 3600:
-                User.objects(id=user.id).update_one(set__last_active=now)
+            if not last_act or (now - last_act).total_seconds() > 3600: User.objects(id=user.id).update_one(set__last_active=now)
             check_lazy_death_and_bleed(user, settings)
         except: pass
-        
         quicksand = getattr(user, 'quicksand_lock_until', None)
         if quicksand and datetime.utcnow() < quicksand:
-            tl = quicksand - datetime.utcnow()
-            return render_template('locked.html', message=f'مقيّد في الرمال لـ {tl.seconds // 60}د و {tl.seconds % 60}ث')
-            
-        if getattr(user, 'status', '') == 'frozen':
-            return render_template('locked.html', message='لقد تم تجميد روحك بأمر الإمبراطور! ❄️')
-            
-        if getattr(user, 'gate_status', '') == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']:
-            return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
+            tl = quicksand - datetime.utcnow(); return render_template('locked.html', message=f'مقيّد في الرمال لـ {tl.seconds // 60}د و {tl.seconds % 60}ث')
+        if getattr(user, 'status', '') == 'frozen': return render_template('locked.html', message='لقد تم تجميد روحك بأمر الإمبراطور! ❄️')
+        if getattr(user, 'gate_status', '') == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']: return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
 
 @app.context_processor
-def inject_notifications():
+def inject_globals():
     notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None}
+    # 🌟 صورة افتراضية قوية مدمجة لتسريع الموقع وحل مشكلة الصورة المكسورة
+    default_avatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%2314100c'/><circle cx='50' cy='35' r='20' fill='%23d4af37'/><path d='M20 90c0-20 15-35 30-35s30 15 30 35' fill='%23d4af37'/></svg>"
+    
     try:
         settings = GlobalSettings.objects(setting_name='main_config').first()
         if settings: notifs['war_settings'] = settings
@@ -133,14 +128,13 @@ def inject_notifications():
         try:
             user = User.objects(id=session['user_id']).first()
             if user:
-                notifs['current_user'] = user
-                now = datetime.utcnow()
+                notifs['current_user'] = user; now = datetime.utcnow()
                 notifs['un_news'] = News.objects(category='news', status='approved', created_at__gt=(getattr(user, 'last_seen_news', None) or now)).count()
                 notifs['un_puz'] = News.objects(category='puzzle', status='approved', created_at__gt=(getattr(user, 'last_seen_puzzles', None) or now)).count()
                 notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=(getattr(user, 'last_seen_decs', None) or now)).count()
                 notifs['un_store'] = StoreItem.objects(created_at__gt=(getattr(user, 'last_seen_store', None) or now)).count()
         except: pass
-    return notifs
+    return {**notifs, 'default_avatar': default_avatar}
 
 def login_required(f):
     @wraps(f)
@@ -173,33 +167,25 @@ def get_allowed_news(user):
 def home():
     try: settings = GlobalSettings.objects(setting_name='main_config').first()
     except: settings = None
-    
     user = User.objects(id=session.get('user_id')).first() if 'user_id' in session else None
     test_winner = User.objects(hunter_id=int(request.args.get('test_victory'))).first() if user and getattr(user, 'role', '') == 'admin' and request.args.get('test_victory') and request.args.get('test_victory').isdigit() else None
-
-    allowed_news = get_allowed_news(user)
-    latest_news = allowed_news[0] if allowed_news else None
+    latest_news = get_allowed_news(user)[0] if get_allowed_news(user) else None
     latest_dec = News.objects(category='declaration', status='approved').order_by('-created_at').first()
-    
     alive_count = User.objects(status='active', hunter_id__ne=1000).count()
     dead_count = User.objects(status='eliminated', hunter_id__ne=1000).count()
     emperor = User.objects(hunter_id=1000).first()
-    
-    hunters_list = [{'id': h.hunter_id, 'name': h.username} for h in User.objects(status='active', role='hunter', hunter_id__ne=1000)] if settings and getattr(settings, 'floor3_mode_active', False) else []
-    return render_template('index.html', settings=settings, news=latest_news, dec=latest_dec, alive_count=alive_count, dead_count=dead_count, emperor=emperor, active_hunters_json=json.dumps(hunters_list), test_winner=test_winner)
+    return render_template('index.html', settings=settings, news=latest_news, dec=latest_dec, alive_count=alive_count, dead_count=dead_count, emperor=emperor, test_winner=test_winner)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        if User.objects(username=request.form['username']).first(): 
-            flash('الاسم مستخدم مسبقاً.', 'error'); return redirect(url_for('register'))
-        existing_ids = [u.hunter_id for u in User.objects().only('hunter_id').order_by('hunter_id')]
-        new_id = 1000
+        if User.objects(username=request.form['username']).first(): flash('الاسم مستخدم مسبقاً.', 'error'); return redirect(url_for('register'))
+        existing_ids = [u.hunter_id for u in User.objects().only('hunter_id').order_by('hunter_id')]; new_id = 1000
         for eid in existing_ids:
             if eid == new_id: new_id += 1
             elif eid > new_id: break
         User(hunter_id=new_id, username=request.form['username'], password_hash=generate_password_hash(request.form['password']), role='admin' if new_id == 1000 else 'hunter', status='active' if new_id == 1000 else 'inactive', facebook_link=request.form.get('facebook_link', ''), zone='البوابات', special_rank='مستكشف').save()
-        flash('تم تسجيلك بنجاح! في انتظار التفعيل.', 'success'); return redirect(url_for('login'))
+        flash('تم تسجيلك بنجاح!', 'success'); return redirect(url_for('login'))
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -208,8 +194,7 @@ def login():
         user = User.objects(username=request.form['username']).first()
         if user and check_password_hash(getattr(user, 'password_hash', ''), request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); session['role'] = getattr(user, 'role', 'hunter')
-            User.objects(id=user.id).update_one(set__last_active=datetime.utcnow())
-            return redirect(url_for('home'))
+            User.objects(id=user.id).update_one(set__last_active=datetime.utcnow()); return redirect(url_for('home'))
         flash('بياناتك خاطئة.', 'error')
     return render_template('login.html')
 
@@ -219,20 +204,17 @@ def logout(): session.clear(); return redirect(url_for('home'))
 @app.route('/profile')
 @login_required
 def profile():
-    user = User.objects(id=session['user_id']).first()
-    settings = GlobalSettings.objects(setting_name='main_config').first()
+    user = User.objects(id=session['user_id']).first(); settings = GlobalSettings.objects(setting_name='main_config').first()
     my_items = StoreItem.objects(name__in=getattr(user, 'inventory', []) or [])
-    return render_template('profile.html', user=user, banner_url=getattr(settings, 'banner_url', ''), my_items=my_items, my_seals=[i for i in my_items if getattr(i, 'item_type', '') == 'seal'])
+    return render_template('profile.html', user=user, settings=settings, my_items=my_items, my_seals=[i for i in my_items if getattr(i, 'item_type', '') == 'seal'])
 
 @app.route('/settings', methods=['POST'])
 @login_required
 def update_settings():
-    user = User.objects(id=session['user_id']).first()
-    action = request.form.get('action'); now = datetime.utcnow()
+    user = User.objects(id=session['user_id']).first(); action = request.form.get('action'); now = datetime.utcnow()
     if action == 'change_avatar':
         file = request.files.get('avatar_file')
-        if file and file.filename != '': 
-            user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تم تحديث النقش بنجاح!', 'success')
+        if file and file.filename != '': user.avatar = f"data:{file.content_type};base64,{base64.b64encode(file.read()).decode('utf-8')}"; flash('تم تحديث النقش بنجاح!', 'success')
     elif action == 'change_name':
         new_name = request.form.get('new_name')
         if getattr(user, 'last_name_change', None) and (now - user.last_name_change).days < 15: flash('كل 15 يوماً فقط!', 'error')
@@ -257,7 +239,7 @@ def hunter_profile(target_id):
     check_lazy_death_and_bleed(target_user, settings)
     current_user = User.objects(id=session['user_id']).first()
     my_items = StoreItem.objects(name__in=getattr(current_user, 'inventory', []) or [])
-    return render_template('hunter_profile.html', target_user=target_user, banner_url=getattr(settings, 'banner_url', ''), my_weapons=[i for i in my_items if getattr(i, 'item_type', '')=='weapon'], my_heals=[i for i in my_items if getattr(i, 'item_type', '')=='heal'], my_spies=[i for i in my_items if getattr(i, 'item_type', '')=='spy'], my_steals=[i for i in my_items if getattr(i, 'item_type', '')=='steal'])
+    return render_template('hunter_profile.html', target_user=target_user, settings=settings, my_weapons=[i for i in my_items if getattr(i, 'item_type', '')=='weapon'], my_heals=[i for i in my_items if getattr(i, 'item_type', '')=='heal'], my_spies=[i for i in my_items if getattr(i, 'item_type', '')=='spy'], my_steals=[i for i in my_items if getattr(i, 'item_type', '')=='steal'])
 
 @app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
 @admin_required
@@ -276,6 +258,7 @@ def admin_update_profile(target_id):
             target_user.save(); flash('تم التعديل الإمبراطوري!', 'success')
         except: pass
     return redirect(url_for('hunter_profile', target_id=target_id))
+
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
 def transfer(target_id):
@@ -664,6 +647,7 @@ def admin_panel():
                     set__nav_friends=request.form.get('nav_friends', 'التحالفات 🤝'), set__nav_news=request.form.get('nav_news', 'المخطوطات 📜'),
                     set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش 🧩'), set__nav_decs=request.form.get('nav_decs', 'التصريحات 📢'),
                     set__nav_store=request.form.get('nav_store', 'السوق 🐪'), set__nav_grave=request.form.get('nav_grave', 'المقبرة 💀'),
+                    set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم 🔮'),
                     set__maze_name=request.form.get('maze_name', 'متاهة سيفار')
                 )
             
@@ -706,6 +690,7 @@ def admin_panel():
                         elif bt == 'activate': u.status = 'active'; u.health = 100; u.save()
                         elif bt == 'eliminate': u.status = 'eliminated'; u.freeze_reason = 'بأمر الإمبراطور'; u.save()
                         elif bt == 'freeze': u.status = 'frozen'; u.save()
+                        elif bt == 'move_zone': u.zone = request.form.get('bulk_zone', 'الطابق 1'); u.save()
             
             elif act == 'setup_gates': GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=True, set__gates_selection_locked=bool(request.form.get('locked')), set__gates_description=request.form.get('desc', ''), set__gate_1_name=request.form.get('g1', ''), set__gate_2_name=request.form.get('g2', ''), set__gate_3_name=request.form.get('g3', ''), set__gates_test_message=request.form.get('test_msg', ''))
             elif act == 'close_gates_mode': GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=False)
@@ -752,17 +737,16 @@ def admin_panel():
         except: pass
         return redirect(url_for('admin_panel', search_user=search_query))
     
-    # 🚀 استدعاء خفيف للسيرفر. الكود يجلب أحدث 100 لاعب بدون تحميل الصورة في الذاكرة لتسريع لوحة الإدارة
-    users_query = User.objects(hunter_id__ne=1000).exclude('avatar')
+    users_query = User.objects(hunter_id__ne=1000)
     if search_query:
         if search_query.isdigit(): users_query = users_query.filter(hunter_id=int(search_query))
         else: users_query = users_query.filter(username__icontains=search_query)
     
     users = users_query.order_by('-last_active')[:100]
     gate_stats = {1: User.objects(chosen_gate=1, status='active').count(), 2: User.objects(chosen_gate=2, status='active').count(), 3: User.objects(chosen_gate=3, status='active').count()}
-    floor3_leaders = User.objects(status='active', role='hunter').exclude('avatar').order_by('-survival_votes')[:getattr(settings, 'vote_top_n', 5)] if getattr(settings, 'floor3_mode_active', False) else []
+    floor3_leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:getattr(settings, 'vote_top_n', 5)] if getattr(settings, 'floor3_mode_active', False) else []
         
-    return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active').exclude('avatar'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query)
+    return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query)
 
 if __name__ == '__main__': 
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
