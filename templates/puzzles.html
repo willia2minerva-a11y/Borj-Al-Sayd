@@ -22,8 +22,8 @@
 {% for puz in puzzles_list %}
 <details class="accordion-item">
     <summary class="accordion-header">
-        <span>{{ puz.title }} <span class="badge-points">+{{ puz.reward_points|default(0, true) }} دينار</span></span>
-        <span style="font-size: 11px; color: #666;">{{ puz.current_winners|default(0, true) }}/{{ puz.max_winners|default(1, true) }} فائزين</span>
+        <span>{{ puz.title }} <span class="badge-points">+{{ puz.reward_points | default(0, true) }} دينار</span></span>
+        <span style="font-size: 11px; color: #666;">{{ puz.current_winners | default(0, true) }}/{{ puz.max_winners | default(1, true) }} فائزين</span>
     </summary>
     <div class="accordion-body">
         <div style="white-space: pre-wrap; margin-bottom: 15px; color: var(--gold-light);">{{ puz.content }}</div>
@@ -51,4 +51,3 @@
 <p style="text-align: center; color: #888; margin-top: 50px;">لا توجد نقوش غامضة في هذا الطابق حالياً.</p>
 {% endfor %}
 {% endblock %}
-
