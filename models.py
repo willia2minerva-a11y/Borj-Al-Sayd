@@ -4,6 +4,9 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
+    # هذا هو السطر السحري الذي سيمنع انهيار الموقع بسبب البيانات القديمة ويسرعه
+    meta = {'strict': False} 
+    
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
@@ -40,8 +43,16 @@ class User(db.Document):
     gate_test_answer = db.StringField(default='')
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
+    
+    # تمت إعادتها لمنع أي خطأ قادم
+    last_seen_news = db.DateTimeField()
+    last_seen_decs = db.DateTimeField()
+    last_seen_store = db.DateTimeField()
+    last_seen_puzzles = db.DateTimeField()
+    facebook_link = db.StringField(default='')
 
 class News(db.Document):
+    meta = {'strict': False}
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     category = db.StringField(default='news') # news, puzzle, hidden, declaration
@@ -61,6 +72,7 @@ class News(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class StoreItem(db.Document):
+    meta = {'strict': False}
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(default=0)
@@ -75,6 +87,7 @@ class StoreItem(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
+    meta = {'strict': False}
     setting_name = db.StringField(unique=True, default='main_config')
     maze_name = db.StringField(default='متاهة سيفار')
     home_title = db.StringField(default='البوابة')
@@ -114,6 +127,7 @@ class GlobalSettings(db.Document):
     dead_count = db.IntField(default=0)
 
 class SpellConfig(db.Document):
+    meta = {'strict': False}
     spell_word = db.StringField(required=True, unique=True)
     spell_type = db.StringField(required=True)
     effect_value = db.IntField(default=0)
@@ -123,3 +137,4 @@ class SpellConfig(db.Document):
     used_by = db.ListField(db.StringField(), default=list)
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
+
