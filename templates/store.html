@@ -1,86 +1,53 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-    .store-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-    .store-card:hover { border-color: var(--gold-main); transform: translateY(-5px); transition: 0.3s; }
-    .item-icon { font-size: 50px; margin-bottom: 10px; display: inline-block; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 50%; border: 1px dashed var(--gold-dark); }
-    .item-price { position: absolute; top: 15px; left: 15px; background: rgba(212,175,55,0.2); color: var(--gold-light); font-weight: bold; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--gold-main); }
-    .btn-buy { background: linear-gradient(45deg, #2ecc71, #27ae60); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; transition: 0.3s; }
-    .btn-buy:hover { transform: scale(1.05); }
-    
-    /* 👑 تنسيقات لوحة الأدمن الخاصة بالسوق */
-    .admin-store-panel { background: #0a0505; border: 2px dashed #9b59b6; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: inset 0 0 20px rgba(155, 89, 182, 0.1); }
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 15px; outline:none; box-sizing:border-box;}
+    .store-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+    .store-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.4); transition: 0.3s; }
+    .store-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
+    .item-icon { font-size: 50px; margin-bottom: 15px; display: inline-block; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 50%; border: 1px dashed var(--gold-dark); }
+    .item-image { max-width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--gold-dark); }
+    .item-price { position: absolute; top: 15px; left: 15px; background: rgba(212,175,55,0.2); color: var(--gold-light); font-weight: bold; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--gold-main); font-size: 13px; z-index: 2; }
+    .btn-buy { background: linear-gradient(45deg, #2ecc71, #27ae60); color: #fff; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px; width: 100%; transition: 0.3s; font-size: 15px; }
+    .btn-buy:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(46,204,113,0.4); }
+    .btn-disabled { background: #333; color: #888; border: 1px solid #444; padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-top: 15px; width: 100%; cursor: not-allowed; font-size: 15px; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
     <h2 style="color: var(--sand); font-size: 35px; margin: 0;">🐪 السوق المظلم</h2>
-    <p style="color: #aaa; font-size: 15px;">استبدل غنائمك بأدوات النجاة.. أو ربما تشتري فخاً دون أن تدري!</p>
+    <p style="color: #aaa; font-size: 15px;">استبدل دنانيرك بأدوات النجاة.. أو ربما تقع في فخ السراب دون أن تدري!</p>
 </div>
-
-{% if current_user.role == 'admin' %}
-<div class="admin-store-panel">
-    <h3 style="color: #9b59b6; text-align: center; margin-top: 0;">👑 إضافة بضاعة جديدة للسوق</h3>
-    <form action="/admin" method="POST">
-        <input type="hidden" name="action" value="add_store_item">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" name="item_name" placeholder="اسم الأداة (مثال: درع الملك)" class="form-control" required style="grid-column: span 2; margin-bottom:0;">
-            <input type="text" name="item_desc" placeholder="الوصف والقدرات..." class="form-control" required style="grid-column: span 2; margin-bottom:0;">
-            <input type="number" name="item_price" placeholder="السعر بالغنائم" class="form-control" required style="margin-bottom:0;">
-            <select name="item_type" class="form-control" required style="margin-bottom:0;">
-                <option value="weapon">سلاح (هجوم)</option>
-                <option value="heal">جرعة (شفاء)</option>
-                <option value="spy">عين تاجيس (تجسس)</option>
-                <option value="steal">قفاز السارق (سرقة)</option>
-                <option value="seal">ختم سحري</option>
-            </select>
-            <input type="number" name="effect_amount" placeholder="قيمة التأثير (ضرر السلاح/مقدار الشفاء)" class="form-control" style="margin-bottom:0;">
-            
-            <div style="background:#111; padding:10px; border-radius:6px; border:1px solid #332815;">
-                <label style="color:#e67e22; font-size:13px; display:block; margin-bottom:5px;">🎲 هل هو صندوق حظ؟</label>
-                <select name="is_luck" class="form-control" style="margin-bottom:5px; padding:8px;"><option value="">لا</option><option value="1">نعم</option></select>
-                <div style="display:flex; gap:5px;"><input type="number" name="luck_min" placeholder="أقل ربح/خسارة" class="form-control" style="margin:0;"><input type="number" name="luck_max" placeholder="أعلى ربح" class="form-control" style="margin:0;"></div>
-            </div>
-            
-            <div style="background:#111; padding:10px; border-radius:6px; border:1px solid #332815;">
-                <label style="color:#e74c3c; font-size:13px; display:block; margin-bottom:5px;">🕸️ هل هو فخ سراب؟</label>
-                <select name="is_mirage" class="form-control" style="margin-bottom:5px; padding:8px;"><option value="">لا (أداة حقيقية)</option><option value="1">نعم (فخ يسرق نقاط ذكاء)</option></select>
-                <input type="text" name="mirage_message" placeholder="رسالة الفخ عند الشراء" class="form-control" style="margin:0;">
-            </div>
-        </div>
-        <button type="submit" class="btn-gold" style="width:100%; margin-top:15px; padding:15px; font-size:18px;">🛒 عرض في السوق</button>
-    </form>
-</div>
-{% endif %}
 
 <div class="store-grid">
     {% for item in items %}
     <div class="store-card">
-        <div class="item-price">{{ item.price }} 💰</div>
+        <div class="item-price">{{ item.price }} دينار</div>
         
-        <div class="item-icon">
-            {% if item.item_type == 'weapon' %}⚔️
-            {% elif item.item_type == 'heal' %}🧪
-            {% elif item.item_type == 'spy' %}👁️
-            {% elif item.item_type == 'steal' %}🖐️
-            {% elif item.item_type == 'seal' %}🔮
-            {% else %}📦{% endif %}
-        </div>
+        {% if item.image %}
+            <img src="{{ item.image }}" class="item-image" alt="{{ item.name }}" loading="lazy">
+        {% else %}
+            <div class="item-icon">
+                {% if item.item_type == 'weapon' %}⚔️
+                {% elif item.item_type == 'heal' %}🧪
+                {% elif item.item_type == 'spy' %}👁️
+                {% elif item.item_type == 'steal' %}🖐️
+                {% elif item.item_type == 'seal' %}🔮
+                {% else %}📦{% endif %}
+            </div>
+        {% endif %}
         
         <h3 style="color: var(--gold-main); margin: 10px 0;">{{ item.name }}</h3>
-        <p style="color: #ccc; font-size: 13px; line-height: 1.6; margin-bottom: 20px;">{{ item.description }}</p>
+        <p style="color: #ccc; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">{{ item.description }}</p>
         
         {% if current_user.points >= item.price %}
             <form action="/buy/{{ item.id }}" method="POST" style="margin:0;">
-                <button type="submit" class="btn-buy" onclick="return confirm('هل أنت متأكد من شراء {{ item.name }}؟');">شراء الآن</button>
+                <button type="submit" class="btn-buy" onclick="return confirm('هل أنت متأكد من شراء [{{ item.name }}] مقابل {{ item.price }} دينار؟');">شراء الأداة</button>
             </form>
         {% else %}
-            <button class="btn-buy" style="background: #333; color: #888; cursor: not-allowed;" disabled>غنائمك لا تكفي</button>
+            <button class="btn-disabled" disabled>دنانيرك لا تكفي</button>
         {% endif %}
     </div>
     {% else %}
-    <p style="text-align: center; color: #888; grid-column: 1 / -1; margin-top: 50px;">السوق فارغ حالياً، قوافل التجار لم تصل بعد.</p>
+    <p style="text-align: center; color: #888; grid-column: 1 / -1; margin-top: 50px;">السوق المظلم فارغ حالياً، قوافل التجار لم تصل بعد إلى المتاهة.</p>
     {% endfor %}
 </div>
 
