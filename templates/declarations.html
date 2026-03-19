@@ -10,11 +10,12 @@
     .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; }
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
     
-    .reaction-bar { display: flex; gap: 10px; border-top: 1px solid #222; padding-top: 10px; }
+    .reaction-bar { display: flex; gap: 10px; border-top: 1px solid #222; padding-top: 10px; align-items: center; }
     .react-btn { background: #111; color: #aaa; border: 1px solid #333; padding: 5px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 13px; transition: 0.3s; }
-    .react-btn:hover { background: #222; color: #fff; }
+    .react-btn:hover { background: #222; color: #fff; border-color: var(--gold-main); }
     .react-active { background: rgba(212,175,55,0.2); color: var(--gold-light); border-color: var(--gold-main); }
-    .btn-delete { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: auto; }
+    .btn-delete { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: auto; transition: 0.3s; }
+    .btn-delete:hover { background: #e74c3c; color: #fff; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -35,23 +36,28 @@
 {% for dec in approved_decs %}
 <div class="dec-card">
     <div class="dec-header">
-        <a href="/hunter/{{ avatars[dec.author] }}" style="text-decoration:none;"><img src="/avatar/{{ avatars[dec.author] }}" class="dec-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzE0MTAwYyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZDRhZjM3Ii8+PHBhdGggZD0iTTIwIDkwYzAtMjAgMTUtMzUgMzAtMzVzMzAgMTUgMzAgMzUiIGZpbGw9IiNkNGFmMzciLz48L3N2Zz4='"></a>
-        <div><strong style="color: #fff; font-size: 16px;">{{ dec.author }}</strong><div style="color: #666; font-size: 11px;">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div></div>
+        <a href="/hunter/{{ avatars[dec.author] }}" style="text-decoration:none;">
+            <img src="/avatar/{{ avatars[dec.author] }}" class="dec-avatar" onerror="this.src='{{ default_avatar }}'">
+        </a>
+        <div>
+            <strong style="color: #fff; font-size: 16px;">{{ dec.author }}</strong>
+            <div style="color: #666; font-size: 11px;">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
     </div>
     <div class="dec-content">{{ dec.content }}</div>
     {% if dec.image_data %}<img src="{{ dec.image_data }}" class="dec-image">{% endif %}
     
     <div class="reaction-bar">
         <form action="/react_declaration/{{ dec.id }}/like" method="POST" style="margin:0;">
-            <button type="submit" class="react-btn {% if current_user.id|string in dec.likes %}react-active{% endif %}">❤️ {{ dec.likes|length }}</button>
+            <button type="submit" class="react-btn {% if current_user.id|string in dec.like_list %}react-active{% endif %}">❤️ {{ dec.like_list|length }}</button>
         </form>
         <form action="/react_declaration/{{ dec.id }}/laugh" method="POST" style="margin:0;">
-            <button type="submit" class="react-btn {% if current_user.id|string in dec.laughs %}react-active{% endif %}">😂 {{ dec.laughs|length }}</button>
+            <button type="submit" class="react-btn {% if current_user.id|string in dec.laugh_list %}react-active{% endif %}">😂 {{ dec.laugh_list|length }}</button>
         </form>
         
         {% if current_user.username == dec.author or current_user.role == 'admin' %}
         <form action="/delete_declaration/{{ dec.id }}" method="POST" style="margin:0; margin-right:auto;">
-            <button type="submit" class="btn-delete" onclick="return confirm('حذف التصريح؟');">🗑️ حذف</button>
+            <button type="submit" class="btn-delete" onclick="return confirm('هل أنت متأكد من طمس هذا التصريح؟');">🗑️ حذف</button>
         </form>
         {% endif %}
     </div>
