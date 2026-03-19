@@ -4,7 +4,7 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    meta = {'strict': False} # درع يمنع الانهيار بسبب أي بيانات قديمة أو مجهولة
+    meta = {'strict': False} 
     
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
@@ -43,7 +43,7 @@ class User(db.Document):
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
     
-    # 🛡️ الحقول الستة القديمة التي ظهرت في الخطأ وتسببت في الانهيار (تم إضافتها لمنع الصدام)
+    # 🛡️ الحقول القديمة التي تسببت في الخطأ (تمت إعادتها لمنع الانهيار)
     last_seen_news = db.DateTimeField()
     last_seen_decs = db.DateTimeField()
     last_seen_store = db.DateTimeField()
