@@ -1,28 +1,37 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2 style="color: #8B5A2B;" class="translatable" data-ar="📜 الأخبار" data-en="📜 News">📜 الأخبار</h2>
+<style>
+    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+    .accordion-header { padding: 15px 20px; cursor: pointer; color: var(--gold-main); font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; }
+    .accordion-header:hover { background: rgba(212,175,55,0.05); }
+    .accordion-header::after { content: '▼'; font-size: 12px; color: #888; transition: transform 0.3s; }
+    details[open] .accordion-header::after { transform: rotate(180deg); color: var(--gold-light); }
+    details[open] .accordion-header { border-bottom: 1px dashed #332815; }
+    .accordion-body { padding: 20px; color: #ccc; line-height: 1.8; background: var(--bg-card); font-size: 15px; white-space: pre-wrap; }
+    details { outline: none; } summary { list-style: none; } summary::-webkit-details-marker { display: none; }
+</style>
 
-{% for n in news_list %}
-<div class="hunter-card" style="padding: 0; border-color: #8B5A2B;">
-    
-    <div class="accordion-header" style="display: flex; justify-content: space-between; align-items: center; border-right-color: #8B5A2B;">
-        <span style="color: var(--text-main);">{{ n.title }}</span>
-        
-        {% if session.get('role') == 'admin' %}
-        <form method="POST" action="/delete_news/{{ n.id }}" style="margin: 0;" onsubmit="return confirm('تأكيد السحق؟');">
-            <button type="submit" class="btn-danger" style="padding: 4px 10px; font-size: 11px;">سحق 🗑️</button>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); margin: 0;">📜 المراسيم الملكية</h2>
+    <p style="color: #aaa; font-size: 14px;">أخبار وقرارات الإمبراطور للرحالة.</p>
+</div>
+
+{% for news in news_list %}
+<details class="accordion-item">
+    <summary class="accordion-header">
+        <span>{{ news.title }}</span>
+        <span style="font-size: 11px; color: #666; font-weight: normal;">{{ news.created_at.strftime('%Y-%m-%d') }}</span>
+    </summary>
+    <div class="accordion-body">
+        {{ news.content }}
+        {% if current_user and current_user.role == 'admin' %}
+        <form action="/delete_puzzle/{{ news.id }}" method="POST" style="margin-top: 15px; text-align: left;">
+            <button type="submit" style="background: #e74c3c; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer;">حذف</button>
         </form>
         {% endif %}
     </div>
-    
-    <div class="accordion-content">
-        <p style="padding-top:15px; color: var(--text-muted); line-height: 1.6;">
-            {{ n.content | safe | replace('<img', '<img loading="lazy" decoding="async"') }}
-        </p>
-        <br>
-    </div>
-</div>
+</details>
 {% else %}
-<p style="color: var(--text-muted); text-align: center; margin-top: 30px;">لا توجد أخبار في الوقت الحالي.</p>
+<p style="text-align: center; color: #888; margin-top: 50px;">لا توجد مراسيم حالياً، المتاهة صامتة.</p>
 {% endfor %}
 {% endblock %}
