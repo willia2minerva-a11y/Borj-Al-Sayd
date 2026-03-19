@@ -6,16 +6,21 @@ from datetime import datetime, timedelta
 import os, base64, random, math, traceback
 
 app = Flask(__name__)
-# تمرير دالة getattr للواجهات بشكل آمن
 app.jinja_env.globals.update(getattr=getattr)
 
-app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI'), 'connect': False}
+# 🚀 تسريع الاتصال ومنع تعليق السيرفر (White Screen Fix)
+app.config['MONGODB_SETTINGS'] = {
+    'host': os.getenv('MONGO_URI'),
+    'connect': False,
+    'serverSelectionTimeoutMS': 5000 
+}
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    import traceback
     return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 System Crash</h2><pre>{traceback.format_exc()}</pre></div>", 200
 
 def check_achievements(user):
@@ -552,7 +557,6 @@ def declarations():
     avatars = {u.username: u.hunter_id for u in users_query}
     return render_template('declarations.html', approved_decs=approved_decs, pending_decs=pending_decs, my_pending_decs=my_pending_decs, current_user=user, avatars=avatars)
 
-# 🚀 تم الإصلاح: تجاوز المشكلة السابقة بتحديث مباشر في قاعدة البيانات
 @app.route('/react_declaration/<dec_id>/<react_type>', methods=['POST'])
 @login_required
 def react_declaration(dec_id, react_type):
@@ -763,3 +767,4 @@ def admin_panel():
 
 if __name__ == '__main__': 
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+
