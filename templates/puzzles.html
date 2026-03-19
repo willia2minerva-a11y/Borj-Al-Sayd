@@ -1,132 +1,54 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .puzzle-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-    .puzzle-title { color: var(--gold-main); font-size: 22px; margin-top: 0; border-bottom: 1px dashed #332815; padding-bottom: 10px; }
-    .puzzle-text { color: #ccc; font-size: 15px; line-height: 1.8; margin-bottom: 20px; }
-    
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; }
-    .form-control:focus { border-color: var(--gold-main); outline: none; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 16px; transition: 0.3s; width: 100%; }
-    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(212,175,55,0.4); }
-
-    /* ستايل لغز الضغط */
-    .btn-clicker { background: #8b0000; color: #fff; border: 2px solid #e74c3c; border-radius: 50%; width: 120px; height: 120px; font-size: 20px; font-weight: bold; cursor: pointer; margin: 20px auto; display: flex; align-items: center; justify-content: center; user-select: none; transition: transform 0.1s; box-shadow: inset 0 0 20px #000, 0 0 15px rgba(231,76,60,0.5); }
-    .btn-clicker:active { transform: scale(0.9); background: #600000; }
-    .clicks-left { color: var(--gold-main); font-size: 18px; text-align: center; font-weight: bold; }
-
-    /* ستايل لغز ترتيب الكلمات */
-    .word-btn { background: #1a140c; color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; font-weight: bold; display: inline-block; transition: 0.2s; }
-    .word-btn.selected { background: var(--gold-main); color: #000; opacity: 0.5; cursor: not-allowed; }
-    .selected-words-area { min-height: 50px; background: #000; border: 1px dashed #44351c; border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center; color: #fff; font-size: 18px; font-weight: bold; }
+    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 8px; margin-bottom: 15px; overflow: hidden; border-right: 4px solid var(--gold-dark); }
+    .accordion-header { padding: 15px 20px; cursor: pointer; color: var(--gold-light); font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; }
+    .accordion-header:hover { background: rgba(212,175,55,0.05); }
+    .accordion-header::after { content: '▼'; font-size: 12px; color: #888; transition: 0.3s; }
+    details[open] .accordion-header::after { transform: rotate(180deg); }
+    details[open] .accordion-header { border-bottom: 1px dashed #332815; }
+    .accordion-body { padding: 20px; color: #ddd; line-height: 1.8; background: var(--bg-card); font-size: 15px; }
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-top: 15px; outline:none; box-sizing: border-box; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
+    details { outline: none; } summary { list-style: none; } summary::-webkit-details-marker { display: none; }
+    .badge-points { background: rgba(212,175,55,0.2); color: var(--gold-main); padding: 3px 8px; border-radius: 4px; font-size: 12px; border: 1px solid var(--gold-dark); }
 </style>
 
-<div style="text-align: center; margin-bottom: 40px;">
-    <div style="font-size: 50px; text-shadow: 0 0 20px var(--gold-main);">🧩</div>
-    <h2 style="color: var(--gold-main); margin: 10px 0;">النقوش المنسية</h2>
-    <p style="color: #aaa;">من يحل اللغز أولاً، يحصد الغنيمة بأكملها.</p>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); margin: 0;">🧩 نقوش المتاهة</h2>
+    <p style="color: #aaa; font-size: 14px;">حل الألغاز المخبأة واجمع الدنانير قبل غيرك.</p>
 </div>
 
 {% for puz in puzzles_list %}
-<div class="puzzle-card">
-    <h3 class="puzzle-title">{{ puz.title }}</h3>
-    <div class="puzzle-text">{{ puz.content }}</div>
-
-    <div style="display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-bottom: 15px;">
-        <span>المكافأة: <strong style="color: var(--gold-light);">{{ puz.reward_points }} نقطة</strong></span>
-        <span>الفائزون: {{ puz.current_winners }}/{{ puz.max_winners }}</span>
-    </div>
-
-    {% if current_user.id|string in puz.winners_list %}
-        <div style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 15px; text-align: center; border-radius: 6px; border: 1px solid #2ecc71;">لقد حصدت غنيمة هذا اللغز مسبقاً! ✔️</div>
-    {% elif puz.current_winners >= puz.max_winners %}
-        <div style="background: rgba(231,76,60,0.1); color: #e74c3c; padding: 15px; text-align: center; border-radius: 6px; border: 1px solid #e74c3c;">نفدت جوائز هذا اللغز، لقد سبقوك! ❌</div>
-    {% else %}
+<details class="accordion-item">
+    <summary class="accordion-header">
+        <span>{{ puz.title }} <span class="badge-points">+{{ puz.reward_points|default(0, true) }} دينار</span></span>
+        <span style="font-size: 11px; color: #666;">{{ puz.current_winners|default(0, true) }}/{{ puz.max_winners|default(1, true) }} فائزين</span>
+    </summary>
+    <div class="accordion-body">
+        <div style="white-space: pre-wrap; margin-bottom: 15px; color: var(--gold-light);">{{ puz.content }}</div>
         
-        {% if puz.puzzle_type == 'text' or puz.puzzle_type == 'none' %}
-        <form action="/puzzles" method="POST">
-            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
-            <input type="text" name="guess" class="form-control" placeholder="اكتب الإجابة هنا..." required>
-            <button type="submit" class="btn-gold">تحقق من النقش</button>
-        </form>
-
-        {% elif puz.puzzle_type == 'click_count' %}
-        <div id="click-container-{{ puz.id }}">
-            <div class="clicks-left">اضغط لكسر الختم!</div>
-            <div class="btn-clicker" onclick="handlePuzzleClick('{{ puz.id }}', {{ puz.puzzle_answer }})">كسر!</div>
-        </div>
-        <form id="form-{{ puz.id }}" action="/puzzles" method="POST" style="display: none;">
-            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
-            <input type="hidden" name="guess" id="guess-{{ puz.id }}" value="">
-        </form>
-
-        {% elif puz.puzzle_type == 'word_order' %}
-        <div id="word-order-container-{{ puz.id }}">
-            <div class="selected-words-area" id="selected-{{ puz.id }}">... رتب الكلمات هنا ...</div>
-            <div style="text-align: center; margin-bottom: 15px;">
-                {% set words = puz.content.split(' ') %}
-                {% for w in words %}
-                    <span class="word-btn" onclick="selectWord(this, '{{ puz.id }}')">{{ w }}</span>
-                {% endfor %}
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn-gold" style="background: #333; color: #fff;" onclick="resetWords('{{ puz.id }}')">إعادة ترتيب</button>
-                <button type="button" class="btn-gold" onclick="submitWordOrder('{{ puz.id }}')">تحقق</button>
-            </div>
-        </div>
-        <form id="form-order-{{ puz.id }}" action="/puzzles" method="POST" style="display: none;">
-            <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
-            <input type="hidden" name="guess" id="guess-order-{{ puz.id }}" value="">
-        </form>
+        {% if current_user and current_user.id|string in puz.winners_list %}
+            <div style="background: rgba(46, 204, 113, 0.1); color: #2ecc71; padding: 10px; text-align: center; border: 1px solid #2ecc71; border-radius: 6px;">لقد قمت بحل هذا اللغز مسبقاً! ✔️</div>
+        {% elif puz.current_winners >= puz.max_winners %}
+            <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; text-align: center; border: 1px solid #e74c3c; border-radius: 6px;">انتهت الجوائز، لقد سبقك الآخرون! ❌</div>
+        {% else %}
+            <form action="/puzzles" method="POST" style="margin: 0;">
+                <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
+                <input type="text" name="guess" placeholder="أدخل إجابتك هنا..." class="form-control" required>
+                <button type="submit" class="btn-gold">إرسال الإجابة ➔</button>
+            </form>
         {% endif %}
         
-    {% endif %}
-</div>
+        {% if current_user and current_user.role == 'admin' %}
+        <form action="/delete_puzzle/{{ puz.id }}" method="POST" style="margin-top: 15px;">
+            <button type="submit" style="background: #e74c3c; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; width: 100%;">طمس اللغز (حذف) 🗑️</button>
+        </form>
+        {% endif %}
+    </div>
+</details>
 {% else %}
-    <p style="text-align: center; color: #666;">لا توجد نقوش للبحث عنها حالياً.</p>
+<p style="text-align: center; color: #888; margin-top: 50px;">لا توجد نقوش غامضة في هذا الطابق حالياً.</p>
 {% endfor %}
-
-<script>
-    // سكربت لغز الضغط
-    let clickCounts = {};
-    function handlePuzzleClick(puzId, target) {
-        if(!clickCounts[puzId]) clickCounts[puzId] = 0;
-        clickCounts[puzId]++;
-        
-        let btn = document.querySelector(`#click-container-${puzId} .btn-clicker`);
-        btn.style.transform = `scale(${1 - (clickCounts[puzId] * 0.005)})`;
-        
-        if(clickCounts[puzId] >= target) {
-            document.getElementById(`guess-${puzId}`).value = target;
-            document.getElementById(`form-${puzId}`).submit();
-        }
-    }
-
-    // سكربت ترتيب الكلمات
-    let selectedWords = {};
-    function selectWord(btn, puzId) {
-        if(btn.classList.contains('selected')) return;
-        btn.classList.add('selected');
-        
-        if(!selectedWords[puzId]) selectedWords[puzId] = [];
-        selectedWords[puzId].push(btn.innerText);
-        
-        let displayArea = document.getElementById(`selected-${puzId}`);
-        displayArea.innerText = selectedWords[puzId].join(' ');
-    }
-    
-    function resetWords(puzId) {
-        selectedWords[puzId] = [];
-        document.getElementById(`selected-${puzId}`).innerText = '... رتب الكلمات هنا ...';
-        let btns = document.querySelectorAll(`#word-order-container-${puzId} .word-btn`);
-        btns.forEach(b => b.classList.remove('selected'));
-    }
-    
-    function submitWordOrder(puzId) {
-        if(!selectedWords[puzId]) return;
-        let finalAnswer = selectedWords[puzId].join(' ');
-        document.getElementById(`guess-order-${puzId}`).value = finalAnswer;
-        document.getElementById(`form-order-${puzId}`).submit();
-    }
-</script>
 {% endblock %}
+
