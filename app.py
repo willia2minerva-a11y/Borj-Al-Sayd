@@ -8,19 +8,22 @@ import os, base64, random, math, traceback
 app = Flask(__name__)
 app.jinja_env.globals.update(getattr=getattr)
 
-# 🚀 تسريع الاتصال ومنع تعليق السيرفر (White Screen Fix)
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI'),
-    'connect': False,
-    'serverSelectionTimeoutMS': 5000 
+    'connect': False
 }
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
+# 🚀 هذا هو الحل السحري! يمنع اختناق السيرفر من فحص Render
+@app.before_request
+def fast_health_check():
+    if request.method == 'HEAD' or request.path == '/health':
+        return "OK", 200
+
 @app.errorhandler(Exception)
 def handle_exception(e):
-    import traceback
     return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 System Crash</h2><pre>{traceback.format_exc()}</pre></div>", 200
 
 def check_achievements(user):
@@ -69,7 +72,7 @@ def check_lazy_death_and_bleed(user, settings):
 
 @app.before_request
 def check_locks_and_timers():
-    if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar']: return
+    if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar', 'fast_health_check']: return
     try: settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     except: settings = None
     
