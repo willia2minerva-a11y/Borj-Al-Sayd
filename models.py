@@ -4,15 +4,15 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    meta = {'strict': False} # درع حماية يمنع انهيار الموقع بسبب أي بيانات قديمة
+    meta = {'strict': False} # درع يمنع الانهيار بسبب أي بيانات قديمة أو مجهولة
     
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
-    role = db.StringField(default='hunter') # admin, hunter, ghost, cursed_ghost
-    status = db.StringField(default='active') # active, eliminated, frozen
+    role = db.StringField(default='hunter') 
+    status = db.StringField(default='active') 
     health = db.IntField(default=100)
-    points = db.IntField(default=0) # الدنانير
+    points = db.IntField(default=0) 
     loyalty_points = db.IntField(default=0)
     intelligence_points = db.IntField(default=0)
     zone = db.StringField(default='البوابات')
@@ -43,19 +43,19 @@ class User(db.Document):
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
     
-    # 🛡️ الحقول القديمة (Legacy Fields) لحماية الحسابات السابقة من الضياع والانهيار
+    # 🛡️ الحقول الستة القديمة التي ظهرت في الخطأ وتسببت في الانهيار (تم إضافتها لمنع الصدام)
     last_seen_news = db.DateTimeField()
     last_seen_decs = db.DateTimeField()
     last_seen_store = db.DateTimeField()
     last_seen_puzzles = db.DateTimeField()
     facebook_link = db.StringField(default='')
-    secret_achievements = db.ListField(db.StringField(), default=list) # الحقل الذي سبب الانهيار في صورتك
+    secret_achievements = db.ListField(db.StringField(), default=list) 
 
 class News(db.Document):
     meta = {'strict': False}
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='news') # news, puzzle, hidden, declaration
+    category = db.StringField(default='news') 
     puzzle_type = db.StringField(default='none')
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
@@ -76,7 +76,7 @@ class StoreItem(db.Document):
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(default=0)
-    item_type = db.StringField(default='box') # weapon, heal, spy, steal, seal, box
+    item_type = db.StringField(default='box') 
     effect_amount = db.IntField(default=0)
     is_mirage = db.BooleanField(default=False)
     mirage_message = db.StringField(default='')
@@ -137,3 +137,4 @@ class SpellConfig(db.Document):
     used_by = db.ListField(db.StringField(), default=list)
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
+
