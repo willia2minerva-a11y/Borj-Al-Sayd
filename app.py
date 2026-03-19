@@ -6,20 +6,16 @@ from datetime import datetime, timedelta
 import os, base64, random, math, json, traceback
 
 app = Flask(__name__)
-# إصلاح جذري للشاشة الحمراء (السماح للواجهات بقراءة البيانات المتغيرة)
 app.jinja_env.globals.update(getattr=getattr)
 
-app.config['MONGODB_SETTINGS'] = {
-    'host': os.getenv('MONGO_URI'),
-    'connect': False  
-}
+app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI'), 'connect': False}
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; border:2px solid red;'><h2>🚨 System Crash</h2><pre>{traceback.format_exc()}</pre></div>", 200
+    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 System Crash</h2><pre>{traceback.format_exc()}</pre></div>", 200
 
 def check_achievements(user):
     try:
@@ -67,37 +63,29 @@ def check_lazy_death_and_bleed(user, settings):
 
 @app.before_request
 def check_locks_and_timers():
-    if request.endpoint in ['static', 'login', 'logout', 'register']: return
+    if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar']: return
     try: settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     except: settings = None
     
     if settings:
         now = datetime.utcnow()
-        # ⏱️ مؤقت الحرب الشاملة
         if getattr(settings, 'war_mode', False) and getattr(settings, 'war_end_time', None) and now >= settings.war_end_time:
-            GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=False)
-            User.objects(status='active').update(health=100)
+            GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=False); User.objects(status='active').update(health=100)
             
-        # ⏱️ مؤقت البوابات (إقصاء من لم يختر)
         if getattr(settings, 'gates_mode_active', False) and getattr(settings, 'gates_end_time', None) and now >= settings.gates_end_time:
-            User.objects(status='active', chosen_gate=0, hunter_id__ne=1000).update(set__status='eliminated', set__freeze_reason='انتهى وقت البوابات وتلاشى')
+            User.objects(status='active', chosen_gate=0, hunter_id__ne=1000).update(set__status='eliminated', set__freeze_reason='انتهى وقت البوابات')
             GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=False)
 
-        # ⏱️ مؤقت التصويت (المحكمة)
         if getattr(settings, 'floor3_mode_active', False) and getattr(settings, 'vote_end_time', None) and now >= settings.vote_end_time:
             slackers = User.objects(has_voted=False, status='active', role='hunter')
             active_voters = User.objects(has_voted=True, status='active', role='hunter')
             total_dinars = sum([getattr(s, 'points', 0) for s in slackers])
-            
-            # توزيع الدنانير على المصوتين وإعدام المتخاذلين
             if active_voters.count() > 0 and total_dinars > 0:
                 bonus = total_dinars // active_voters.count()
                 for v in active_voters: v.points = getattr(v, 'points', 0) + bonus; v.save()
             for s in slackers: s.status = 'eliminated'; s.freeze_reason = 'تخاذل في المحكمة'; s.save()
-            
             top_n = getattr(settings, 'vote_top_n', 5)
-            for l in User.objects(status='active', role='hunter').order_by('-survival_votes')[:top_n]:
-                l.zone = 'المعركة الأخيرة'; l.save()
+            for l in User.objects(status='active', role='hunter').order_by('-survival_votes')[:top_n]: l.zone = 'المعركة الأخيرة'; l.save()
             GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=False)
 
     user = None
@@ -115,16 +103,27 @@ def check_locks_and_timers():
             if 'all' in m_pages or request.endpoint in m_pages: return render_template('locked.html', message='المتاهة قيد الصيانة ⏳')
 
     if user:
-        now = datetime.utcnow()
-        last_act = getattr(user, 'last_active', None)
+        now = datetime.utcnow(); last_act = getattr(user, 'last_active', None)
         if not last_act or (now - last_act).total_seconds() > 3600: User.objects(id=user.id).update_one(set__last_active=now)
         check_lazy_death_and_bleed(user, settings)
-        
         quicksand = getattr(user, 'quicksand_lock_until', None)
-        if quicksand and now < quicksand:
-            tl = quicksand - now; return render_template('locked.html', message=f'مقيّد في الرمال لـ {tl.seconds // 60}د و {tl.seconds % 60}ث')
+        if quicksand and now < quicksand: tl = quicksand - now; return render_template('locked.html', message=f'مقيّد في الرمال لـ {tl.seconds // 60}د و {tl.seconds % 60}ث')
         if getattr(user, 'status', '') == 'frozen': return render_template('locked.html', message='روحك مجمدة بأمر الإمبراطور! ❄️')
         if getattr(user, 'gate_status', '') == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']: return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
+
+@app.route('/avatar/<int:hunter_id>')
+def get_avatar(hunter_id):
+    user = User.objects(hunter_id=hunter_id).only('avatar').first()
+    if user and getattr(user, 'avatar', '') and user.avatar.startswith('data:image'):
+        header, encoded = user.avatar.split(",", 1)
+        mime = header.split(":")[1].split(";")[0]
+        resp = Response(base64.b64decode(encoded), mimetype=mime)
+        resp.headers['Cache-Control'] = 'public, max-age=31536000'
+        return resp
+    svg_default = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#14100c"/><circle cx="50" cy="35" r="20" fill="#d4af37"/><path d="M20 90c0-20 15-35 30-35s30 15 30 35" fill="#d4af37"/></svg>'''
+    resp = Response(svg_default, mimetype="image/svg+xml")
+    resp.headers['Cache-Control'] = 'public, max-age=31536000'
+    return resp
 
 @app.context_processor
 def inject_globals():
@@ -143,10 +142,7 @@ def inject_globals():
                 notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=(getattr(user, 'last_seen_decs', None) or now)).count()
                 notifs['un_store'] = StoreItem.objects(created_at__gt=(getattr(user, 'last_seen_store', None) or now)).count()
         except: pass
-    
-    # 🌟 صورة افتراضية كـ Base64 لسرعة التحميل
-    def_avatar = "data:image/svg+xml;base64," + base64.b64encode(b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#14100c"/><circle cx="50" cy="35" r="20" fill="#d4af37"/><path d="M20 90c0-20 15-35 30-35s30 15 30 35" fill="#d4af37"/></svg>').decode('utf-8')
-    return {**notifs, 'default_avatar': def_avatar}
+    return notifs
 
 def login_required(f):
     @wraps(f)
@@ -258,6 +254,7 @@ def admin_update_profile(target_id):
             target_user.save(); flash('تم التعديل الإمبراطوري!', 'success')
         except: pass
     return redirect(url_for('hunter_profile', target_id=target_id))
+
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
 def transfer(target_id):
@@ -373,6 +370,7 @@ def altar():
             flash('لقد دفعت ضريبة الدم!', 'error')
         elif stype == 'hp_gain': gain = int(user.health * (val / 100.0)) if is_perc else val; user.health = min(100, user.health + gain); flash('تسري طاقة غريبة في جسدك!', 'success')
         elif stype == 'points_loss': loss = int(user.points * (val / 100.0)) if is_perc else val; user.points = max(0, user.points - loss); flash('تبخرت دنانيرك أمام عينيك!', 'error')
+        elif stype == 'points_gain': user.points += val; flash(f'مُنحت {val} دنانير من طاقة المذبح!', 'success')
         elif stype == 'item_reward':
             item_name = getattr(spell, 'item_name', '')
             if item_name: user.inventory.append(item_name); flash(f'ظهرت أداة ({item_name}) بين يديك!', 'success')
@@ -430,7 +428,6 @@ def add_friend():
     target = User.objects(hunter_id=int(request.form.get('target_id') or 0)).first()
     if not target or getattr(target, 'status', '') != 'active': return redirect(request.referrer or url_for('home'))
     
-    # 🕸️ فخ الشبح الملعون (يسرق الدنانير أو الأغراض)
     if getattr(target, 'role', '') in ['ghost', 'cursed_ghost']:
         trap = News.objects(puzzle_type='fake_account', puzzle_answer=str(target.hunter_id)).first()
         if getattr(target, 'role', '') == 'cursed_ghost' and trap: 
@@ -533,28 +530,46 @@ def declarations():
         flash('تم الإرسال', 'success'); return redirect(url_for('declarations'))
     try: User.objects(id=user.id).update_one(set__last_seen_decs=datetime.utcnow())
     except: pass
-    approved_decs = News.objects(category='declaration', status='approved').order_by('-created_at')
+    
+    approved_decs = list(News.objects(category='declaration', status='approved').order_by('-created_at'))
+    for dec in approved_decs:
+        try: dec.like_list = dec._data.get('likes', []) if isinstance(dec._data, dict) else []
+        except: dec.like_list = []
+        try: dec.laugh_list = dec._data.get('laughs', []) if isinstance(dec._data, dict) else []
+        except: dec.laugh_list = []
+
     pending_decs = News.objects(category='declaration', status='pending') if getattr(user, 'role', '') == 'admin' else []
     my_pending_decs = News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at')
     authors = set([d.author for d in approved_decs] + [d.author for d in pending_decs] + [d.author for d in my_pending_decs])
-    users_query = User.objects(username__in=authors).only('username', 'hunter_id', 'avatar')
+    users_query = User.objects(username__in=authors).only('username', 'hunter_id')
     avatars = {u.username: u.hunter_id for u in users_query}
     return render_template('declarations.html', approved_decs=approved_decs, pending_decs=pending_decs, my_pending_decs=my_pending_decs, current_user=user, avatars=avatars)
 
+# 🚀 إصلاح انهيار التفاعلات عن طريق استخدام الاتصال المباشر بقاعدة البيانات
 @app.route('/react_declaration/<dec_id>/<react_type>', methods=['POST'])
 @login_required
 def react_declaration(dec_id, react_type):
     user = User.objects(id=session['user_id']).first()
-    dec = News.objects(id=dec_id).first()
-    if dec and react_type in ['like', 'laugh']:
-        uid = str(user.id)
-        if react_type == 'like':
-            if uid in getattr(dec, 'likes', []): dec.likes.remove(uid)
-            else: dec.likes.append(uid); dec.laughs = [x for x in getattr(dec, 'laughs', []) if x != uid]
-        elif react_type == 'laugh':
-            if uid in getattr(dec, 'laughs', []): dec.laughs.remove(uid)
-            else: dec.laughs.append(uid); dec.likes = [x for x in getattr(dec, 'likes', []) if x != uid]
-        dec.save()
+    try:
+        from bson.objectid import ObjectId
+        coll = News._get_collection()
+        dec_data = coll.find_one({'_id': ObjectId(dec_id)})
+        if dec_data and react_type in ['like', 'laugh']:
+            uid = str(user.id)
+            likes = dec_data.get('likes', [])
+            laughs = dec_data.get('laughs', [])
+            if react_type == 'like':
+                if uid in likes: likes.remove(uid)
+                else: 
+                    likes.append(uid)
+                    if uid in laughs: laughs.remove(uid)
+            elif react_type == 'laugh':
+                if uid in laughs: laughs.remove(uid)
+                else:
+                    laughs.append(uid)
+                    if uid in likes: likes.remove(uid)
+            coll.update_one({'_id': ObjectId(dec_id)}, {'$set': {'likes': likes, 'laughs': laughs}})
+    except Exception as e: print("Reaction error:", e)
     return redirect(url_for('declarations'))
 
 @app.route('/delete_declaration/<dec_id>', methods=['POST'])
@@ -571,6 +586,14 @@ def store():
     except: pass
     return render_template('store.html', items=StoreItem.objects())
 
+# 🚀 زر حذف المنتجات من السوق للأدمن
+@app.route('/delete_store_item/<item_id>', methods=['POST'])
+@admin_required
+def delete_store_item(item_id):
+    try: StoreItem.objects(id=item_id).delete(); flash('تم حذف المنتج من السوق!', 'success')
+    except: pass
+    return redirect(url_for('store'))
+
 @app.route('/buy/<item_id>', methods=['POST'])
 @login_required
 def buy_item(item_id):
@@ -579,7 +602,6 @@ def buy_item(item_id):
     try: item = StoreItem.objects(id=item_id).first()
     except: return redirect(url_for('store'))
     if user and item and user.points >= item.price:
-        # 🕸️ فخ السراب في السوق (يسرق الدنانير والذكاء)
         if getattr(item, 'is_mirage', False):
             user.points -= item.price
             user.intelligence_points = max(0, getattr(user, 'intelligence_points', 0) - 10)
@@ -728,8 +750,11 @@ def admin_panel():
     users = users_query.order_by('-last_active')[:100]
     gate_stats = {1: User.objects(chosen_gate=1, status='active').count(), 2: User.objects(chosen_gate=2, status='active').count(), 3: User.objects(chosen_gate=3, status='active').count()}
     floor3_leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:getattr(settings, 'vote_top_n', 5)] if getattr(settings, 'floor3_mode_active', False) else []
+    
+    # استدعاء منتجات السوق للتعاويذ
+    store_items = StoreItem.objects()
         
-    return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query)
+    return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query, store_items=store_items)
 
 if __name__ == '__main__': 
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
