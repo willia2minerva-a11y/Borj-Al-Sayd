@@ -7,13 +7,12 @@
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
     .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
     .section-head { color: var(--gold-main); font-size: 16px; border-bottom: 1px dashed #332815; padding-bottom: 5px; margin-bottom: 15px; display: block; }
-    .setting-btn { background: #111; color: #aaa; border: 1px dashed #333; padding: 10px; width: 100%; text-align: center; border-radius: 6px; cursor: pointer; margin-bottom: 10px; }
-    .setting-btn:hover { background: #222; color: #fff; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
     <div style="font-size: 50px; text-shadow: 0 0 30px var(--gold-main);">👑</div>
     <h1 style="color: var(--gold-main); margin: 0;">لوحة تحكم الإمبراطور</h1>
+    <p style="color:#aaa; font-size:13px; margin-top:5px;">إدارة المتجر والسوق المظلم تجدها الآن داخل صفحة المتجر نفسها.</p>
 </div>
 
 <button type="button" class="mod-btn" onclick="toggleMod('m1')">🖼️ 1. تخصيص الرئيسية <span>▼</span></button>
@@ -84,7 +83,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m4')">📜 4. الأخبار والألغاز <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m4')">📜 4. الأخبار والألغاز العادية <span>▼</span></button>
 <div id="m4" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_news">
@@ -98,99 +97,69 @@
         </select>
         <input type="text" name="puzzle_answer" placeholder="الإجابة الصحيحة (إن وجد لغز)" class="form-control">
         <div style="display:flex; gap:10px;">
-            <input type="number" name="reward_points" placeholder="الدنانير المكافأة" class="form-control">
+            <input type="number" name="reward_points" placeholder="دنانير المكافأة" class="form-control">
             <input type="number" name="max_winners" placeholder="عدد الفائزين" class="form-control" value="1">
         </div>
         <button type="submit" class="btn-gold">نشر في المتاهة</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m-store')">🐪 5. إدارة السوق المظلم <span>▼</span></button>
-<div id="m-store" class="mod-content">
-    <form action="/admin" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="add_store_item">
-        <input type="text" name="item_name" placeholder="اسم المنتج أو السلاح..." class="form-control" required>
-        <textarea name="item_desc" placeholder="الوصف والقدرات..." class="form-control" rows="2" required></textarea>
-        <div style="display:flex; gap:10px;">
-            <input type="number" name="item_price" placeholder="السعر بالدنانير" class="form-control" required>
-            <input type="number" name="effect_amount" placeholder="قوة التأثير (للأسلحة/الجرعات)" class="form-control">
-        </div>
-        <select name="item_type" class="form-control" required>
-            <option value="weapon">سلاح (هجوم)</option>
-            <option value="heal">جرعة (شفاء)</option>
-            <option value="spy">عين تاجيس (تجسس)</option>
-            <option value="steal">قفاز السارق (سرقة)</option>
-            <option value="seal">ختم سحري</option>
-        </select>
-        <label style="color:#aaa;">صورة المنتج (اختياري):</label>
-        <input type="file" name="item_image" accept="image/*" class="form-control">
-        
-        <div class="setting-btn" onclick="document.getElementById('luck_settings').style.display='block'">🎲 تحويله إلى صندوق عشوائي (حظ)</div>
-        <div id="luck_settings" style="display:none; background:#111; padding:15px; border-radius:8px; margin-bottom:15px;">
-            <label style="color:#2ecc71;">إعدادات الحظ:</label>
-            <input type="hidden" name="is_luck" value="0" id="luck_val">
-            <input type="checkbox" onchange="document.getElementById('luck_val').value = this.checked ? '1' : '0'" style="margin-bottom:10px;"> تفعيل الحظ
-            <div style="display:flex; gap:10px;"><input type="number" name="luck_min" placeholder="أدنى ربح/خسارة (مثال: -50)" class="form-control"><input type="number" name="luck_max" placeholder="أعلى ربح (مثال: 200)" class="form-control"></div>
-        </div>
-
-        <div class="setting-btn" onclick="document.getElementById('mirage_settings').style.display='block'">🕸️ تحويله إلى فخ سراب</div>
-        <div id="mirage_settings" style="display:none; background:#111; padding:15px; border-radius:8px; margin-bottom:15px;">
-            <label style="color:#e74c3c;">إعدادات فخ السراب:</label>
-            <input type="hidden" name="is_mirage" value="0" id="mirage_val">
-            <input type="checkbox" onchange="document.getElementById('mirage_val').value = this.checked ? '1' : '0'" style="margin-bottom:10px;"> تفعيل الفخ (سيخسر المشتري الدنانير + 10 ذكاء)
-            <input type="text" name="mirage_message" placeholder="رسالة الفخ التي تظهر له..." class="form-control">
-        </div>
-
-        <button type="submit" class="btn-gold" style="background:#e67e22;">إضافة للسوق المظلم 🛒</button>
-    </form>
-</div>
-
-<button type="button" class="mod-btn" onclick="toggleMod('m5')">🕸️ 6. الفخاخ، الأشباح والروابط <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m5')">🕸️ 5. الفخاخ، الأشباح والروابط المخفية <span>▼</span></button>
 <div id="m5" class="mod-content">
     <form action="/admin" method="POST" style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px;">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="puzzle_type" class="form-control" required>
             <option value="quicksand_trap">فخ الرمال المتحركة</option>
-            <option value="fake_account">حساب شبح وهمي (مكافأة)</option>
-            <option value="cursed_ghost">حساب شبح ملعون (يسرق الدنانير)</option>
+            <option value="fake_account">حساب شبح وهمي (مكافأة صيد)</option>
+            <option value="cursed_ghost">حساب شبح ملعون (يسرق الدنانير والأغراض)</option>
             <option value="hidden_link">رابط مكافأة مخفي</option>
         </select>
         <input type="text" name="puzzle_answer" placeholder="الـ ID للشبح (إذا اخترت شبح)" class="form-control">
-        <div style="display:flex; gap:10px;"><input type="number" name="reward_points" placeholder="مكافأة النجاح" class="form-control" value="0"><input type="number" name="max_winners" placeholder="الفائزين" class="form-control" value="1"></div>
+        <div style="display:flex; gap:10px;"><input type="number" name="reward_points" placeholder="دنانير النجاح" class="form-control" value="0"><input type="number" name="max_winners" placeholder="الفائزين" class="form-control" value="1"></div>
         <div style="display:flex; gap:10px;"><input type="number" name="trap_duration" placeholder="مدة الفخ (دقائق)" class="form-control" value="0"><input type="number" name="trap_penalty" placeholder="خسارة الدنانير (للفخ)" class="form-control" value="0"></div>
         <button type="submit" class="btn-danger">نشر الفخ / الشبح</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m6')">🔮 7. منصة التعاويذ والمذبح <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m6')">🔮 6. منصة التعاويذ والمذبح <span>▼</span></button>
 <div id="m6" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_spell">
         <input type="text" name="spell_word" placeholder="كلمة التعويذة..." class="form-control" required>
         <select name="spell_type" class="form-control" required>
-            <option value="hp_gain">شفاء</option><option value="hp_loss">ضريبة دم</option>
-            <option value="points_loss">سرقة دنانير</option><option value="item_reward">إعطاء أداة</option>
+            <option value="hp_gain">شفاء الجراح</option>
+            <option value="hp_loss">ضريبة دم</option>
+            <option value="points_gain">منح دنانير مجانية</option>
+            <option value="points_loss">سرقة دنانير</option>
+            <option value="item_reward">إعطاء أداة</option>
             <option value="unlock_lore">فتح البونغليف</option>
             <option value="unlock_top">فتح قاعة الأساطير (التوب)</option> 
         </select>
         <div style="display:flex; gap:10px;">
-            <input type="number" name="effect_value" placeholder="القيمة" class="form-control">
+            <input type="number" name="effect_value" placeholder="القيمة (دم أو دنانير)" class="form-control">
             <input type="number" name="max_uses" placeholder="عدد الاستخدامات (0=مفتوح)" class="form-control" value="1">
             <input type="number" name="spell_hours" placeholder="الصلاحية (ساعات)" class="form-control" value="0">
         </div>
-        <input type="text" name="item_name" placeholder="اسم الأداة (إن وجد)" class="form-control">
+        
+        <select name="item_name" class="form-control">
+            <option value="">-- اختر أداة لمنحها (إن وجد) --</option>
+            {% for itm in store_items %}
+                <option value="{{ itm.name }}">{{ itm.name }}</option>
+            {% endfor %}
+        </select>
+        
         <button type="submit" class="btn-gold">زرع التعويذة</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m7')">🚪 8. مود البوابات <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m7')">🚪 7. مود البوابات <span>▼</span></button>
 <div id="m7" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom:15px;">
         <input type="hidden" name="action" value="setup_gates">
         <textarea name="desc" placeholder="قصة البوابات..." class="form-control">{{ settings.gates_description if settings else '' }}</textarea>
         <div style="display:flex; gap:10px;"><input type="text" name="g1" value="{{ settings.gate_1_name if settings else '' }}" placeholder="بوابة 1" class="form-control"><input type="text" name="g2" value="{{ settings.gate_2_name if settings else '' }}" placeholder="بوابة 2" class="form-control"><input type="text" name="g3" value="{{ settings.gate_3_name if settings else '' }}" placeholder="بوابة 3" class="form-control"></div>
         <input type="number" name="gates_hours" placeholder="مؤقت البوابات (ساعات) لإقصاء من لم يختر" class="form-control">
-        <button type="submit" class="btn-gold">تفعيل البوابات بالمؤقت</button>
+        <button type="submit" class="btn-gold">تفعيل البوابات</button>
     </form>
     <hr style="border-color:#332815; margin:15px 0;">
     <form action="/admin" method="POST">
@@ -204,13 +173,13 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m8')">⚔️ 9. الحرب والمعركة الأخيرة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m8')">⚔️ 8. الحرب والمعركة الأخيرة <span>▼</span></button>
 <div id="m8" class="mod-content">
     <strong class="section-head">⚔️ الحرب الشاملة (العادية):</strong>
     <form action="/admin" method="POST" style="margin-bottom:15px;">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="مؤقت الحرب (ساعات)" class="form-control">
-        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب' if settings and settings.war_mode else 'إشعال الحرب' }}</button>
+        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب' if settings and settings.war_mode else 'إشعال الحرب الشاملة' }}</button>
     </form>
     <form action="/admin" method="POST" style="margin-bottom: 30px;">
         <input type="hidden" name="action" value="update_war_settings">
@@ -222,11 +191,11 @@
     <strong class="section-head" style="color: #9b59b6;">👑 المعركة الأخيرة (البقاء للأقوى):</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_final_battle">
-        <button type="submit" class="btn-danger" style="background: #9b59b6;">{{ 'إنهاء المعركة الأخيرة' if settings and settings.final_battle_mode else 'إطلاق المعركة الأخيرة' }}</button>
+        <button type="submit" class="btn-danger" style="background: #9b59b6;">{{ 'إنهاء المعركة الأخيرة' if settings and settings.final_battle_mode else 'إطلاق المعركة الأخيرة المستقلة' }}</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m9')">🗳️ 10. التصويت (المحكمة) <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m9')">🗳️ 9. التصويت (المحكمة) <span>▼</span></button>
 <div id="m9" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor3">
@@ -236,7 +205,7 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m10')">🗿 11. البونغليف والصيانة <span>▼</span></button>
+<button type="button" class="mod-btn" onclick="toggleMod('m10')">🗿 10. البونغليف والصيانة <span>▼</span></button>
 <div id="m10" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="update_poneglyph">
@@ -263,3 +232,4 @@
     {% if search_query %} document.getElementById('m2').style.display = 'block'; {% endif %}
 </script>
 {% endblock %}
+
