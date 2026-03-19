@@ -4,14 +4,13 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    # هذا هو السطر السحري الذي سيمنع انهيار الموقع بسبب البيانات القديمة ويسرعه
-    meta = {'strict': False} 
+    meta = {'strict': False} # درع حماية يمنع انهيار الموقع بسبب أي بيانات قديمة
     
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
     role = db.StringField(default='hunter') # admin, hunter, ghost, cursed_ghost
-    status = db.StringField(default='inactive') # active, eliminated, frozen
+    status = db.StringField(default='active') # active, eliminated, frozen
     health = db.IntField(default=100)
     points = db.IntField(default=0) # الدنانير
     loyalty_points = db.IntField(default=0)
@@ -44,12 +43,13 @@ class User(db.Document):
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
     
-    # تمت إعادتها لمنع أي خطأ قادم
+    # 🛡️ الحقول القديمة (Legacy Fields) لحماية الحسابات السابقة من الضياع والانهيار
     last_seen_news = db.DateTimeField()
     last_seen_decs = db.DateTimeField()
     last_seen_store = db.DateTimeField()
     last_seen_puzzles = db.DateTimeField()
     facebook_link = db.StringField(default='')
+    secret_achievements = db.ListField(db.StringField(), default=list) # الحقل الذي سبب الانهيار في صورتك
 
 class News(db.Document):
     meta = {'strict': False}
@@ -137,4 +137,3 @@ class SpellConfig(db.Document):
     used_by = db.ListField(db.StringField(), default=list)
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
-
