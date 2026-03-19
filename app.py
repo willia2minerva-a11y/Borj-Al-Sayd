@@ -3,9 +3,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from models import db, User, News, StoreItem, GlobalSettings, SpellConfig
 from functools import wraps
 from datetime import datetime, timedelta
-import os, base64, random, math, json, traceback
+import os, base64, random, math, traceback
 
 app = Flask(__name__)
+# تمرير دالة getattr للواجهات بشكل آمن
 app.jinja_env.globals.update(getattr=getattr)
 
 app.config['MONGODB_SETTINGS'] = {'host': os.getenv('MONGO_URI'), 'connect': False}
@@ -113,19 +114,20 @@ def check_locks_and_timers():
 
 @app.route('/avatar/<int:hunter_id>')
 def get_avatar(hunter_id):
-    user = User.objects(hunter_id=hunter_id).only('avatar').first()
-    if user and getattr(user, 'avatar', '') and user.avatar.startswith('data:image'):
-        header, encoded = user.avatar.split(",", 1)
-        mime = header.split(":")[1].split(";")[0]
-        resp = Response(base64.b64decode(encoded), mimetype=mime)
-        resp.headers['Cache-Control'] = 'public, max-age=31536000'
-        return resp
+    try:
+        user = User.objects(hunter_id=hunter_id).only('avatar').first()
+        if user and getattr(user, 'avatar', '') and user.avatar.startswith('data:image'):
+            header, encoded = user.avatar.split(",", 1)
+            mime = header.split(":")[1].split(";")[0]
+            resp = Response(base64.b64decode(encoded), mimetype=mime)
+            resp.headers['Cache-Control'] = 'public, max-age=31536000'
+            return resp
+    except: pass
     svg_default = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#14100c"/><circle cx="50" cy="35" r="20" fill="#d4af37"/><path d="M20 90c0-20 15-35 30-35s30 15 30 35" fill="#d4af37"/></svg>'''
     resp = Response(svg_default, mimetype="image/svg+xml")
     resp.headers['Cache-Control'] = 'public, max-age=31536000'
     return resp
 
-# 🚀 الحل النهائي لانهيار الصفحات: تمرير الـ settings لكل الصفحات تلقائياً
 @app.context_processor
 def inject_globals():
     notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'settings': None}
@@ -186,7 +188,7 @@ def register():
         for eid in existing_ids:
             if eid == new_id: new_id += 1
             elif eid > new_id: break
-        User(hunter_id=new_id, username=request.form['username'], password_hash=generate_password_hash(request.form['password']), role='admin' if new_id == 1000 else 'hunter', status='active' if new_id == 1000 else 'inactive', facebook_link=request.form.get('facebook_link', ''), zone='البوابات', special_rank='مستكشف').save()
+        User(hunter_id=new_id, username=request.form['username'], password_hash=generate_password_hash(request.form['password']), role='admin' if new_id == 1000 else 'hunter', status='active' if new_id == 1000 else 'inactive', zone='البوابات', special_rank='مستكشف').save()
         flash('تم تسجيلك بنجاح!', 'success'); return redirect(url_for('login'))
     return render_template('register.html')
 
@@ -550,6 +552,7 @@ def declarations():
     avatars = {u.username: u.hunter_id for u in users_query}
     return render_template('declarations.html', approved_decs=approved_decs, pending_decs=pending_decs, my_pending_decs=my_pending_decs, current_user=user, avatars=avatars)
 
+# 🚀 تم الإصلاح: تجاوز المشكلة السابقة بتحديث مباشر في قاعدة البيانات
 @app.route('/react_declaration/<dec_id>/<react_type>', methods=['POST'])
 @login_required
 def react_declaration(dec_id, react_type):
@@ -760,4 +763,3 @@ def admin_panel():
 
 if __name__ == '__main__': 
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
-
