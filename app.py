@@ -125,13 +125,17 @@ def get_avatar(hunter_id):
     resp.headers['Cache-Control'] = 'public, max-age=31536000'
     return resp
 
+# 🚀 الحل النهائي لانهيار الصفحات: تمرير الـ settings لكل الصفحات تلقائياً
 @app.context_processor
 def inject_globals():
-    notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None}
+    notifs = {'un_news': 0, 'un_puz': 0, 'un_dec': 0, 'un_store': 0, 'current_user': None, 'war_settings': None, 'settings': None}
     try:
-        settings = GlobalSettings.objects(setting_name='main_config').first()
-        if settings: notifs['war_settings'] = settings
+        settings_obj = GlobalSettings.objects(setting_name='main_config').first()
+        if settings_obj: 
+            notifs['war_settings'] = settings_obj
+            notifs['settings'] = settings_obj
     except: pass
+    
     if 'user_id' in session:
         try:
             user = User.objects(id=session['user_id']).first()
@@ -142,7 +146,9 @@ def inject_globals():
                 notifs['un_dec'] = News.objects(category='declaration', status='approved', created_at__gt=(getattr(user, 'last_seen_decs', None) or now)).count()
                 notifs['un_store'] = StoreItem.objects(created_at__gt=(getattr(user, 'last_seen_store', None) or now)).count()
         except: pass
-    return notifs
+    
+    def_avatar = "data:image/svg+xml;base64," + base64.b64encode(b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#14100c"/><circle cx="50" cy="35" r="20" fill="#d4af37"/><path d="M20 90c0-20 15-35 30-35s30 15 30 35" fill="#d4af37"/></svg>').decode('utf-8')
+    return {**notifs, 'default_avatar': def_avatar}
 
 def login_required(f):
     @wraps(f)
@@ -170,7 +176,7 @@ def home():
     alive_count = User.objects(status='active', hunter_id__ne=1000).count()
     dead_count = User.objects(status='eliminated', hunter_id__ne=1000).count()
     emperor = User.objects(hunter_id=1000).first()
-    return render_template('index.html', settings=settings, alive_count=alive_count, dead_count=dead_count, emperor=emperor, test_winner=test_winner)
+    return render_template('index.html', alive_count=alive_count, dead_count=dead_count, emperor=emperor, test_winner=test_winner)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -200,9 +206,9 @@ def logout(): session.clear(); return redirect(url_for('home'))
 @app.route('/profile')
 @login_required
 def profile():
-    user = User.objects(id=session['user_id']).first(); settings = GlobalSettings.objects(setting_name='main_config').first()
+    user = User.objects(id=session['user_id']).first()
     my_items = StoreItem.objects(name__in=getattr(user, 'inventory', []) or [])
-    return render_template('profile.html', user=user, settings=settings, my_items=my_items, my_seals=[i for i in my_items if getattr(i, 'item_type', '') == 'seal'])
+    return render_template('profile.html', user=user, my_items=my_items, my_seals=[i for i in my_items if getattr(i, 'item_type', '') == 'seal'])
 
 @app.route('/settings', methods=['POST'])
 @login_required
@@ -235,7 +241,7 @@ def hunter_profile(target_id):
     check_lazy_death_and_bleed(target_user, settings)
     current_user = User.objects(id=session['user_id']).first()
     my_items = StoreItem.objects(name__in=getattr(current_user, 'inventory', []) or [])
-    return render_template('hunter_profile.html', target_user=target_user, settings=settings, my_weapons=[i for i in my_items if getattr(i, 'item_type', '')=='weapon'], my_heals=[i for i in my_items if getattr(i, 'item_type', '')=='heal'], my_spies=[i for i in my_items if getattr(i, 'item_type', '')=='spy'], my_steals=[i for i in my_items if getattr(i, 'item_type', '')=='steal'])
+    return render_template('hunter_profile.html', target_user=target_user, my_weapons=[i for i in my_items if getattr(i, 'item_type', '')=='weapon'], my_heals=[i for i in my_items if getattr(i, 'item_type', '')=='heal'], my_spies=[i for i in my_items if getattr(i, 'item_type', '')=='spy'], my_steals=[i for i in my_items if getattr(i, 'item_type', '')=='steal'])
 
 @app.route('/admin_update_profile/<int:target_id>', methods=['POST'])
 @admin_required
@@ -254,7 +260,6 @@ def admin_update_profile(target_id):
             target_user.save(); flash('تم التعديل الإمبراطوري!', 'success')
         except: pass
     return redirect(url_for('hunter_profile', target_id=target_id))
-
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
 def transfer(target_id):
@@ -545,7 +550,6 @@ def declarations():
     avatars = {u.username: u.hunter_id for u in users_query}
     return render_template('declarations.html', approved_decs=approved_decs, pending_decs=pending_decs, my_pending_decs=my_pending_decs, current_user=user, avatars=avatars)
 
-# 🚀 إصلاح انهيار التفاعلات عن طريق استخدام الاتصال المباشر بقاعدة البيانات
 @app.route('/react_declaration/<dec_id>/<react_type>', methods=['POST'])
 @login_required
 def react_declaration(dec_id, react_type):
@@ -586,7 +590,6 @@ def store():
     except: pass
     return render_template('store.html', items=StoreItem.objects())
 
-# 🚀 زر حذف المنتجات من السوق للأدمن
 @app.route('/delete_store_item/<item_id>', methods=['POST'])
 @admin_required
 def delete_store_item(item_id):
@@ -678,11 +681,11 @@ def admin_panel():
                     GlobalSettings.objects(setting_name='main_config').update_one(set__banner_url=b_url)
             elif act == 'update_nav_names':
                 GlobalSettings.objects(setting_name='main_config').update_one(
-                    set__nav_home=request.form.get('nav_home', 'الرئيسية 🏰'), set__nav_profile=request.form.get('nav_profile', 'هويتي 👤'),
-                    set__nav_friends=request.form.get('nav_friends', 'التحالفات 🤝'), set__nav_news=request.form.get('nav_news', 'المخطوطات 📜'),
-                    set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش 🧩'), set__nav_decs=request.form.get('nav_decs', 'التصريحات 📢'),
-                    set__nav_store=request.form.get('nav_store', 'السوق 🐪'), set__nav_grave=request.form.get('nav_grave', 'المقبرة 💀'),
-                    set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم 🔮'), set__maze_name=request.form.get('maze_name', 'متاهة سيفار')
+                    set__nav_home=request.form.get('nav_home', 'الرئيسية'), set__nav_profile=request.form.get('nav_profile', 'هويتي'),
+                    set__nav_friends=request.form.get('nav_friends', 'التحالفات'), set__nav_news=request.form.get('nav_news', 'المراسيم'),
+                    set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش'), set__nav_decs=request.form.get('nav_decs', 'التصريحات'),
+                    set__nav_store=request.form.get('nav_store', 'السوق المظلم'), set__nav_grave=request.form.get('nav_grave', 'المقبرة'),
+                    set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم'), set__maze_name=request.form.get('maze_name', 'متاهة سيفار')
                 )
             elif act == 'toggle_war':
                 new_state = not getattr(settings, 'war_mode', False); war_hours = int(request.form.get('war_hours') or 0)
@@ -751,7 +754,6 @@ def admin_panel():
     gate_stats = {1: User.objects(chosen_gate=1, status='active').count(), 2: User.objects(chosen_gate=2, status='active').count(), 3: User.objects(chosen_gate=3, status='active').count()}
     floor3_leaders = User.objects(status='active', role='hunter').order_by('-survival_votes')[:getattr(settings, 'vote_top_n', 5)] if getattr(settings, 'floor3_mode_active', False) else []
     
-    # استدعاء منتجات السوق للتعاويذ
     store_items = StoreItem.objects()
         
     return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query, store_items=store_items)
