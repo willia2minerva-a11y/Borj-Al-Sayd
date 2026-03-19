@@ -1,105 +1,62 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .fb-container { max-width: 600px; margin: auto; font-family: Arial, sans-serif; }
-    .pending-box { border: 2px dashed #e67e22; border-radius: 12px; padding: 15px; margin-bottom: 30px; background: rgba(230, 126, 34, 0.05); }
-    .fb-post { background: #242526; border-radius: 10px; padding: 15px; margin-bottom: 20px; border: 1px solid #3e4042; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-    .fb-post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-    .fb-user-info { display: flex; align-items: center; gap: 10px; }
-    .fb-avatar { width: 45px; height: 45px; border-radius: 50%; background: #3a3b3c; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden; border: 2px solid var(--zone-3-gold); }
-    .fb-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .fb-username { color: #e4e6eb; font-weight: bold; font-size: 15px; display: block; margin-bottom: 2px; }
-    .fb-time { color: #b0b3b8; font-size: 12px; }
-    .fb-post-content { color: #e4e6eb; font-size: 15px; line-height: 1.5; white-space: pre-wrap; margin-bottom: 15px; }
-    .fb-post-img { width: calc(100% + 30px); margin-left: -15px; max-height: 500px; object-fit: cover; display: block; }
-    .btn-approve { background: #2ecc71; color: #fff; padding: 6px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
-    .btn-reject { background: #e74c3c; color: #fff; padding: 6px 15px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
-    .create-post-box { background: #242526; border: 1px solid #3e4042; border-radius: 10px; padding: 15px; margin-bottom: 30px; }
-    .create-post-header { display: flex; gap: 10px; margin-bottom: 15px; }
-    .create-post-input { flex: 1; background: #3a3b3c; border: none; color: #e4e6eb; padding: 10px 15px; border-radius: 20px; resize: none; font-family: inherit; font-size: 15px; outline: none; }
-    .create-post-actions { border-top: 1px solid #3e4042; padding-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .dec-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    .dec-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px dashed #332815; padding-bottom: 10px; }
+    .dec-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
+    .dec-content { color: #ddd; line-height: 1.8; white-space: pre-wrap; font-size: 15px; margin-bottom: 15px; }
+    .dec-image { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #332815; }
+    
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    
+    .reaction-bar { display: flex; gap: 10px; border-top: 1px solid #222; padding-top: 10px; }
+    .react-btn { background: #111; color: #aaa; border: 1px solid #333; padding: 5px 15px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 13px; transition: 0.3s; }
+    .react-btn:hover { background: #222; color: #fff; }
+    .react-active { background: rgba(212,175,55,0.2); color: var(--gold-light); border-color: var(--gold-main); }
+    .btn-delete { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: auto; }
 </style>
 
-<div class="fb-container">
-    <h2 style="color: var(--zone-3-gold); text-align: center; margin-bottom: 30px;">📢 ساحة التصريحات</h2>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); margin: 0;">📢 صدى الساحة</h2>
+    <p style="color: #aaa; font-size: 14px;">أوصل صوتك لجميع أنحاء المتاهة.</p>
+</div>
 
-    {% if current_user.role == 'admin' and pending_decs %}
-    <div class="pending-box">
-        <h3 style="color: #e67e22; margin-top: 0; font-size: 16px;">⏳ منشورات تنتظر موافقتك الإمبراطورية ({{ pending_decs|length }})</h3>
-        {% for dec in pending_decs %}
-        <div style="background: #18191a; padding: 12px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #3e4042;">
-            <div class="fb-user-info" style="margin-bottom: 10px;">
-                <div class="fb-avatar">
-                    {% if avatars and avatars.get(dec.author) %}
-                        <img src="{{ avatars.get(dec.author) }}">
-                    {% else %}
-                        👤
-                    {% endif %}
-                </div>
-                <strong style="color: var(--zone-3-gold);">{{ dec.author }}</strong>
-            </div>
-            <p style="font-size: 14px; margin: 5px 0; color: #e4e6eb;">{{ dec.content }}</p>
-            {% if dec.image_data %}<img src="{{ dec.image_data }}" style="max-width: 100px; margin-bottom: 10px; border-radius: 5px;">{% endif %}
-            <div style="display: flex; gap: 10px;">
-                <form action="/admin" method="POST"><input type="hidden" name="action" value="moderate_dec"><input type="hidden" name="dec_id" value="{{ dec.id }}"><button type="submit" name="decision" value="approve" class="btn-approve">نشر ✅</button></form>
-                <form action="/admin" method="POST"><input type="hidden" name="action" value="moderate_dec"><input type="hidden" name="dec_id" value="{{ dec.id }}"><button type="submit" name="decision" value="reject" class="btn-reject">حذف ❌</button></form>
-            </div>
+<div class="dec-card" style="border-color: var(--gold-main); background: #050403;">
+    <form action="/declarations" method="POST" enctype="multipart/form-data">
+        <textarea name="content" class="form-control" rows="3" placeholder="ماذا تريد أن تقول للرحالة؟..." required></textarea>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <input type="file" name="image_file" accept="image/*" style="color: #aaa; font-size: 12px; max-width: 60%;">
+            <button type="submit" class="btn-gold">إطلاق التصريح 🚀</button>
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    </form>
+</div>
 
-    {% if current_user.status == 'active' %}
-    <div class="create-post-box">
-        <form action="/declarations" method="POST" enctype="multipart/form-data">
-            <div class="create-post-header">
-                <div class="fb-avatar">
-                    {% if current_user.avatar %}<img src="{{ current_user.avatar }}">{% else %}👤{% endif %}
-                </div>
-                <textarea name="content" class="create-post-input" placeholder="بم تفكر يا {{ current_user.username }}؟ أعلن للمتاهة..." rows="2" required></textarea>
-            </div>
-            <div class="create-post-actions">
-                <label style="color: #45bd62; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: bold; font-size: 14px;">
-                    🖼️ إرفاق صورة
-                    <input type="file" name="image_file" accept="image/*" style="display: none;">
-                </label>
-                <button type="submit" class="btn-primary" style="width: auto; padding: 8px 25px; border-radius: 6px;">نشر</button>
-            </div>
+{% for dec in approved_decs %}
+<div class="dec-card">
+    <div class="dec-header">
+        <a href="/hunter/{{ avatars[dec.author] }}" style="text-decoration:none;"><img src="/avatar/{{ avatars[dec.author] }}" class="dec-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzE0MTAwYyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZDRhZjM3Ii8+PHBhdGggZD0iTTIwIDkwYzAtMjAgMTUtMzUgMzAtMzVzMzAgMTUgMzAgMzUiIGZpbGw9IiNkNGFmMzciLz48L3N2Zz4='"></a>
+        <div><strong style="color: #fff; font-size: 16px;">{{ dec.author }}</strong><div style="color: #666; font-size: 11px;">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div></div>
+    </div>
+    <div class="dec-content">{{ dec.content }}</div>
+    {% if dec.image_data %}<img src="{{ dec.image_data }}" class="dec-image">{% endif %}
+    
+    <div class="reaction-bar">
+        <form action="/react_declaration/{{ dec.id }}/like" method="POST" style="margin:0;">
+            <button type="submit" class="react-btn {% if current_user.id|string in dec.likes %}react-active{% endif %}">❤️ {{ dec.likes|length }}</button>
         </form>
-    </div>
-    {% elif current_user.status == 'inactive' %}
-    <div style="background: rgba(231, 76, 60, 0.1); border: 1px dashed #e74c3c; color: #e74c3c; padding: 15px; text-align: center; border-radius: 10px; margin-bottom: 20px;">
-        حسابك قيد المراجعة الإمبراطورية. لا يمكنك النشر حتى يتم تفعيلك.
-    </div>
-    {% endif %}
-
-    {% for dec in approved_decs %}
-    <div class="fb-post">
-        <div class="fb-post-header">
-            <div class="fb-user-info">
-                <div class="fb-avatar">
-                    {% if avatars and avatars.get(dec.author) %}
-                        <img src="{{ avatars.get(dec.author) }}">
-                    {% else %}
-                        👤
-                    {% endif %}
-                </div>
-                <div>
-                    <span class="fb-username">{{ dec.author }}</span>
-                    <span class="fb-time">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                </div>
-            </div>
-            {% if current_user.username == dec.author or current_user.role == 'admin' %}
-            <form action="/delete_declaration/{{ dec.id }}" method="POST"><button type="submit" style="background:none; border:none; color:#aaa; cursor:pointer; font-size: 18px;" title="حذف التصريح">🗑️</button></form>
-            {% endif %}
-        </div>
-        <div class="fb-post-content">{{ dec.content }}</div>
-        {% if dec.image_data %}
-        <img src="{{ dec.image_data }}" class="fb-post-img">
+        <form action="/react_declaration/{{ dec.id }}/laugh" method="POST" style="margin:0;">
+            <button type="submit" class="react-btn {% if current_user.id|string in dec.laughs %}react-active{% endif %}">😂 {{ dec.laughs|length }}</button>
+        </form>
+        
+        {% if current_user.username == dec.author or current_user.role == 'admin' %}
+        <form action="/delete_declaration/{{ dec.id }}" method="POST" style="margin:0; margin-right:auto;">
+            <button type="submit" class="btn-delete" onclick="return confirm('حذف التصريح؟');">🗑️ حذف</button>
+        </form>
         {% endif %}
     </div>
-    {% else %}
-    <p style="text-align: center; color: #666; font-weight: bold;">لا توجد تصريحات في المتاهة حالياً.</p>
-    {% endfor %}
 </div>
+{% else %}
+<p style="text-align: center; color: #888;">الساحة هادئة، لا توجد تصريحات حالياً.</p>
+{% endfor %}
 {% endblock %}
