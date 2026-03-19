@@ -43,7 +43,7 @@ class User(db.Document):
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
     
-    # 🛡️ الحقول القديمة التي تسببت في الخطأ (تمت إعادتها لمنع الانهيار)
+    # الحقول القديمة لحماية البيانات من الصدام
     last_seen_news = db.DateTimeField()
     last_seen_decs = db.DateTimeField()
     last_seen_store = db.DateTimeField()
