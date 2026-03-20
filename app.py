@@ -8,16 +8,19 @@ import os, base64, random, math, traceback
 app = Flask(__name__)
 app.jinja_env.globals.update(getattr=getattr)
 
-# 🚀 الدرع المضاد للتعليق والشاشة البيضاء (يوقف المحاولة بعد 3 ثوانٍ)
+# 🚀 تم إزالة قيود الوقت الخانقة (Timeouts) لكي لا ينقطع الاتصال بقاعدة البيانات المجانية
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI'),
-    'connect': False,
-    'serverSelectionTimeoutMS': 3000,
-    'socketTimeoutMS': 3000
+    'connect': False
 }
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
+
+@app.before_request
+def fast_health_check():
+    if request.method == 'HEAD' or request.path == '/health':
+        return "OK", 200
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -69,11 +72,10 @@ def check_lazy_death_and_bleed(user, settings):
 
 @app.before_request
 def check_locks_and_timers():
-    # 🚀 حماية إضافية: إذا كان الرابط هو طلب الفحص من Render، تجاهل قاعدة البيانات فوراً
-    if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar'] or request.method == 'HEAD': return
+    if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar', 'fast_health_check']: return
     try: settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     except Exception as e: 
-        return f"<div style='direction:rtl; background:#0a0a0a; color:#e74c3c; padding:30px; text-align:center;'><h1>🚨 قاعدة البيانات معطلة!</h1><p>السيرفر لا يستطيع الدخول لـ MongoDB. تأكد من إزالة علامة (?) من الرابط، وتأكد من تفعيل Network Access لـ 0.0.0.0/0 في MongoDB.</p><p style='font-family:monospace; direction:ltr;'>{str(e)}</p></div>", 503
+        return f"<div style='direction:rtl; background:#0a0a0a; color:#e74c3c; padding:30px; text-align:center;'><h1>🚨 قاعدة البيانات معطلة!</h1><p>السيرفر لا يستطيع الدخول لـ MongoDB. تأكد من إزالة علامة (?) من الرابط، وتأكد من تفعيل Network Access.</p><p style='font-family:monospace; direction:ltr;'>{str(e)}</p></div>", 503
     
     if settings:
         now = datetime.utcnow()
@@ -768,6 +770,5 @@ def admin_panel():
     return render_template('admin.html', users=users, settings=settings, test_users=User.objects(gate_status='testing', status='active'), gate_stats=gate_stats, floor3_leaders=floor3_leaders, search_query=search_query, store_items=store_items)
 
 if __name__ == '__main__': 
-    # إجبار السيرفر على فتح البورت لتخطي الفحص
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
 
