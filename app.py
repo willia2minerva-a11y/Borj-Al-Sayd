@@ -8,17 +8,21 @@ import os, base64, random, math, traceback
 app = Flask(__name__)
 app.jinja_env.globals.update(getattr=getattr)
 
-# 🚀 تم إزالة قيود الوقت الخانقة (Timeouts) لكي لا ينقطع الاتصال بقاعدة البيانات المجانية
+# 🚀 الحل الجذري لاختناق الشبكة: تجاوز شهادات SSL وإعطاء السيرفر وقتاً للاتصال
 app.config['MONGODB_SETTINGS'] = {
     'host': os.getenv('MONGO_URI'),
-    'connect': False
+    'connect': False,
+    'tls': True,
+    'tlsAllowInvalidCertificates': True
 }
+
 app.config['SECRET_KEY'] = 'sephar-maze-emperor-v12-final'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
 @app.before_request
 def fast_health_check():
+    # نبضة فحص سريعة لـ Render لتجنب الـ Timeout
     if request.method == 'HEAD' or request.path == '/health':
         return "OK", 200
 
@@ -75,7 +79,7 @@ def check_locks_and_timers():
     if request.endpoint in ['static', 'login', 'logout', 'register', 'get_avatar', 'fast_health_check']: return
     try: settings = GlobalSettings.objects(setting_name='main_config').first() or GlobalSettings(setting_name='main_config').save()
     except Exception as e: 
-        return f"<div style='direction:rtl; background:#0a0a0a; color:#e74c3c; padding:30px; text-align:center;'><h1>🚨 قاعدة البيانات معطلة!</h1><p>السيرفر لا يستطيع الدخول لـ MongoDB. تأكد من إزالة علامة (?) من الرابط، وتأكد من تفعيل Network Access.</p><p style='font-family:monospace; direction:ltr;'>{str(e)}</p></div>", 503
+        return f"<div style='direction:rtl; background:#0a0a0a; color:#e74c3c; padding:30px; text-align:center;'><h1>🚨 قاعدة البيانات معطلة!</h1><p>تأكد من وجود dnspython في ملف requirements.txt، وتأكد من رابط MONGO_URI في إعدادات Render.</p><p style='font-family:monospace; direction:ltr;'>{str(e)}</p></div>", 503
     
     if settings:
         now = datetime.utcnow()
@@ -771,4 +775,3 @@ def admin_panel():
 
 if __name__ == '__main__': 
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
-
