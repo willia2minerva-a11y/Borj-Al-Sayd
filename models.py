@@ -4,15 +4,29 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    meta = {'strict': False} 
+    meta = {
+        'strict': False,
+        'indexes': [
+            'hunter_id',          # بحث سريع بالرقم
+            'username',           # بحث سريع بالاسم
+            'status',             # تصفية الأحياء/الأموات
+            'chosen_gate',        # إحصاءات البوابات
+            ('status', 'role'),   # تصفية الصيادين الأحياء
+            'last_active',        # ترتيب حسب النشاط
+            'gate_status',        # تصفية من في الاختبار
+            'friends',            # استعلامات الأصدقاء (قائمة)
+            'friend_requests',    # طلبات الصداقة
+            'hunter_id', 'status' # استخدامات متعددة
+        ]
+    }
     
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
-    role = db.StringField(default='hunter') 
-    status = db.StringField(default='active') 
+    role = db.StringField(default='hunter')
+    status = db.StringField(default='active')
     health = db.IntField(default=100)
-    points = db.IntField(default=0) 
+    points = db.IntField(default=0)
     loyalty_points = db.IntField(default=0)
     intelligence_points = db.IntField(default=0)
     zone = db.StringField(default='البوابات')
@@ -42,20 +56,27 @@ class User(db.Document):
     gate_test_answer = db.StringField(default='')
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
-    
-    # الحقول القديمة لحماية البيانات من الصدام
     last_seen_news = db.DateTimeField()
     last_seen_decs = db.DateTimeField()
     last_seen_store = db.DateTimeField()
     last_seen_puzzles = db.DateTimeField()
     facebook_link = db.StringField(default='')
-    secret_achievements = db.ListField(db.StringField(), default=list) 
+    secret_achievements = db.ListField(db.StringField(), default=list)
 
 class News(db.Document):
-    meta = {'strict': False}
+    meta = {
+        'strict': False,
+        'indexes': [
+            'category',
+            'status',
+            'created_at',
+            ('category', 'status'),
+            ('category', 'status', 'created_at')  # للترتيب
+        ]
+    }
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='news') 
+    category = db.StringField(default='news')
     puzzle_type = db.StringField(default='none')
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
@@ -72,11 +93,18 @@ class News(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class StoreItem(db.Document):
-    meta = {'strict': False}
+    meta = {
+        'strict': False,
+        'indexes': [
+            'name',
+            'item_type',
+            'created_at'
+        ]
+    }
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(default=0)
-    item_type = db.StringField(default='box') 
+    item_type = db.StringField(default='box')
     effect_amount = db.IntField(default=0)
     is_mirage = db.BooleanField(default=False)
     mirage_message = db.StringField(default='')
@@ -87,7 +115,12 @@ class StoreItem(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
-    meta = {'strict': False}
+    meta = {
+        'strict': False,
+        'indexes': [
+            'setting_name'
+        ]
+    }
     setting_name = db.StringField(unique=True, default='main_config')
     maze_name = db.StringField(default='متاهة سيفار')
     home_title = db.StringField(default='البوابة')
@@ -127,7 +160,13 @@ class GlobalSettings(db.Document):
     dead_count = db.IntField(default=0)
 
 class SpellConfig(db.Document):
-    meta = {'strict': False}
+    meta = {
+        'strict': False,
+        'indexes': [
+            'spell_word',
+            'expires_at'
+        ]
+    }
     spell_word = db.StringField(required=True, unique=True)
     spell_type = db.StringField(required=True)
     effect_value = db.IntField(default=0)
@@ -137,4 +176,3 @@ class SpellConfig(db.Document):
     used_by = db.ListField(db.StringField(), default=list)
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
-
