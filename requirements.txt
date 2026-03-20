@@ -1,5 +1,7 @@
-Flask
-flask-mongoengine
-pymongo[srv]
-dnspython
-gunicorn
+Flask==2.2.5
+Werkzeug==2.2.3
+flask-mongoengine==1.0.0
+mongoengine==0.27.0
+pymongo[srv]==4.6.1
+dnspython==2.6.0
+gunicorn==21.2.0
