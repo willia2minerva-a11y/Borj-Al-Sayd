@@ -37,8 +37,8 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m2')" {% if search_query %}onload="toggleMod('m2')"{% endif %}>👥 2. الأعضاء وتجربة الفوز <span>▼</span></button>
-<div id="m2" class="mod-content" {% if search_query %}style="display:block;"{% endif %}>
+<button type="button" class="mod-btn" onclick="toggleMod('m2')">👥 2. الأعضاء وتجربة الفوز <span>▼</span></button>
+<div id="m2" class="mod-content">
     <form action="/" method="GET" style="display: flex; gap: 10px; margin-bottom: 20px;">
         <input type="number" name="test_victory" placeholder="تجربة مشهد الفوز (أدخل ID)" class="form-control" style="margin:0;" required>
         <button type="submit" class="btn-gold" style="width: auto;">تجربة ➔</button>
@@ -161,11 +161,11 @@
     {% if spells %}
     <table class="spell-table">
         <thead>
-            <tr><th>الكلمة</th><th>النوع</th><th>القيمة</th><th>نسبة%</th><th>الأداة</th><th>الاستخدامات</th><th>تنتهي</th><th></th></tr>
+            <tr><th>الكلمة</th><th>النوع</th><th>القيمة</th><th>نسبة%</th><th>الأداة</th><th>الاستخدامات</th><th>تنتهي</th><th></th>   </tr>
         </thead>
         <tbody>
             {% for s in spells %}
-            <tr>
+             <tr>
                 <td>{{ s.spell_word }}</td>
                 <td>{{ s.spell_type }}</td>
                 <td>{{ s.effect_value }}</td>
@@ -180,7 +180,7 @@
                         <button type="submit" class="delete-spell-btn" onclick="return confirm('حذف التعويذة نهائياً؟')">🗑️</button>
                     </form>
                 </td>
-            </tr>
+             </tr>
             {% endfor %}
         </tbody>
     </table>
@@ -214,7 +214,6 @@
     </form>
 </div>
 
-<!-- 8. الحرب الشاملة (منفصل) -->
 <button type="button" class="mod-btn" onclick="toggleMod('m8_war')">⚔️ 8. الحرب الشاملة (العادية) <span>▼</span></button>
 <div id="m8_war" class="mod-content">
     <strong class="section-head">⚔️ إعدادات الحرب الشاملة:</strong>
@@ -231,7 +230,6 @@
     </form>
 </div>
 
-<!-- 9. المعركة الأخيرة (منفصل) -->
 <button type="button" class="mod-btn" onclick="toggleMod('m9_final')">👑 9. المعركة الأخيرة <span>▼</span></button>
 <div id="m9_final" class="mod-content">
     <strong class="section-head" style="color: #9b59b6;">👑 المعركة الأخيرة (البقاء للأقوى):</strong>
@@ -251,14 +249,18 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m11')">🗿 11. البونغليف والصيانة <span>▼</span></button>
-<div id="m11" class="mod-content">
+<button type="button" class="mod-btn" onclick="toggleMod('m11_poneglyph')">🗿 11. البونغليف (غرفة الأساطير) <span>▼</span></button>
+<div id="m11_poneglyph" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="update_poneglyph">
         <textarea name="poneglyph_text" class="form-control" rows="4" placeholder="اكتب التعليمات السرية هنا...">{{ settings.poneglyph_text if settings else '' }}</textarea>
         <button type="submit" class="btn-gold">نقش البونغليف</button>
     </form>
-    <hr style="border-color:#332815; margin:15px 0;">
+    <p style="color:#aaa; font-size:12px;">ملاحظة: يمكن للمستخدمين فتح هذه الغرفة باستخدام تعويذة "unlock_lore" في المذبح.</p>
+</div>
+
+<button type="button" class="mod-btn" onclick="toggleMod('m12_maintenance')">🛠️ 12. وضع الصيانة <span>▼</span></button>
+<div id="m12_maintenance" class="mod-content">
     <strong class="section-head" style="color:#e74c3c;">🛠️ وضع الصيانة:</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="setup_maintenance">
