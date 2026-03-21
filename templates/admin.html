@@ -6,7 +6,12 @@
     .mod-content { padding: 20px; display: none; background: #0a0806; border: 1px solid #332815; border-radius: 0 0 8px 8px; margin-top: -15px; margin-bottom: 20px; }
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
     .btn-danger { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
+    .btn-warning { background: linear-gradient(45deg, #e67e22, #f39c12); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 5px; }
     .section-head { color: var(--gold-main); font-size: 16px; border-bottom: 1px dashed #332815; padding-bottom: 5px; margin-bottom: 15px; display: block; }
+    .spell-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    .spell-table th, .spell-table td { border: 1px solid #332815; padding: 8px; text-align: center; font-size: 13px; }
+    .spell-table th { background: #0a0806; color: var(--gold-main); }
+    .delete-spell-btn { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -150,6 +155,38 @@
         
         <button type="submit" class="btn-gold">زرع التعويذة</button>
     </form>
+
+    <hr style="border-color:#332815; margin:20px 0;">
+    <strong class="section-head" style="color:#9b59b6;">📜 التعويذات الموجودة في المذبح:</strong>
+    {% if spells %}
+    <table class="spell-table">
+        <thead>
+            <tr><th>الكلمة</th><th>النوع</th><th>القيمة</th><th>نسبة%</th><th>الأداة</th><th>الاستخدامات</th><th>تنتهي</th><th></th></tr>
+        </thead>
+        <tbody>
+            {% for s in spells %}
+            <tr>
+                <td>{{ s.spell_word }}</td>
+                <td>{{ s.spell_type }}</td>
+                <td>{{ s.effect_value }}</td>
+                <td>{{ "نعم" if s.is_percentage else "لا" }}</td>
+                <td>{{ s.item_name or "-" }}</td>
+                <td>{{ s.used_by|length }}/{{ s.max_uses }}</td>
+                <td>{{ s.expires_at.strftime('%Y-%m-%d %H:%M') if s.expires_at else "لا تنتهي" }}</td>
+                <td>
+                    <form action="/admin" method="POST" style="margin:0;">
+                        <input type="hidden" name="action" value="delete_spell">
+                        <input type="hidden" name="spell_id" value="{{ s.id }}">
+                        <button type="submit" class="delete-spell-btn" onclick="return confirm('حذف التعويذة نهائياً؟')">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color:#888; text-align:center;">لا توجد تعويذات مسجلة حالياً.</p>
+    {% endif %}
 </div>
 
 <button type="button" class="mod-btn" onclick="toggleMod('m7')">🚪 7. مود البوابات <span>▼</span></button>
@@ -160,6 +197,10 @@
         <div style="display:flex; gap:10px;"><input type="text" name="g1" value="{{ settings.gate_1_name if settings else '' }}" placeholder="بوابة 1" class="form-control"><input type="text" name="g2" value="{{ settings.gate_2_name if settings else '' }}" placeholder="بوابة 2" class="form-control"><input type="text" name="g3" value="{{ settings.gate_3_name if settings else '' }}" placeholder="بوابة 3" class="form-control"></div>
         <input type="number" name="gates_hours" placeholder="مؤقت البوابات (ساعات) لإقصاء من لم يختر" class="form-control">
         <button type="submit" class="btn-gold">تفعيل البوابات</button>
+    </form>
+    <form action="/admin" method="POST" style="margin-bottom:15px;">
+        <input type="hidden" name="action" value="close_gates_mode">
+        <button type="submit" class="btn-danger">إغلاق البوابات يدوياً</button>
     </form>
     <hr style="border-color:#332815; margin:15px 0;">
     <form action="/admin" method="POST">
@@ -173,30 +214,35 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m8')">⚔️ 8. الحرب والمعركة الأخيرة <span>▼</span></button>
-<div id="m8" class="mod-content">
-    <strong class="section-head">⚔️ الحرب الشاملة (العادية):</strong>
+<!-- 8. الحرب الشاملة (منفصل) -->
+<button type="button" class="mod-btn" onclick="toggleMod('m8_war')">⚔️ 8. الحرب الشاملة (العادية) <span>▼</span></button>
+<div id="m8_war" class="mod-content">
+    <strong class="section-head">⚔️ إعدادات الحرب الشاملة:</strong>
     <form action="/admin" method="POST" style="margin-bottom:15px;">
         <input type="hidden" name="action" value="toggle_war">
-        <input type="number" name="war_hours" placeholder="مؤقت الحرب (ساعات)" class="form-control">
-        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب' if settings and settings.war_mode else 'إشعال الحرب الشاملة' }}</button>
+        <input type="number" name="war_hours" placeholder="مدة الحرب (ساعات)" class="form-control">
+        <button type="submit" class="btn-danger">{{ 'إيقاف الحرب الشاملة' if settings and settings.war_mode else 'إشعال الحرب الشاملة' }}</button>
     </form>
-    <form action="/admin" method="POST" style="margin-bottom: 30px;">
+    <form action="/admin" method="POST">
         <input type="hidden" name="action" value="update_war_settings">
         <input type="number" name="war_kill_target" value="{{ settings.war_kill_target if settings else '' }}" placeholder="العدد لإنهاء الحرب آلياً" class="form-control">
         <div style="display:flex; gap:10px;"><input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes if settings else '' }}" placeholder="ينزف كل (دقيقة)" class="form-control"><input type="number" name="bleed_amount" value="{{ settings.bleed_amount if settings else '' }}" placeholder="مقدار النزيف" class="form-control"></div>
         <button type="submit" class="btn-gold">حفظ قوانين الحرب</button>
     </form>
+</div>
 
+<!-- 9. المعركة الأخيرة (منفصل) -->
+<button type="button" class="mod-btn" onclick="toggleMod('m9_final')">👑 9. المعركة الأخيرة <span>▼</span></button>
+<div id="m9_final" class="mod-content">
     <strong class="section-head" style="color: #9b59b6;">👑 المعركة الأخيرة (البقاء للأقوى):</strong>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_final_battle">
-        <button type="submit" class="btn-danger" style="background: #9b59b6;">{{ 'إنهاء المعركة الأخيرة' if settings and settings.final_battle_mode else 'إطلاق المعركة الأخيرة المستقلة' }}</button>
+        <button type="submit" class="btn-danger" style="background:#9b59b6;">{{ 'إنهاء المعركة الأخيرة' if settings and settings.final_battle_mode else 'إطلاق المعركة الأخيرة المستقلة' }}</button>
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m9')">🗳️ 9. التصويت (المحكمة) <span>▼</span></button>
-<div id="m9" class="mod-content">
+<button type="button" class="mod-btn" onclick="toggleMod('m10')">🗳️ 10. التصويت (المحكمة) <span>▼</span></button>
+<div id="m10" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor3">
         <p style="color:#aaa; font-size:13px;">بانتهاء المؤقت سيُعدم المتخاذلون وتوزع دنانيرهم على المصوتين!</p>
@@ -205,8 +251,8 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn" onclick="toggleMod('m10')">🗿 10. البونغليف والصيانة <span>▼</span></button>
-<div id="m10" class="mod-content">
+<button type="button" class="mod-btn" onclick="toggleMod('m11')">🗿 11. البونغليف والصيانة <span>▼</span></button>
+<div id="m11" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="update_poneglyph">
         <textarea name="poneglyph_text" class="form-control" rows="4" placeholder="اكتب التعليمات السرية هنا...">{{ settings.poneglyph_text if settings else '' }}</textarea>
@@ -232,4 +278,3 @@
     {% if search_query %} document.getElementById('m2').style.display = 'block'; {% endif %}
 </script>
 {% endblock %}
-
