@@ -17,7 +17,7 @@
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
     
-    /* بطاقة المستخدم مع خلفية البانر */
+    /* بطاقة المستخدم مع صورة متحركة */
     .id-card {
         background: var(--bg-card);
         border: 1px solid #332815;
@@ -35,36 +35,19 @@
         border-color: var(--gold-dark);
         transform: translateY(-3px);
     }
-    .avatar-banner-small {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        border: 2px solid var(--gold-main);
-        box-shadow: 0 0 12px rgba(212,175,55,0.4);
-        position: relative;
-        overflow: hidden;
-        flex-shrink: 0;
-    }
     .avatar-small {
         width: 60px;
         height: 60px;
         border-radius: 50%;
         object-fit: cover;
         background: #000;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: none;
-        animation: floatSmall 8s ease-in-out infinite;
+        border: 2px solid var(--gold-main);
+        animation: floatSmall 6s ease-in-out infinite;
     }
     @keyframes floatSmall {
-        0% { transform: translate(-50%, -50%) translateY(0px); }
-        50% { transform: translate(-50%, -50%) translateY(-4px); }
-        100% { transform: translate(-50%, -50%) translateY(0px); }
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+        100% { transform: translateY(0px); }
     }
     .world-stats { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .event-indicators { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
@@ -149,12 +132,10 @@
             </div>
         </div>
 
-        <div class="top-stats-container" style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
             <a href="/profile" class="id-card">
-                <div class="avatar-banner-small" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
-                    <img src="/avatar/{{ current_user.hunter_id }}" class="avatar-small"
-                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
-                </div>
+                <img src="/avatar/{{ current_user.hunter_id }}" class="avatar-small"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
                 <div>
                     <div style="font-size:20px; font-weight:bold;">{{ current_user.username }}</div>
                     <div style="color:var(--gold-main); font-size:13px; margin-top:5px;">{{ display_rank }} | {{ current_user.points }} دينار</div>
