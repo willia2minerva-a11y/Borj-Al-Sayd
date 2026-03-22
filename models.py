@@ -7,16 +7,16 @@ class User(db.Document):
     meta = {
         'strict': False,
         'indexes': [
-            'hunter_id',          # بحث سريع بالرقم
-            'username',           # بحث سريع بالاسم
-            'status',             # تصفية الأحياء/الأموات
-            'chosen_gate',        # إحصاءات البوابات
-            ('status', 'role'),   # تصفية الصيادين الأحياء
-            'last_active',        # ترتيب حسب النشاط
-            'gate_status',        # تصفية من في الاختبار
-            'friends',            # استعلامات الأصدقاء (قائمة)
-            'friend_requests',    # طلبات الصداقة
-            'hunter_id', 'status' # استخدامات متعددة
+            'hunter_id',
+            'username',
+            'status',
+            'chosen_gate',
+            ('status', 'role'),
+            'last_active',
+            'gate_status',
+            'friends',
+            'friend_requests',
+            'created_at'
         ]
     }
     
@@ -62,6 +62,10 @@ class User(db.Document):
     last_seen_puzzles = db.DateTimeField()
     facebook_link = db.StringField(default='')
     secret_achievements = db.ListField(db.StringField(), default=list)
+    
+    # الحقول الجديدة للميكانيكيات المضافة
+    has_shield = db.BooleanField(default=False)      # وشاح الحماية (يحمي من العين واليد)
+    totem_self = db.BooleanField(default=False)      # توتم إحياء النفس (يُستعمل مرة واحدة)
 
 class News(db.Document):
     meta = {
@@ -70,14 +74,13 @@ class News(db.Document):
             'category',
             'status',
             'created_at',
-            ('category', 'status'),
-            ('category', 'status', 'created_at')  # للترتيب
+            ('category', 'status', 'created_at')
         ]
     }
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     category = db.StringField(default='news')
-    puzzle_type = db.StringField(default='none')
+    puzzle_type = db.StringField(default='none')   # none, text, click_count, word_order, quicksand_trap, fake_account, cursed_ghost, hidden_link, secret_word
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
     max_winners = db.IntField(default=1)
@@ -104,7 +107,7 @@ class StoreItem(db.Document):
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(default=0)
-    item_type = db.StringField(default='box')
+    item_type = db.StringField(default='box')  # weapon, heal, spy, steal, seal, shield, totem_self, totem_other
     effect_amount = db.IntField(default=0)
     is_mirage = db.BooleanField(default=False)
     mirage_message = db.StringField(default='')
@@ -168,7 +171,7 @@ class SpellConfig(db.Document):
         ]
     }
     spell_word = db.StringField(required=True, unique=True)
-    spell_type = db.StringField(required=True)
+    spell_type = db.StringField(required=True)   # hp_gain, hp_loss, points_gain, points_loss, item_reward, unlock_lore, unlock_top, kill_emperor
     effect_value = db.IntField(default=0)
     is_percentage = db.BooleanField(default=False)
     item_name = db.StringField(default='')
