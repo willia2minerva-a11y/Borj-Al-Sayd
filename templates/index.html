@@ -16,9 +16,56 @@
     .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
-    .top-stats-container { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px; }
-    .id-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; text-decoration: none; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s; }
-    .id-card:hover { border-color: var(--gold-dark); transform: translateY(-3px); }
+    
+    /* بطاقة المستخدم مع خلفية البانر */
+    .id-card {
+        background: var(--bg-card);
+        border: 1px solid #332815;
+        border-radius: 12px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        text-decoration: none;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        transition: 0.3s;
+    }
+    .id-card:hover {
+        border-color: var(--gold-dark);
+        transform: translateY(-3px);
+    }
+    .avatar-banner-small {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 2px solid var(--gold-main);
+        box-shadow: 0 0 12px rgba(212,175,55,0.4);
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .avatar-small {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #000;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: none;
+        animation: floatSmall 8s ease-in-out infinite;
+    }
+    @keyframes floatSmall {
+        0% { transform: translate(-50%, -50%) translateY(0px); }
+        50% { transform: translate(-50%, -50%) translateY(-4px); }
+        100% { transform: translate(-50%, -50%) translateY(0px); }
+    }
     .world-stats { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .event-indicators { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
     .event-badge { background: rgba(0,0,0,0.6); border: 1px solid; border-radius: 20px; padding: 5px 15px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
@@ -31,6 +78,8 @@
     .gold-card:hover { border-color: var(--gold-main); transform: translateY(-5px); background: #1a140c; }
     .card-icon { font-size: 30px; margin-bottom: 10px; }
     .card-title { color: var(--gold-main); font-size: 14px; margin: 0; font-weight: bold; }
+
+    /* مشهد النصر (كما هو) */
     .victory-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1a1005 0%, #000 100%); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
     .vic-text { position: absolute; font-size: 26px; font-weight: 900; color: var(--gold-light); text-shadow: 0 0 20px rgba(212,175,55,0.8); opacity: 0; transform: scale(0.8); transition: all 1s ease; text-align: center; line-height: 1.8; max-width: 80%; }
     .vic-text.show { opacity: 1; transform: scale(1); }
@@ -100,11 +149,12 @@
             </div>
         </div>
 
-        <div class="top-stats-container">
+        <div class="top-stats-container" style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
             <a href="/profile" class="id-card">
-                <img src="/avatar/{{ current_user.hunter_id }}" 
-                     style="width:60px; height:60px; border-radius:50%; border:2px solid var(--gold-main); object-fit:cover; background:#000;"
-                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                <div class="avatar-banner-small" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
+                    <img src="/avatar/{{ current_user.hunter_id }}" class="avatar-small"
+                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                </div>
                 <div>
                     <div style="font-size:20px; font-weight:bold;">{{ current_user.username }}</div>
                     <div style="color:var(--gold-main); font-size:13px; margin-top:5px;">{{ display_rank }} | {{ current_user.points }} دينار</div>
