@@ -1,9 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .profile-container { text-align: center; margin-bottom: 30px; position: relative; }
+    /* حاوية الغلاف */
+    .cover-container {
+        position: relative;
+        width: 100%;
+        height: 220px;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border-radius: 12px 12px 0 0;
+        margin-bottom: 80px; /* لترك مسافة للصورة الرمزية */
+        background-color: #0a0806;
+    }
+    /* الصورة الرمزية (تطفو فوق الغلاف) */
+    .profile-avatar-wrapper {
+        position: absolute;
+        bottom: -50px;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 2;
+    }
     .avatar-banner {
-        display: inline-block;
         width: 140px;
         height: 140px;
         border-radius: 50%;
@@ -12,13 +31,9 @@
         background-repeat: no-repeat;
         border: 3px solid var(--gold-main);
         box-shadow: 0 0 20px rgba(212,175,55,0.4);
-        margin-bottom: 15px;
         position: relative;
         overflow: hidden;
-        transition: transform 0.3s ease;
-    }
-    .avatar-banner:hover {
-        transform: scale(1.02);
+        margin: 0 auto;
     }
     .profile-avatar {
         width: 120px;
@@ -31,7 +46,6 @@
         left: 50%;
         transform: translate(-50%, -50%);
         border: none;
-        box-shadow: none;
         animation: float 6s ease-in-out infinite;
     }
     @keyframes float {
@@ -42,6 +56,11 @@
     @media (max-width: 600px) {
         .avatar-banner { width: 120px; height: 120px; }
         .profile-avatar { width: 100px; height: 100px; }
+        .cover-container { height: 160px; margin-bottom: 60px; }
+    }
+    .username {
+        margin-top: 70px;
+        text-align: center;
     }
     .stat-card {
         background: var(--bg-card);
@@ -104,16 +123,20 @@
     }
 </style>
 
-<div class="profile-container">
-    <div class="avatar-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
-        <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar"
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+<div class="cover-container" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
+    <div class="profile-avatar-wrapper">
+        <div class="avatar-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
+            <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar"
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+        </div>
     </div>
+</div>
+<div class="username">
     <h1 style="color:#fff; margin:0;">{{ user.username }}</h1>
     <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:10px; display:inline-block;">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
 </div>
 
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px; margin-bottom:30px;">
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px; margin:30px 0;">
     <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#2ecc71;">{{ user.health }}%</div><div style="color:#888; font-size:13px;">الصحة 🩸</div></div>
     <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:var(--gold-light);">{{ user.points }}</div><div style="color:#888; font-size:13px;">دنانير 💰</div></div>
     <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#3498db;">{{ user.loyalty_points }}</div><div style="color:#888; font-size:13px;">الولاء 🤝</div></div>
