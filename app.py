@@ -15,7 +15,7 @@ except ImportError:
 app = Flask(__name__)
 app.jinja_env.globals.update(getattr=getattr)
 
-# إعدادات قاعدة البيانات
+# ==================== إعدادات قاعدة البيانات ====================
 MONGO_URI = os.getenv('MONGO_URI')
 if not MONGO_URI:
     raise Exception("MONGO_URI environment variable not set")
@@ -50,7 +50,7 @@ try:
 except Exception as e:
     print(f"⚠️ DB initialization: {e}")
 
-# ذاكرة تخزين الإعدادات
+# ==================== ذاكرة تخزين الإعدادات ====================
 _settings_cache = {'data': None, 'timestamp': 0}
 _SETTINGS_CACHE_TTL = 30
 
@@ -71,7 +71,7 @@ def get_cached_settings(retry=2):
                 time.sleep(0.5)
     return _settings_cache['data']
 
-# دوال مساعدة
+# ==================== دوال مساعدة ====================
 def check_achievements(user):
     try:
         new_ach = []
@@ -523,7 +523,7 @@ def transfer(target_id):
                 sender.loyalty_points += 2
                 sender.save()
                 receiver.save()
-                flash('تم إرسال الدنانير بنجاح!', 'success')
+                flash(f'تم إرسال {amt} دينار إلى {receiver.username}!', 'success')
         elif transfer_type == 'item':
             itm = request.form.get('item_name')
             if itm in sender.inventory:
@@ -532,7 +532,7 @@ def transfer(target_id):
                 sender.loyalty_points += 5
                 sender.save()
                 receiver.save()
-                flash('تم إرسال الأداة!', 'success')
+                flash(f'تم إرسال {itm} إلى {receiver.username}!', 'success')
     except Exception as e:
         app.logger.error(f"Transfer error: {e}")
         flash('حدث خطأ أثناء الإرسال', 'error')
@@ -555,9 +555,10 @@ def use_item(target_id):
         now = datetime.utcnow()
         item_type = item.item_type
 
+        # ========== الأختام ==========
         if item_type == 'seal':
             if target.id == attacker.id:
-                attacker.destroyed_seals += 1
+                attacker.destroyed_seals = attacker.destroyed_seals + 1
                 attacker.inventory.remove(item_name)
                 if attacker.destroyed_seals >= 4:
                     settings.war_mode = False
@@ -567,16 +568,61 @@ def use_item(target_id):
                     _settings_cache['timestamp'] = 0
                     flash('دُمرت اللعنة النهائية وانتهت المعركة!', 'success')
                 else:
-                    flash('تم تدمير الختم!', 'success')
+                    flash(f'تم تدمير الختم! ({attacker.destroyed_seals}/4)', 'success')
                 attacker.save()
             return redirect(request.referrer or url_for('home'))
 
+        # ========== وشاح الحماية ==========
+        if item_type == 'shield':
+            # يمكن للاعب استخدام الوشاح على نفسه فقط
+            if target.id == attacker.id:
+                # الوشاح يحمي من هجمات العين واليد
+                attacker.has_shield = True
+                attacker.inventory.remove(item_name)
+                attacker.save()
+                flash('ارتديت وشاح الحماية! ستحمي من عين سيفار ويد الشبح حتى انكساره.', 'success')
+            else:
+                flash('يمكنك استخدام الوشاح على نفسك فقط.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== توتم إعادة الحياة (لنفسك) ==========
+        if item_type == 'totem_self':
+            if target.id == attacker.id:
+                attacker.totem_self = True
+                attacker.inventory.remove(item_name)
+                attacker.save()
+                flash('التوتم الآن معك! إذا مت، ستعود للحياة مرة واحدة.', 'success')
+            else:
+                flash('يمكنك استخدام هذا التوتم على نفسك فقط.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== توتم إحياء الآخرين ==========
+        if item_type == 'totem_other':
+            if target.id != attacker.id:
+                # تحقق من أن الهدف ميت
+                if target.status == 'eliminated':
+                    target.status = 'active'
+                    target.health = 50
+                    target.freeze_reason = ''
+                    attacker.inventory.remove(item_name)
+                    target.save()
+                    attacker.save()
+                    flash(f'لقد أعاد {attacker.username} الحياة إلى {target.username}!', 'success')
+                else:
+                    flash('الهدف لا يزال على قيد الحياة!', 'error')
+            else:
+                flash('لا يمكنك استخدام توتم إحياء الآخرين على نفسك.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== استخدام السلاح ==========
         is_combat_active = settings.war_mode or settings.final_battle_mode
         if item_type == 'weapon' and is_combat_active and target.hunter_id not in attacker.friends:
-            if target.role == 'admin' and not settings.final_battle_mode:
-                flash('🛡️ الإمبراطور محصن!', 'error')
+            # منع استهداف الإمبراطور في الحرب الشاملة (وليس المعركة الأخيرة)
+            if target.hunter_id == 1000 and settings.war_mode and not settings.final_battle_mode:
+                flash('🛡️ الإمبراطور محصن في الحرب الشاملة! لا يمكن استهدافه.', 'error')
                 return redirect(request.referrer or url_for('home'))
 
+            # التحقق من درع الهدف
             has_shield = False
             for inv_item in target.inventory:
                 if 'درع' in inv_item or 'shield' in inv_item.lower():
@@ -588,16 +634,12 @@ def use_item(target_id):
             else:
                 target.health -= item.effect_amount
                 if target.health <= 0:
-                    has_totem = False
-                    if not settings.final_battle_mode and not settings.floor3_mode_active:
-                        for inv_item in target.inventory:
-                            if 'طوطم' in inv_item or 'totem' in inv_item.lower():
-                                target.inventory.remove(inv_item)
-                                has_totem = True
-                                break
-                    if has_totem:
+                    # التحقق من توتم إحياء النفس للهدف
+                    has_totem = getattr(target, 'totem_self', False)
+                    if has_totem and not settings.final_battle_mode and not settings.floor3_mode_active:
                         target.health = 50
-                        flash('استيقظ الهدف من الموت باستخدام طوطم الخلود!', 'error')
+                        target.totem_self = False
+                        flash('استيقظ الهدف من الموت باستخدام توتم الخلود!', 'error')
                     else:
                         target.health = 0
                         target.status = 'eliminated'
@@ -605,11 +647,16 @@ def use_item(target_id):
                         if target.role == 'admin':
                             GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=False, set__war_mode=False)
                             _settings_cache['timestamp'] = 0
-                flash('تمت الضربة بنجاح!', 'success')
+                        flash(f'تم القضاء على {target.username}!', 'success')
+                else:
+                    flash(f'تم إصابة {target.username} وتضرر بـ {item.effect_amount} نقطة صحة!', 'success')
             attacker.inventory.remove(item_name)
             attacker.last_action_time = now
             attacker.save()
             target.save()
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== الجرعة العلاجية ==========
         elif item_type == 'heal':
             if target.id == attacker.id or target.hunter_id in attacker.friends:
                 heal_amount = item.effect_amount
@@ -623,24 +670,38 @@ def use_item(target_id):
                 attacker.inventory.remove(item_name)
                 attacker.last_action_time = now
                 attacker.save()
-                flash('تم العلاج!', 'success')
+                flash(f'تم شفاء {target.username} بـ {heal_amount} نقطة صحة!', 'success')
+            else:
+                flash('لا يمكنك علاج غير حلفائك.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== عين سيفار (تجسس) ==========
         elif item_type == 'spy':
-            if any('حجاب' in i or 'درع' in i for i in target.inventory):
+            # التحقق من وجود وشاح حماية لدى الهدف
+            if getattr(target, 'has_shield', False):
                 attacker.inventory.remove(item_name)
                 attacker.save()
-                flash('الهدف محصن ضد التجسس!', 'error')
+                target.has_shield = False  # الوشاح ينكسر
+                target.save()
+                flash('الهدف يمتلك وشاح حماية! لقد انكسر الوشاح وضاعت عينك.', 'error')
             else:
                 attacker.tajis_eye_until = now + timedelta(hours=1)
                 attacker.inventory.remove(item_name)
                 attacker.save()
-                flash('تجسست بنجاح، ملفه مفتوح لك الآن!', 'success')
+                flash('تجسست بنجاح، ملفه مفتوح لك الآن لمدة ساعة!', 'success')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== يد الشبح (سرقة) ==========
         elif item_type == 'steal':
             stolen_item = request.form.get('target_item')
             if stolen_item in target.inventory:
-                if any('حجاب' in i or 'درع' in i or 'عباءة' in i for i in target.inventory):
+                # التحقق من وجود وشاح حماية
+                if getattr(target, 'has_shield', False):
                     attacker.inventory.remove(item_name)
                     attacker.save()
-                    flash('الهدف محمي ضد السرقة!', 'error')
+                    target.has_shield = False
+                    target.save()
+                    flash('الهدف يمتلك وشاح حماية! لقد انكسر الوشاح وضاعت يدك.', 'error')
                 else:
                     target.inventory.remove(stolen_item)
                     attacker.inventory.append(stolen_item)
@@ -648,7 +709,16 @@ def use_item(target_id):
                     attacker.intelligence_points += 5
                     attacker.save()
                     target.save()
-                    flash(f'تمت سرقة {stolen_item} بنجاح!', 'success')
+                    flash(f'تمت سرقة {stolen_item} من {target.username} بنجاح!', 'success')
+            else:
+                flash('العنصر غير موجود في حقيبة الهدف.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
+        # ========== فخ السراب (في حالة الشراء، يتم التعامل معه في buy_item) ==========
+        else:
+            flash('هذا العنصر لا يمكن استخدامه بهذه الطريقة.', 'error')
+            return redirect(request.referrer or url_for('home'))
+
     except Exception as e:
         app.logger.error(f"Use item error: {traceback.format_exc()}")
         flash('حدث خطأ أثناء استخدام الأداة', 'error')
@@ -695,15 +765,15 @@ def altar():
                     user.health = 0
                     user.status = 'eliminated'
                     user.freeze_reason = 'أحرقته تعويذة'
-                flash('لقد دفعت ضريبة الدم!', 'error')
+                flash(f'لقد دفعت ضريبة الدم: {loss} نقطة صحة!', 'error')
             elif stype == 'hp_gain':
                 gain = int(user.health * (val / 100.0)) if is_perc else val
                 user.health = min(100, user.health + gain)
-                flash('تسري طاقة غريبة في جسدك!', 'success')
+                flash(f'تم شفاء {gain} نقطة صحة!', 'success')
             elif stype == 'points_loss':
                 loss = int(user.points * (val / 100.0)) if is_perc else val
                 user.points = max(0, user.points - loss)
-                flash('تبخرت دنانيرك أمام عينيك!', 'error')
+                flash(f'فقدت {loss} دينار!', 'error')
             elif stype == 'points_gain':
                 user.points += val
                 flash(f'مُنحت {val} دنانير من طاقة المذبح!', 'success')
@@ -827,7 +897,7 @@ def add_friend():
                 user.save()
                 trap.save()
                 check_achievements(user)
-                flash('اصطدت شبحاً وحصلت على المكافأة!', 'success')
+                flash(f'اصطدت شبحاً وحصلت على {trap.reward_points} دينار!', 'success')
             return redirect(request.referrer or url_for('home'))
 
         if target.hunter_id not in user.friends and user.hunter_id not in target.friend_requests:
@@ -913,7 +983,7 @@ def puzzles():
                     user.save()
                     puzzle.save()
                     check_achievements(user)
-                    flash('إجابة صحيحة!', 'success')
+                    flash(f'إجابة صحيحة! حصلت على {puzzle.reward_points} دينار!', 'success')
                 else:
                     flash('نفدت الجوائز!', 'error')
             else:
@@ -951,7 +1021,7 @@ def secret_link(puzzle_id):
             user.quicksand_lock_until = datetime.utcnow() + timedelta(minutes=puzzle.trap_duration_minutes or 5)
             user.intelligence_points = max(0, user.intelligence_points - 5)
             user.save()
-            flash('وقعت في فخ الرمال!', 'error')
+            flash(f'وقعت في فخ الرمال! لن تستطيع التحرك لمدة {puzzle.trap_duration_minutes} دقائق.', 'error')
         elif str(user.id) not in puzzle.winners_list and puzzle.current_winners < puzzle.max_winners:
             user.points += puzzle.reward_points
             puzzle.current_winners += 1
@@ -959,7 +1029,7 @@ def secret_link(puzzle_id):
             user.intelligence_points += 15
             user.save()
             puzzle.save()
-            flash('جائزة سرية!', 'success')
+            flash(f'جائزة سرية! حصلت على {puzzle.reward_points} دينار!', 'success')
     except Exception as e:
         app.logger.error(f"Secret link error: {e}")
         flash('حدث خطأ', 'error')
@@ -1085,19 +1155,23 @@ def buy_item(item_id):
             return redirect(url_for('store'))
         if user.points >= item.price:
             if item.is_mirage:
+                # فخ سراب: يظهر كسلعة عادية لكنه يسلب الدنانير والذكاء
                 user.points -= item.price
                 user.intelligence_points = max(0, user.intelligence_points - 10)
-                flash(item.mirage_message or 'فخ سراب! خسرت الدنانير و 10 نقاط ذكاء.', 'error')
+                flash(item.mirage_message or 'لقد اشتريت شيئًا غامضًا... لكنه تبين أنه فخ! فقدت دنانيرك و 10 نقاط ذكاء.', 'error')
             else:
                 user.points -= item.price
                 if item.is_luck:
                     outcome = random.randint(item.luck_min, item.luck_max)
                     user.points += outcome
-                    flash(f'النتيجة من الصندوق: {outcome} دنانير', 'success' if outcome >= 0 else 'error')
+                    if outcome >= 0:
+                        flash(f'النتيجة من الصندوق: {outcome} دينار!', 'success')
+                    else:
+                        flash(f'النتيجة من الصندوق: {outcome} دينار (خسارة)!', 'error')
                 else:
                     user.inventory.append(item.name)
                     user.stats_items_bought += 1
-                    flash('تم الشراء!', 'success')
+                    flash(f'تم شراء {item.name} بنجاح!', 'success')
             user.save()
         else:
             flash('دنانيرك لا تكفي!', 'error')
