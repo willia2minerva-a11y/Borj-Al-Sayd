@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .lore-container { background: #0a0a0a; border: 2px solid #333; padding: 30px; border-radius: 10px; max-width: 800px; margin: auto; box-shadow: inset 0 0 50px rgba(0,0,0,0.9); }
+    .lore-title { color: #f1c40f; text-align: center; text-shadow: 0 0 10px #f1c40f; font-size: 28px; margin-bottom: 30px; border-bottom: 1px dashed #444; padding-bottom: 15px; }
+    .lore-entry { color: #ccc; font-size: 16px; line-height: 1.8; margin-bottom: 20px; padding-left: 15px; border-left: 2px solid #444; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; }
+    .lore-epic { color: #e74c3c; font-weight: bold; border-left-color: #e74c3c; text-shadow: 0 0 5px rgba(231,76,60,0.5); }
+</style>
+
+<div class="lore-container">
+    <h2 class="lore-title">📜 غرفة البونغليف (نقوش سيفار)</h2>
+    <div class="lore-entry lore-epic">
+        {{ poneglyph_text | safe }}
+    </div>
+</div>
+{% endblock %}
