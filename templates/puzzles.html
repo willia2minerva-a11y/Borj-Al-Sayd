@@ -10,8 +10,15 @@
     .accordion-body { padding: 20px; color: #ddd; line-height: 1.8; background: var(--bg-card); font-size: 15px; }
     .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-top: 15px; outline:none; box-sizing: border-box; }
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; width: 100%; }
-    details { outline: none; } summary { list-style: none; } summary::-webkit-details-marker { display: none; }
     .badge-points { background: rgba(212,175,55,0.2); color: var(--gold-main); padding: 3px 8px; border-radius: 4px; font-size: 12px; border: 1px solid var(--gold-dark); }
+    .click-counter { text-align: center; margin-top: 15px; }
+    .click-btn { background: #8b0000; color: #fff; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .click-btn:hover { transform: scale(1.05); background: #e74c3c; }
+    .word-buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 15px; }
+    .word-btn { background: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+    .word-btn.selected { background: var(--gold-main); color: #000; transform: scale(1.05); }
+    .word-seq { margin-top: 15px; padding: 10px; background: #000; border-radius: 6px; text-align: center; color: var(--gold-light); min-height: 50px; }
+    .reset-seq { background: #e67e22; color: #000; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 10px; font-size: 12px; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -33,11 +40,33 @@
         {% elif puz.current_winners >= puz.max_winners %}
             <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; text-align: center; border: 1px solid #e74c3c; border-radius: 6px;">انتهت الجوائز، لقد سبقك الآخرون! ❌</div>
         {% else %}
-            <form action="/puzzles" method="POST" style="margin: 0;">
-                <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
-                <input type="text" name="guess" placeholder="أدخل إجابتك هنا..." class="form-control" required>
-                <button type="submit" class="btn-gold">إرسال الإجابة ➔</button>
-            </form>
+            {% if puz.puzzle_type == 'text' %}
+                <form action="/puzzles" method="POST" style="margin: 0;">
+                    <input type="hidden" name="puzzle_id" value="{{ puz.id }}">
+                    <input type="text" name="guess" placeholder="أدخل إجابتك هنا..." class="form-control" required>
+                    <button type="submit" class="btn-gold">إرسال الإجابة ➔</button>
+                </form>
+            {% elif puz.puzzle_type == 'click_count' %}
+                <div class="click-counter">
+                    <p style="color:#aaa;">عدد الضغطات المطلوب: <strong style="color: var(--gold-main);">{{ puz.puzzle_answer }}</strong></p>
+                    <button class="click-btn" data-puzzle-id="{{ puz.id }}" data-target="{{ puz.puzzle_answer }}" data-reward="{{ puz.reward_points }}" onclick="handleClickCount(this)">اضغط هنا! (0)</button>
+                </div>
+            {% elif puz.puzzle_type == 'word_order' %}
+                {% set words = puz.puzzle_answer.split(',') %}
+                <div class="word-order-game" data-puzzle-id="{{ puz.id }}" data-words="{{ puz.puzzle_answer }}" data-reward="{{ puz.reward_points }}">
+                    <p style="color:#aaa;">رتب الكلمات بالترتيب الصحيح:</p>
+                    <div class="word-buttons">
+                        {% for word in words %}
+                            <button class="word-btn" data-word="{{ word.strip() }}">{{ word.strip() }}</button>
+                        {% endfor %}
+                    </div>
+                    <div class="word-seq">الترتيب الحالي: <span class="seq-display">[ ]</span></div>
+                    <button class="reset-seq" onclick="resetWordSeq(this)">إعادة الترتيب</button>
+                    <button class="btn-gold submit-word-seq" onclick="submitWordSeq(this)">إرسال الترتيب</button>
+                </div>
+            {% else %}
+                <div style="background: rgba(231, 76, 60, 0.1); color: #e74c3c; padding: 10px; text-align: center; border: 1px solid #e74c3c; border-radius: 6px;">نوع اللغز غير مدعوم في هذه الواجهة.</div>
+            {% endif %}
         {% endif %}
         
         {% if current_user and current_user.role == 'admin' %}
@@ -50,4 +79,82 @@
 {% else %}
 <p style="text-align: center; color: #888; margin-top: 50px;">لا توجد نقوش غامضة في هذا الطابق حالياً.</p>
 {% endfor %}
+
+<script>
+    // منطق لغز الضغط المتكرر
+    let clickCounters = {};
+    function handleClickCount(btn) {
+        const puzzleId = btn.dataset.puzzleId;
+        const target = parseInt(btn.dataset.target);
+        const reward = parseInt(btn.dataset.reward);
+        if (!clickCounters[puzzleId]) clickCounters[puzzleId] = 0;
+        clickCounters[puzzleId]++;
+        btn.innerText = `اضغط هنا! (${clickCounters[puzzleId]})`;
+        if (clickCounters[puzzleId] >= target) {
+            // إرسال النتيجة إلى السيرفر
+            fetch('/puzzles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `puzzle_id=${puzzleId}&guess=${clickCounters[puzzleId]}`
+            }).then(() => location.reload());
+        }
+    }
+
+    // منطق لغز ترتيب الكلمات
+    let wordSeqs = {};
+    function initWordSeq(container) {
+        const puzzleId = container.dataset.puzzleId;
+        if (!wordSeqs[puzzleId]) wordSeqs[puzzleId] = [];
+        const btns = container.querySelectorAll('.word-btn');
+        btns.forEach(btn => {
+            btn.removeEventListener('click', wordClickHandler);
+            btn.addEventListener('click', wordClickHandler);
+        });
+        function wordClickHandler(e) {
+            const word = e.currentTarget.dataset.word;
+            if (wordSeqs[puzzleId].includes(word)) return;
+            wordSeqs[puzzleId].push(word);
+            updateSeqDisplay(container, wordSeqs[puzzleId]);
+            e.currentTarget.classList.add('selected');
+        }
+    }
+    function updateSeqDisplay(container, seq) {
+        const displaySpan = container.querySelector('.seq-display');
+        displaySpan.innerText = `[ ${seq.join(' → ')} ]`;
+    }
+    function resetWordSeq(btn) {
+        const container = btn.closest('.word-order-game');
+        const puzzleId = container.dataset.puzzleId;
+        wordSeqs[puzzleId] = [];
+        container.querySelectorAll('.word-btn').forEach(btn => btn.classList.remove('selected'));
+        updateSeqDisplay(container, []);
+    }
+    function submitWordSeq(btn) {
+        const container = btn.closest('.word-order-game');
+        const puzzleId = container.dataset.puzzleId;
+        const correctOrder = container.dataset.words.split(',').map(w => w.trim());
+        const userOrder = wordSeqs[puzzleId] || [];
+        if (userOrder.length !== correctOrder.length) {
+            alert('لم تقم بترتيب كل الكلمات بعد!');
+            return;
+        }
+        let isCorrect = true;
+        for (let i = 0; i < correctOrder.length; i++) {
+            if (userOrder[i] !== correctOrder[i]) {
+                isCorrect = false;
+                break;
+            }
+        }
+        if (isCorrect) {
+            fetch('/puzzles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `puzzle_id=${puzzleId}&guess=${userOrder.join(',')}`
+            }).then(() => location.reload());
+        } else {
+            alert('الترتيب غير صحيح! حاول مرة أخرى.');
+        }
+    }
+    document.querySelectorAll('.word-order-game').forEach(initWordSeq);
+</script>
 {% endblock %}
