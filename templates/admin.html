@@ -97,10 +97,10 @@
         <select name="puzzle_type" class="form-control">
             <option value="none">خبر إعلاني فقط</option>
             <option value="text">لغز نصي (كلمة سر)</option>
-            <option value="click_count">لغز الضغط (إجابة برقم)</option>
-            <option value="word_order">لغز ترتيب الكلمات</option>
+            <option value="click_count">لغز الضغط المتكرر (إجابة برقم الضغطات)</option>
+            <option value="word_order">لغز ترتيب الكلمات (أدخل الكلمات مفصولة بفواصل)</option>
         </select>
-        <input type="text" name="puzzle_answer" placeholder="الإجابة الصحيحة (إن وجد لغز)" class="form-control">
+        <input type="text" name="puzzle_answer" placeholder="الإجابة الصحيحة (للغز نصي: الكلمة، للضغط المتكرر: العدد، لترتيب الكلمات: الكلمات بترتيبها مفصولة بفواصل)" class="form-control">
         <div style="display:flex; gap:10px;">
             <input type="number" name="reward_points" placeholder="دنانير المكافأة" class="form-control">
             <input type="number" name="max_winners" placeholder="عدد الفائزين" class="form-control" value="1">
@@ -114,15 +114,20 @@
     <form action="/admin" method="POST" style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px;">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="puzzle_type" class="form-control" required>
-            <option value="quicksand_trap">فخ الرمال المتحركة</option>
+            <option value="quicksand_trap">فخ الرمال المتحركة (تجمد مؤقت)</option>
+            <option value="points_gift">رابط هدية (نقاط)</option>
+            <option value="points_penalty">رابط عقوبة (خصم نقاط)</option>
+            <option value="freeze_trap">رابط تجميد (يمنع الدخول لفترة)</option>
+            <option value="item_reward">رابط يعطي غرض من المتجر (أدخل اسم الغرض في الإجابة)</option>
+            <option value="seal_reward">رابط يعطي ختم سحري</option>
             <option value="fake_account">حساب شبح وهمي (مكافأة صيد)</option>
             <option value="cursed_ghost">حساب شبح ملعون (يسرق الدنانير والأغراض)</option>
-            <option value="hidden_link">رابط مكافأة مخفي</option>
+            <option value="hidden_link">رابط مكافأة مخفي (نقاط فقط)</option>
         </select>
-        <input type="text" name="puzzle_answer" placeholder="الـ ID للشبح (إذا اخترت شبح)" class="form-control">
+        <input type="text" name="puzzle_answer" placeholder="الـ ID للشبح / اسم الغرض (لـ item_reward)" class="form-control">
         <div style="display:flex; gap:10px;"><input type="number" name="reward_points" placeholder="دنانير النجاح" class="form-control" value="0"><input type="number" name="max_winners" placeholder="الفائزين" class="form-control" value="1"></div>
         <div style="display:flex; gap:10px;"><input type="number" name="trap_duration" placeholder="مدة الفخ (دقائق)" class="form-control" value="0"><input type="number" name="trap_penalty" placeholder="خسارة الدنانير (للفخ)" class="form-control" value="0"></div>
-        <button type="submit" class="btn-danger">نشر الفخ / الشبح</button>
+        <button type="submit" class="btn-danger">نشر الفخ / الشبح / الرابط</button>
     </form>
 </div>
 
@@ -159,7 +164,7 @@
     {% if spells %}
     <table class="spell-table">
         <thead>
-            <tr><th>الكلمة</th><th>النوع</th><th>القيمة</th><th>نسبة%</th><th>الأداة</th><th>الاستخدامات</th><th>تنتهي</th><th></th>    </tr>
+            <tr><th>الكلمة</th><th>النوع</th><th>القيمة</th><th>نسبة%</th><th>الأداة</th><th>الاستخدامات</th><th>تنتهي</th><th></th>     </tr>
         </thead>
         <tbody>
             {% for s in spells %}
