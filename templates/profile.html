@@ -1,18 +1,114 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .profile-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; background: #000; }
-    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; transition: 0.3s; }
-    .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
-    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 15px; box-sizing: border-box; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; }
-    .item-badge { background: rgba(212,175,55,0.1); color: var(--gold-light); border: 1px solid var(--gold-dark); padding: 8px 15px; border-radius: 6px; display: inline-block; margin: 5px; }
+    .profile-container { text-align: center; margin-bottom: 30px; position: relative; }
+    .avatar-banner {
+        display: inline-block;
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        border: 3px solid var(--gold-main);
+        box-shadow: 0 0 20px rgba(212,175,55,0.4);
+        margin-bottom: 15px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .avatar-banner:hover {
+        transform: scale(1.02);
+    }
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #000;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: none;
+        box-shadow: none;
+        animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+        0% { transform: translate(-50%, -50%) translateY(0px); }
+        50% { transform: translate(-50%, -50%) translateY(-8px); }
+        100% { transform: translate(-50%, -50%) translateY(0px); }
+    }
+    @media (max-width: 600px) {
+        .avatar-banner { width: 120px; height: 120px; }
+        .profile-avatar { width: 100px; height: 100px; }
+    }
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid #332815;
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .stat-card:hover {
+        border-color: var(--gold-main);
+        transform: translateY(-5px);
+    }
+    .section-card {
+        background: #050403;
+        border: 1px solid #332815;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        background: #000;
+        color: #fff;
+        border: 1px solid #44351c;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        box-sizing: border-box;
+    }
+    .btn-gold {
+        background: linear-gradient(45deg, var(--gold-dark), var(--gold-light));
+        color: #000;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+        width: 100%;
+        font-size: 16px;
+        transition: 0.2s;
+    }
+    .btn-gold:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+    }
+    .item-badge {
+        background: rgba(212,175,55,0.1);
+        color: var(--gold-light);
+        border: 1px solid var(--gold-dark);
+        padding: 8px 15px;
+        border-radius: 6px;
+        display: inline-block;
+        margin: 5px;
+        transition: 0.2s;
+    }
+    .item-badge:hover {
+        background: rgba(212,175,55,0.2);
+        transform: scale(1.02);
+    }
 </style>
 
-<div style="text-align: center; margin-bottom: 30px;">
-    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" 
-         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+<div class="profile-container">
+    <div class="avatar-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
+        <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar"
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+    </div>
     <h1 style="color:#fff; margin:0;">{{ user.username }}</h1>
     <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:10px; display:inline-block;">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
 </div>
