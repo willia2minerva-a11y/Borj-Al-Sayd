@@ -13,34 +13,24 @@
 {% endif %}
 
 <style>
-    /* تصميم البانر */
     .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
-    
-    /* تصميم الهوية وإحصائيات العالم */
     .top-stats-container { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px; }
     .id-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; text-decoration: none; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: 0.3s; }
     .id-card:hover { border-color: var(--gold-dark); transform: translateY(-3px); }
     .world-stats { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    
-    /* مؤشرات الأحداث */
     .event-indicators { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
     .event-badge { background: rgba(0,0,0,0.6); border: 1px solid; border-radius: 20px; padding: 5px 15px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
     .war-active { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.1); }
     .final-active { border-color: #9b59b6; color: #9b59b6; background: rgba(155,89,182,0.1); }
     .gates-active { border-color: #f1c40f; color: #f1c40f; background: rgba(241,196,15,0.1); }
     .vote-active { border-color: #3498db; color: #3498db; background: rgba(52,152,219,0.1); }
-    
-    /* أزرار الأقسام */
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .gold-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px 10px; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
     .gold-card:hover { border-color: var(--gold-main); transform: translateY(-5px); background: #1a140c; }
     .card-icon { font-size: 30px; margin-bottom: 10px; }
     .card-title { color: var(--gold-main); font-size: 14px; margin: 0; font-weight: bold; }
-
-    /* مشهد النصر */
-    body.victory-lock { overflow: hidden !important; } 
     .victory-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1a1005 0%, #000 100%); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
     .vic-text { position: absolute; font-size: 26px; font-weight: 900; color: var(--gold-light); text-shadow: 0 0 20px rgba(212,175,55,0.8); opacity: 0; transform: scale(0.8); transition: all 1s ease; text-align: center; line-height: 1.8; max-width: 80%; }
     .vic-text.show { opacity: 1; transform: scale(1); }
@@ -70,19 +60,16 @@
         <div class="vic-text" id="vt-1">من تخطى جميع عراقيل المتاهة...<br>وفاز في معركة الدماء...</div>
         <div class="vic-text" id="vt-2">من ارتقى باسمه لأعلى البرج؟</div>
         <div class="vic-text" id="vt-3">ما هو إلا سيّد المتاهة الجديد!</div>
-        
         <div class="vic-profile" id="vp">
             <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
             <h1 style="font-size: 40px; color:#fff; margin:0; text-shadow:0 5px 15px #000;">{{ winner.username }}</h1>
         </div>
-        
         <div class="vic-stats" id="vs">
             <div class="v-box"><div style="font-size:28px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa; font-size:12px;">أرواح سقطت</div></div>
             <div class="v-box"><div style="font-size:28px; color:#3498db;">{{ winner.intelligence_points if winner.intelligence_points else 0 }}</div><div style="color:#aaa; font-size:12px;">نقاط الذكاء</div></div>
             <div class="v-box"><div style="font-size:28px; color:#2ecc71;">{{ winner.points if winner.points else 0 }}</div><div style="color:#aaa; font-size:12px;">الدنانير</div></div>
             <div class="v-box"><div style="font-size:28px; color:#e67e22;">{{ winner.stats_items_bought if winner.stats_items_bought else 0 }}</div><div style="color:#aaa; font-size:12px;">المشتريات</div></div>
         </div>
-
         <div class="vic-final" id="vf">
             لقد خضعت المتاهة لإرادتك بالكامل! 👑
             {% if test_winner and current_user.role == 'admin' %}
@@ -90,7 +77,6 @@
             {% endif %}
         </div>
     </div>
-    
     <script>
         setTimeout(() => { document.getElementById('vt-1').classList.add('show'); }, 500);
         setTimeout(() => { document.getElementById('vt-1').classList.replace('show', 'hide'); }, 3500);
@@ -131,7 +117,6 @@
             </div>
         </div>
 
-        <!-- مؤشرات الأحداث النشطة -->
         <div class="event-indicators">
             {% if war_mode_active %}
             <span class="event-badge war-active">⚔️ الحرب الشاملة مشتعلة!</span>
