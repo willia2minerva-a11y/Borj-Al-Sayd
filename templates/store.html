@@ -11,7 +11,6 @@
     .btn-buy:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(46,204,113,0.4); }
     .btn-disabled { background: #333; color: #888; border: 1px solid #444; padding: 12px 20px; border-radius: 6px; font-weight: bold; margin-top: 15px; width: 100%; cursor: not-allowed; font-size: 15px; }
 
-    /* لوحة الإدارة المخفية للأدمن */
     .admin-panel { background: #0a0505; border: 2px dashed #e67e22; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: inset 0 0 20px rgba(230,126,34,0.1); }
     .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; margin-bottom: 15px; outline:none; box-sizing:border-box;}
     .setting-btn { background: #111; color: #aaa; border: 1px dashed #333; padding: 10px; width: 100%; text-align: center; border-radius: 6px; cursor: pointer; margin-bottom: 10px; transition: 0.3s; }
@@ -20,7 +19,7 @@
 
 <div style="text-align: center; margin-bottom: 30px;">
     <h2 style="color: var(--sand); font-size: 35px; margin: 0;">🐪 السوق المظلم</h2>
-    <p style="color: #aaa; font-size: 15px;">استبدل دنانيرك بأدوات النجاة.. أو ربما تقع في فخ السراب!</p>
+    <p style="color: #aaa; font-size: 15px;">استبدل دنانيرك بمشتريات قيمة.. بعضها قد يحمل أسرارًا.</p>
 </div>
 
 {% if current_user.role == 'admin' %}
@@ -39,9 +38,12 @@
         <select name="item_type" class="form-control" required>
             <option value="weapon">سلاح (هجوم)</option>
             <option value="heal">جرعة (شفاء)</option>
-            <option value="spy">عين تاجيس (تجسس)</option>
-            <option value="steal">قفاز السارق (سرقة)</option>
+            <option value="spy">عين سيفار (تجسس)</option>
+            <option value="steal">يد شبح (سرقة)</option>
             <option value="seal">ختم سحري (للمعركة الأخيرة)</option>
+            <option value="shield">وشاح الحماية (يحمي من العين واليد)</option>
+            <option value="totem_self">توتم إعادة الحياة (لنفسك)</option>
+            <option value="totem_other">توتم إحياء الآخرين</option>
         </select>
         
         <label style="color:#aaa; font-size:13px;">صورة المنتج (اختياري):</label>
@@ -55,12 +57,12 @@
             <div style="display:flex; gap:10px;"><input type="number" name="luck_min" placeholder="أدنى ربح/خسارة" class="form-control"><input type="number" name="luck_max" placeholder="أعلى ربح" class="form-control"></div>
         </div>
 
-        <div class="setting-btn" onclick="document.getElementById('mirage_settings').style.display='block'">🕸️ تحويله إلى فخ سراب</div>
+        <div class="setting-btn" onclick="document.getElementById('mirage_settings').style.display='block'">🕸️ تحويله إلى فخ (يبدو عاديًا لكنه يفقدك الدنانير)</div>
         <div id="mirage_settings" style="display:none; background:#111; padding:15px; border-radius:8px; margin-bottom:15px;">
-            <label style="color:#e74c3c;">إعدادات فخ السراب:</label>
+            <label style="color:#e74c3c;">إعدادات الفخ:</label>
             <input type="hidden" name="is_mirage" value="0" id="mirage_val">
-            <input type="checkbox" onchange="document.getElementById('mirage_val').value = this.checked ? '1' : '0'" style="margin-bottom:10px;"> تفعيل الفخ (يخسر الدنانير و 10 ذكاء)
-            <input type="text" name="mirage_message" placeholder="رسالة الفخ..." class="form-control">
+            <input type="checkbox" onchange="document.getElementById('mirage_val').value = this.checked ? '1' : '0'" style="margin-bottom:10px;"> تفعيل الفخ (يظهر كسلعة عادية لكنه يسلب الدنانير والذكاء)
+            <input type="text" name="mirage_message" placeholder="رسالة الفخ (تظهر بعد الشراء)" class="form-control">
         </div>
 
         <button type="submit" style="background:#e67e22; color:#fff; border:none; padding:12px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer;">عرض في السوق 🛒</button>
@@ -82,6 +84,9 @@
                 {% elif item.item_type == 'spy' %}👁️
                 {% elif item.item_type == 'steal' %}🖐️
                 {% elif item.item_type == 'seal' %}🔮
+                {% elif item.item_type == 'shield' %}🛡️
+                {% elif item.item_type == 'totem_self' %}🌀
+                {% elif item.item_type == 'totem_other' %}🔄
                 {% else %}📦{% endif %}
             </div>
         {% endif %}
