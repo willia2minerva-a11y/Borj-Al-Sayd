@@ -3,9 +3,24 @@
 <style>
     .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
     .form-control-search { flex: 1; padding: 15px; background: #000; color: #fff; border: 2px solid var(--gold-dark); border-radius: 8px; outline: none; font-size: 16px; font-weight: bold; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 900; }
-    .user-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-    .avatar-sm { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 900; transition: 0.2s; }
+    .btn-gold:hover { transform: translateY(-2px); filter: brightness(1.05); }
+    .user-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; transition: 0.2s; }
+    .user-card:hover { border-color: var(--gold-main); }
+    .avatar-sm {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid var(--gold-main);
+        object-fit: cover;
+        background: #000;
+        animation: floatSmall 6s ease-in-out infinite;
+    }
+    @keyframes floatSmall {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+        100% { transform: translateY(0px); }
+    }
     .profile-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; flex: 1; }
 </style>
 
@@ -22,7 +37,8 @@
 {% if search_result %}
 <div class="user-card" style="border-color: var(--gold-main); box-shadow: 0 0 15px rgba(212,175,55,0.2);">
     <a href="/hunter/{{ search_result.hunter_id }}" class="profile-link">
-        <img src="/avatar/{{ search_result.hunter_id }}" class="avatar-sm" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzE0MTAwYyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZDRhZjM3Ii8+PHBhdGggZD0iTTIwIDkwYzAtMjAgMTUtMzUgMzAtMzVzMzAgMTUgMzAgMzUiIGZpbGw9IiNkNGFmMzciLz48L3N2Zz4='">
+        <img src="/avatar/{{ search_result.hunter_id }}" class="avatar-sm" 
+             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
         <div><strong style="color: #fff; font-size: 16px;">{{ search_result.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ search_result.hunter_id }}</div></div>
     </a>
     <form action="/add_friend" method="POST" style="margin: 0;"><input type="hidden" name="target_id" value="{{ search_result.hunter_id }}"><button type="submit" class="btn-gold" style="padding: 8px 15px; font-size: 13px;">طلب تحالف</button></form>
@@ -34,7 +50,8 @@
     {% for req in friend_requests %}
     <div class="user-card">
         <a href="/hunter/{{ req.hunter_id }}" class="profile-link">
-            <img src="/avatar/{{ req.hunter_id }}" class="avatar-sm" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzE0MTAwYyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZDRhZjM3Ii8+PHBhdGggZD0iTTIwIDkwYzAtMjAgMTUtMzUgMzAtMzVzMzAgMTUgMzAgMzUiIGZpbGw9IiNkNGFmMzciLz48L3N2Zz4='">
+            <img src="/avatar/{{ req.hunter_id }}" class="avatar-sm" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
             <div><strong style="color: #fff;">{{ req.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ req.hunter_id }}</div></div>
         </a>
         <div style="display: flex; gap: 10px;">
@@ -42,14 +59,16 @@
             <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin:0;"><button type="submit" style="background:#e74c3c; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">رفض</button></form>
         </div>
     </div>
-    {% endfor %} {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% if friends %}
     <h3 style="color: #2ecc71; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">✔️ الحلفاء</h3>
     {% for f in friends %}
     <div class="user-card">
         <a href="/hunter/{{ f.hunter_id }}" class="profile-link">
-            <img src="/avatar/{{ f.hunter_id }}" class="avatar-sm" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzE0MTAwYyIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZDRhZjM3Ii8+PHBhdGggZD0iTTIwIDkwYzAtMjAgMTUtMzUgMzAtMzVzMzAgMTUgMzAgMzUiIGZpbGw9IiNkNGFmMzciLz48L3N2Zz4='">
+            <img src="/avatar/{{ f.hunter_id }}" class="avatar-sm" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
             <div><strong style="color: #fff;">{{ f.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ f.hunter_id }}</div></div>
         </a>
         <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" style="margin:0;"><button type="submit" style="background:#e74c3c; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">خيانة</button></form>
