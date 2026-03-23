@@ -66,6 +66,15 @@
         <a href="/declarations" class="nav-link"><span class="nav-icon">📢</span> {{ settings.nav_decs | default('التصريحات', true) }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
         <a href="/store" class="nav-link"><span class="nav-icon">🐪</span> {{ settings.nav_store | default('السوق المظلم', true) }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
         <a href="/altar" class="nav-link"><span class="nav-icon">🔮</span> {{ settings.nav_altar | default('مذبح الطلاسم', true) }}</a>
+        
+        {% if current_user.unlocked_lore_room %}
+        <a href="/poneglyph" class="nav-link"><span class="nav-icon">🗿</span> غرفة البونغليف</a>
+        {% endif %}
+        
+        {% if current_user.unlocked_top_room %}
+        <a href="/top_room" class="nav-link"><span class="nav-icon">🏆</span> قاعة الأساطير</a>
+        {% endif %}
+        
         <a href="/graveyard" class="nav-link"><span class="nav-icon">💀</span> {{ settings.nav_grave | default('المقبرة', true) }}</a>
         
         {% if current_user.role == 'admin' %}
@@ -93,4 +102,4 @@
         }
     </script>
 </body>
-            </html>
+                                                                                                                                                                                                        </html>
