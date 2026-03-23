@@ -17,7 +17,7 @@
     .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
     .banner-text { position: relative; z-index: 2; text-align: center; }
     
-    /* بطاقة المستخدم مع صورة متحركة */
+    /* بطاقة المستخدم */
     .id-card {
         background: var(--bg-card);
         border: 1px solid #332815;
@@ -62,20 +62,146 @@
     .card-icon { font-size: 30px; margin-bottom: 10px; }
     .card-title { color: var(--gold-main); font-size: 14px; margin: 0; font-weight: bold; }
 
-    /* مشهد النصر (كما هو) */
-    .victory-screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1a1005 0%, #000 100%); z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
-    .vic-text { position: absolute; font-size: 26px; font-weight: 900; color: var(--gold-light); text-shadow: 0 0 20px rgba(212,175,55,0.8); opacity: 0; transform: scale(0.8); transition: all 1s ease; text-align: center; line-height: 1.8; max-width: 80%; }
-    .vic-text.show { opacity: 1; transform: scale(1); }
-    .vic-text.hide { opacity: 0; transform: scale(1.2); }
-    .vic-profile { position: absolute; opacity: 0; transform: translateY(50px); transition: all 1.5s cubic-bezier(0.25, 1, 0.5, 1); text-align: center; }
-    .vic-profile.show { opacity: 1; transform: translateY(0); }
-    .vic-profile.up { transform: translateY(-160px) scale(0.85); }
-    .v-avatar { width: 160px; height: 160px; border-radius: 50%; border: 5px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.8); object-fit: cover; margin-bottom: 15px; }
-    .vic-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; opacity: 0; transform: translateY(50px); transition: all 1.5s ease; position: absolute; top: 55%; width: 100%; max-width: 500px; padding: 0 20px; box-sizing: border-box; }
-    .vic-stats.show { opacity: 1; transform: translateY(0); }
-    .v-box { background: rgba(0,0,0,0.8); border: 1px solid var(--gold-dark); padding: 15px; border-radius: 12px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
-    .vic-final { position: absolute; bottom: 8%; opacity: 0; font-size: 22px; font-weight: 900; color: #2ecc71; text-shadow: 0 0 20px rgba(46,204,113,0.6); transition: all 1.5s ease; text-align: center; }
-    .vic-final.show { opacity: 1; }
+    /* مشهد النصر المحسّن */
+    body.victory-lock { overflow: hidden !important; }
+    .victory-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: radial-gradient(ellipse at center, #2c1a0a 0%, #000 100%);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        font-family: 'Cinema', 'Courier New', monospace;
+        animation: bgGlow 3s infinite alternate;
+    }
+    @keyframes bgGlow {
+        0% { box-shadow: inset 0 0 0px rgba(212,175,55,0); background: radial-gradient(ellipse at center, #2c1a0a 0%, #000 100%); }
+        100% { box-shadow: inset 0 0 100px rgba(212,175,55,0.3); background: radial-gradient(ellipse at center, #4a2e12 0%, #000 100%); }
+    }
+    .victory-screen::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: repeating-linear-gradient(45deg, rgba(212,175,55,0.05) 0px, rgba(212,175,55,0.05) 2px, transparent 2px, transparent 8px);
+        animation: particles 20s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes particles {
+        0% { transform: translate(0,0) rotate(0deg); }
+        100% { transform: translate(10%,10%) rotate(5deg); }
+    }
+    .vic-text {
+        position: absolute;
+        font-size: 32px;
+        font-weight: 900;
+        color: var(--gold-light);
+        text-shadow: 0 0 30px rgba(212,175,55,0.9), 0 0 60px rgba(212,175,55,0.5);
+        opacity: 0;
+        transform: scale(0.7) rotateY(90deg);
+        transition: all 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        text-align: center;
+        line-height: 1.4;
+        max-width: 80%;
+        letter-spacing: 2px;
+    }
+    .vic-text.show {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+    }
+    .vic-text.hide {
+        opacity: 0;
+        transform: scale(1.3) rotateY(-30deg);
+    }
+    .vic-profile {
+        position: absolute;
+        opacity: 0;
+        transform: translateY(100px) scale(0.8);
+        transition: all 1.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        text-align: center;
+        filter: drop-shadow(0 0 20px rgba(212,175,55,0.8));
+    }
+    .vic-profile.show {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    .vic-profile.up {
+        transform: translateY(-140px) scale(0.9);
+        filter: drop-shadow(0 0 40px rgba(212,175,55,1));
+    }
+    .v-avatar {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        border: 5px solid var(--gold-main);
+        box-shadow: 0 0 50px rgba(212,175,55,0.9), 0 0 100px rgba(212,175,55,0.4);
+        object-fit: cover;
+        margin-bottom: 15px;
+        animation: avatarPulse 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes avatarPulse {
+        0% { transform: scale(1); box-shadow: 0 0 50px rgba(212,175,55,0.5); }
+        100% { transform: scale(1.05); box-shadow: 0 0 80px rgba(212,175,55,1); }
+    }
+    .vic-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        opacity: 0;
+        transform: translateY(60px);
+        transition: all 1.5s ease 0.5s;
+        position: absolute;
+        top: 55%;
+        width: 100%;
+        max-width: 500px;
+        padding: 0 20px;
+        box-sizing: border-box;
+    }
+    .vic-stats.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .v-box {
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(5px);
+        border: 1px solid var(--gold-main);
+        padding: 15px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        transition: 0.3s;
+    }
+    .v-box:hover {
+        transform: scale(1.05);
+        border-color: #fff;
+    }
+    .vic-final {
+        position: absolute;
+        bottom: 8%;
+        opacity: 0;
+        font-size: 24px;
+        font-weight: 900;
+        color: #2ecc71;
+        text-shadow: 0 0 20px rgba(46,204,113,0.8);
+        transition: all 1.5s ease 1s;
+        text-align: center;
+        background: rgba(0,0,0,0.6);
+        padding: 15px 30px;
+        border-radius: 40px;
+        border: 1px solid #2ecc71;
+        letter-spacing: 1px;
+    }
+    .vic-final.show {
+        opacity: 1;
+    }
 </style>
 
 {% if not current_user %}
@@ -93,8 +219,8 @@
         <div class="vic-text" id="vt-2">من ارتقى باسمه لأعلى البرج؟</div>
         <div class="vic-text" id="vt-3">ما هو إلا سيّد المتاهة الجديد!</div>
         <div class="vic-profile" id="vp">
-            <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
-            <h1 style="font-size: 40px; color:#fff; margin:0; text-shadow:0 5px 15px #000;">{{ winner.username }}</h1>
+            <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
+            <h1 style="font-size: 40px; color:#fff; margin:0; text-shadow:0 0 20px #000;">{{ winner.username }}</h1>
         </div>
         <div class="vic-stats" id="vs">
             <div class="v-box"><div style="font-size:28px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa; font-size:12px;">أرواح سقطت</div></div>
@@ -111,17 +237,17 @@
     </div>
     <script>
         setTimeout(() => { document.getElementById('vt-1').classList.add('show'); }, 500);
-        setTimeout(() => { document.getElementById('vt-1').classList.replace('show', 'hide'); }, 3500);
-        setTimeout(() => { document.getElementById('vt-2').classList.add('show'); }, 4500);
-        setTimeout(() => { document.getElementById('vt-2').classList.replace('show', 'hide'); }, 6500);
-        setTimeout(() => { document.getElementById('vt-3').classList.add('show'); }, 7500);
-        setTimeout(() => { document.getElementById('vt-3').classList.replace('show', 'hide'); }, 9500);
-        setTimeout(() => { document.getElementById('vp').classList.add('show'); }, 10500);
+        setTimeout(() => { document.getElementById('vt-1').classList.replace('show', 'hide'); }, 4000);
+        setTimeout(() => { document.getElementById('vt-2').classList.add('show'); }, 5000);
+        setTimeout(() => { document.getElementById('vt-2').classList.replace('show', 'hide'); }, 7500);
+        setTimeout(() => { document.getElementById('vt-3').classList.add('show'); }, 8500);
+        setTimeout(() => { document.getElementById('vt-3').classList.replace('show', 'hide'); }, 11000);
+        setTimeout(() => { document.getElementById('vp').classList.add('show'); }, 12000);
         setTimeout(() => { 
             document.getElementById('vp').classList.add('up'); 
             document.getElementById('vs').classList.add('show');
-        }, 13500);
-        setTimeout(() => { document.getElementById('vf').classList.add('show'); }, 15000);
+        }, 15000);
+        setTimeout(() => { document.getElementById('vf').classList.add('show'); }, 17000);
     </script>
     {% else %}
 
@@ -135,7 +261,7 @@
         <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
             <a href="/profile" class="id-card">
                 <img src="/avatar/{{ current_user.hunter_id }}" class="avatar-small"
-                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
                 <div>
                     <div style="font-size:20px; font-weight:bold;">{{ current_user.username }}</div>
                     <div style="color:var(--gold-main); font-size:13px; margin-top:5px;">{{ display_rank }} | {{ current_user.points }} دينار</div>
