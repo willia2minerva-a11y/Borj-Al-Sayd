@@ -64,8 +64,8 @@ class User(db.Document):
     secret_achievements = db.ListField(db.StringField(), default=list)
     
     # الحقول الجديدة للميكانيكيات المضافة
-    has_shield = db.BooleanField(default=False)      # وشاح الحماية (يحمي من العين واليد)
-    totem_self = db.BooleanField(default=False)      # توتم إحياء النفس (يُستعمل مرة واحدة)
+    has_shield = db.BooleanField(default=False)      # وشاح الحماية
+    totem_self = db.BooleanField(default=False)      # توتم إحياء النفس
 
 class News(db.Document):
     meta = {
@@ -80,7 +80,7 @@ class News(db.Document):
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     category = db.StringField(default='news')
-    puzzle_type = db.StringField(default='none')   # none, text, click_count, word_order, quicksand_trap, fake_account, cursed_ghost, hidden_link, secret_word
+    puzzle_type = db.StringField(default='none')
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
     max_winners = db.IntField(default=1)
@@ -171,7 +171,7 @@ class SpellConfig(db.Document):
         ]
     }
     spell_word = db.StringField(required=True, unique=True)
-    spell_type = db.StringField(required=True)   # hp_gain, hp_loss, points_gain, points_loss, item_reward, unlock_lore, unlock_top, kill_emperor
+    spell_type = db.StringField(required=True)
     effect_value = db.IntField(default=0)
     is_percentage = db.BooleanField(default=False)
     item_name = db.StringField(default='')
