@@ -1,106 +1,64 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .profile-avatar {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        border: 4px solid var(--gold-main);
-        object-fit: cover;
-        box-shadow: 0 0 20px rgba(212,175,55,0.4);
-        margin-bottom: 15px;
-        background: #000;
-        animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-        100% { transform: translateY(0px); }
-    }
-    @media (max-width: 600px) {
-        .profile-avatar {
-            width: 130px;
-            height: 130px;
-        }
-    }
-    .stat-card {
-        background: var(--bg-card);
-        border: 1px solid #332815;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        transition: 0.3s;
-    }
-    .stat-card:hover {
-        border-color: var(--gold-main);
-        transform: translateY(-5px);
-    }
-    .section-card {
-        background: #050403;
-        border: 1px solid #332815;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-    }
-    .form-control {
-        width: 100%;
-        padding: 12px;
-        background: #000;
-        color: #fff;
-        border: 1px solid #44351c;
-        border-radius: 6px;
-        margin-bottom: 15px;
-        box-sizing: border-box;
-    }
-    .btn-gold {
-        background: linear-gradient(45deg, var(--gold-dark), var(--gold-light));
-        color: #000;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        width: 100%;
-        font-size: 16px;
-        transition: 0.2s;
-    }
-    .btn-gold:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.05);
-    }
-    .item-badge {
-        background: rgba(212,175,55,0.1);
-        color: var(--gold-light);
-        border: 1px solid var(--gold-dark);
-        padding: 8px 15px;
-        border-radius: 6px;
-        display: inline-block;
-        margin: 5px;
-        transition: 0.2s;
-    }
-    .item-badge:hover {
-        background: rgba(212,175,55,0.2);
-        transform: scale(1.02);
-    }
+    .profile-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; background: #000; animation: float 6s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+    @media (max-width: 600px) { .profile-avatar { width: 130px; height: 130px; } }
+    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; transition: 0.3s; }
+    .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
+    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; outline:none; }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+    .btn-gold:hover { transform: scale(1.02); }
 </style>
 
-<div style="text-align: center; margin-bottom: 30px;">
-    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar"
-         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
-    <h1 style="color:#fff; margin:0;">{{ user.username }}</h1>
-    <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:10px; display:inline-block;">ID: {{ user.hunter_id }} | 📍 {{ user.zone }}</div>
+<div style="text-align: center; margin-bottom: 40px; position: relative;">
+    <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+    <h1 style="color: var(--gold-main); margin: 0; font-size: 32px; text-shadow: 0 0 10px rgba(212,175,55,0.5);">{{ user.username }}</h1>
+    <div style="color: #aaa; font-size: 16px; margin-top: 5px;">ID: {{ user.hunter_id }}</div>
+    
+    {% if user.facebook_link %}
+    <div style="margin-top: 10px;">
+        <a href="{{ user.facebook_link }}" target="_blank" style="color: #3b5998; text-decoration: none; font-weight: bold; background: rgba(59, 89, 152, 0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid #3b5998;">🔗 فيسبوك الرحالة</a>
+    </div>
+    {% endif %}
+
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+        <span style="background: rgba(212,175,55,0.2); color: var(--gold-light); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold-main); font-size: 13px;">الطابق: {{ user.zone }}</span>
+        {% if user.special_rank %}<span style="background: rgba(46,204,113,0.2); color: #2ecc71; padding: 5px 15px; border-radius: 20px; border: 1px solid #2ecc71; font-size: 13px;">{{ user.special_rank }}</span>{% endif %}
+        {% if user.status == 'inactive' %}<span style="background: rgba(231,76,60,0.2); color: #e74c3c; padding: 5px 15px; border-radius: 20px; border: 1px solid #e74c3c; font-size: 13px;">قيد المراجعة</span>{% endif %}
+    </div>
 </div>
 
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px; margin-bottom:30px;">
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:var(--gold-light);">{{ user.points }}</div><div style="color:#888; font-size:13px;">دنانير 💰</div></div>
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#3498db;">{{ user.loyalty_points }}</div><div style="color:#888; font-size:13px;">الولاء 🤝</div></div>
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#9b59b6;">{{ user.intelligence_points | default(0, true) }}</div><div style="color:#888; font-size:13px;">الذكاء 🧠</div></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 40px;">
+    <div class="stat-card">
+        <div style="font-size: 24px; color: var(--sand); font-weight: 900;">{{ user.points }}</div>
+        <div style="color: #888; font-size: 12px; margin-top: 5px;">دنانير 🪙</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 24px; color: #2ecc71; font-weight: 900;">{{ user.loyalty_points }}</div>
+        <div style="color: #888; font-size: 12px; margin-top: 5px;">شرف ووفاء 🤝</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 24px; color: #3498db; font-weight: 900;">{{ user.intelligence_points }}</div>
+        <div style="color: #888; font-size: 12px; margin-top: 5px;">معدل ذكاء 🧠</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size: 24px; color: #e74c3c; font-weight: 900;">{{ user.health }}%</div>
+        <div style="color: #888; font-size: 12px; margin-top: 5px;">الروح (HP) ❤️</div>
+    </div>
 </div>
 
 <div class="section-card">
-    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">🎒 حقيبة الأغراض</h3>
-    {% if user.inventory %}
-        {% for item in user.inventory %}<span class="item-badge">{{ item }}</span>{% endfor %}
+    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">🎒 حقيبة النجاة</h3>
+    {% if current_user.has_shield %} <span style="font-size:30px;" title="وشاح الحماية">🛡️</span> {% endif %}
+    {% if current_user.totem_self %} <span style="font-size:30px;" title="توتم إعادة الحياة">🌀</span> {% endif %}
+    {% if my_items %}
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top: 15px;">
+            {% for item in my_items %}
+            <div style="background:#111; border:1px solid #44351c; padding:8px 15px; border-radius:6px; color:#ddd; font-size:13px;">{{ item.name }}</div>
+            {% endfor %}
+        </div>
     {% else %}
         <p style="color:#888; text-align:center;">حقيبتك فارغة، اذهب للسوق للتجهّز.</p>
     {% endif %}
@@ -108,17 +66,32 @@
 
 <div class="section-card">
     <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">⚙️ إعدادات الهوية</h3>
+    
     <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom:25px;">
         <input type="hidden" name="action" value="change_avatar">
         <label style="color:#aaa; font-size:13px;">تحديث النقش (الصورة):</label>
         <div style="display:flex; gap:10px;"><input type="file" name="avatar_file" accept="image/*" class="form-control" style="margin:0; padding:9px;" required><button type="submit" class="btn-gold" style="width:auto;">رفع</button></div>
     </form>
+    
+    <form action="/settings" method="POST" style="margin-bottom:25px;">
+        <input type="hidden" name="action" value="change_name">
+        <label style="color:#aaa; font-size:13px;">تغيير اسم الرحالة (مرة كل 15 يوم):</label>
+        <div style="display:flex; gap:10px;">
+            <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control" style="margin:0;" required>
+            <button type="submit" class="btn-gold" style="width:auto;">تغيير</button>
+        </div>
+    </form>
+
     <form action="/settings" method="POST">
         <input type="hidden" name="action" value="change_password">
         <label style="color:#aaa; font-size:13px;">تغيير كلمة المرور السرية:</label>
-        <input type="password" name="old_password" placeholder="الحالية" class="form-control" required>
-        <div style="display:flex; gap:10px; margin-bottom:15px;"><input type="password" name="new_password" placeholder="الجديدة" class="form-control" style="margin:0;" required><input type="password" name="confirm_password" placeholder="تأكيد" class="form-control" style="margin:0;" required></div>
-        <button type="submit" class="btn-gold" style="background:#e74c3c; color:#fff;">تحديث الكلمة</button>
+        <input type="password" name="old_password" placeholder="الحالية" class="form-control" style="margin-bottom:10px;" required>
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <input type="password" name="new_password" placeholder="الجديدة" class="form-control" required>
+            <input type="password" name="confirm_password" placeholder="تأكيد" class="form-control" required>
+        </div>
+        <button type="submit" class="btn-gold">حفظ الختم السري</button>
     </form>
 </div>
 {% endblock %}
+
