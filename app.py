@@ -163,6 +163,8 @@ def fast_health_check():
         return "OK", 200
 
 @app.before_request
+
+@app.before_request
 def pre_process():
     # استثناء الصفحات العامة لمنع الحلقات
     if request.endpoint in ['static', 'get_avatar', 'fast_health_check', 'login', 'register', 'logout']:
@@ -229,7 +231,7 @@ def pre_process():
     if 'user_id' in session:
         try:
             user = User.objects(id=session['user_id']).only(
-                'id', 'username', 'role', 'status', 'health', 'points', 'loyalty_points',
+                'id', 'hunter_id', 'username', 'role', 'status', 'health', 'points', 'loyalty_points',
                 'intelligence_points', 'zone', 'special_rank', 'avatar', 'inventory',
                 'friends', 'friend_requests', 'achievements', 'created_at', 'last_active',
                 'last_action_time', 'last_health_check', 'freeze_reason', 'chosen_gate',
@@ -293,6 +295,7 @@ def pre_process():
             return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
 
     g.user = user
+
 
 # دوال المصادقة
 def login_required(f):
