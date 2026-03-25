@@ -8,13 +8,13 @@
         body { background-color: #080604; background-image: radial-gradient(circle at center, #1a140a 0%, #000 100%); color: #fff; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .auth-container { background: rgba(15, 12, 8, 0.9); padding: 40px; border-radius: 12px; border: 1px solid #d4af37; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(212,175,55,0.2); position: relative; overflow: hidden; }
         .auth-container::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, transparent, #d4af37, transparent); }
-        h2 { color: #d4af37; font-size: 28px; text-shadow: 0 0 15px rgba(212,175,55,0.5); margin-top: 0; margin-bottom: 5px; }
-        p { color: #a08c6c; font-size: 13px; margin-bottom: 25px; }
-        .form-group { margin-bottom: 18px; text-align: right; }
-        .form-group label { display: block; margin-bottom: 8px; color: #d4af37; font-size: 13px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; outline: none; transition: 0.3s; }
-        .form-group input:focus { border-color: #d4af37; box-shadow: 0 0 10px rgba(212,175,55,0.3); }
-        .btn-auth { width: 100%; padding: 14px; background: linear-gradient(45deg, #b8860b, #d4af37); color: #000; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 900; transition: 0.3s; box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
+        h2 { color: #d4af37; font-size: 28px; text-shadow: 0 0 15px rgba(212,175,55,0.4); margin-bottom: 10px; }
+        p { color: #888; font-size: 14px; margin-bottom: 30px; }
+        .form-group { text-align: right; margin-bottom: 20px; }
+        .form-group label { display: block; color: #cca; font-size: 13px; margin-bottom: 8px; font-weight: bold; }
+        .form-control { width: 100%; padding: 12px 15px; background: #000; border: 1px solid #44351c; border-radius: 8px; color: #fff; font-size: 15px; box-sizing: border-box; outline: none; transition: 0.3s; }
+        .form-control:focus { border-color: #d4af37; box-shadow: 0 0 10px rgba(212,175,55,0.2); }
+        .btn-auth { background: linear-gradient(45deg, #aa8222, #f1c40f); color: #000; font-weight: 900; font-size: 16px; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn-auth:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(212,175,55,0.6); }
         .auth-links { margin-top: 20px; font-size: 13px; color: #888; border-top: 1px dashed #333; padding-top: 15px; }
         .auth-links a { color: #d4af37; text-decoration: none; font-weight: bold; }
@@ -30,12 +30,12 @@
         {% if messages %}{% for category, message in messages %}<div class="flash-msg flash-{{ category }}">{{ message }}</div>{% endfor %}{% endif %}
     {% endwith %}
     <form action="/register" method="POST">
-        <div class="form-group"><label>اسم الرحالة</label><input type="text" name="username" required autocomplete="off"></div>
-        <div class="form-group"><label>كلمة السر (الختم)</label><input type="password" name="password" required></div>
-        <div class="form-group"><label>رابط حسابك (للتوثيق)</label><input type="url" name="facebook_link" placeholder="https://..." required></div>
-        <button type="submit" class="btn-auth">طلب الانضمام 🐪</button>
+        <div class="form-group"><label>اسم الرحالة</label><input type="text" name="username" required class="form-control" placeholder="اسمك المستعار..."></div>
+        <div class="form-group"><label>كلمة السر (الختم)</label><input type="password" name="password" required class="form-control" placeholder="كلمة سرية قوية..."></div>
+        <div class="form-group"><label>رابط فيسبوك (إلزامي للتوثيق)</label><input type="url" name="facebook_link" required class="form-control" placeholder="https://facebook.com/yourprofile"></div>
+        <button type="submit" class="btn-auth">تسجيل الدخول للمتاهة ➔</button>
     </form>
-    <div class="auth-links">هل تملك ختماً مسبقاً؟ <a href="/login">ادخل من هنا</a></div>
+    <div class="auth-links">هل تملك ختماً مسبقاً؟ <a href="/login">العبور من هنا</a></div>
 </div>
 </body>
 </html>
