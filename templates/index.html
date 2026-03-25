@@ -12,292 +12,127 @@
     {% endif %}
 {% endif %}
 
+{% if test_winner %}
 <style>
-    .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
-    .epic-banner::after { content: ''; position: absolute; inset:0; background: linear-gradient(to top, #000 10%, transparent 100%); }
-    .banner-text { position: relative; z-index: 2; text-align: center; }
+    .win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: 10vh; overflow: hidden;}
+    .win-avatar { width: 180px; height: 180px; border-radius: 50%; border: 5px solid var(--gold-main); box-shadow: 0 0 80px var(--gold-main); margin-bottom: 20px; opacity: 0; transform: translateY(-50px) scale(0.5); transition: all 2s cubic-bezier(0.25, 1, 0.5, 1); }
+    .win-avatar.show { opacity: 1; transform: translateY(0) scale(1); }
+    .win-name { color: #fff; font-size: 45px; margin: 0 0 30px 0; opacity: 0; transition: opacity 2s ease-in; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
     
-    /* بطاقة المستخدم */
-    .id-card {
-        background: var(--bg-card);
-        border: 1px solid #332815;
-        border-radius: 12px;
-        padding: 15px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        text-decoration: none;
-        color: #fff;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-        transition: 0.3s;
-    }
-    .id-card:hover {
-        border-color: var(--gold-dark);
-        transform: translateY(-3px);
-    }
-    .avatar-small {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
-        background: #000;
-        border: 2px solid var(--gold-main);
-        animation: floatSmall 6s ease-in-out infinite;
-    }
-    @keyframes floatSmall {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-4px); }
-        100% { transform: translateY(0px); }
-    }
-    .world-stats { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 15px; display: flex; justify-content: space-around; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .event-indicators { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 25px; justify-content: center; }
-    .event-badge { background: rgba(0,0,0,0.6); border: 1px solid; border-radius: 20px; padding: 5px 15px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
-    .war-active { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.1); }
-    .final-active { border-color: #9b59b6; color: #9b59b6; background: rgba(155,89,182,0.1); }
-    .gates-active { border-color: #f1c40f; color: #f1c40f; background: rgba(241,196,15,0.1); }
-    .vote-active { border-color: #3498db; color: #3498db; background: rgba(52,152,219,0.1); }
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .gold-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 12px; padding: 20px 10px; text-decoration: none; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: 0.3s; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .gold-card:hover { border-color: var(--gold-main); transform: translateY(-5px); background: #1a140c; }
-    .card-icon { font-size: 30px; margin-bottom: 10px; }
-    .card-title { color: var(--gold-main); font-size: 14px; margin: 0; font-weight: bold; }
-
-    /* مشهد النصر المحسّن */
-    body.victory-lock { overflow: hidden !important; }
-    .victory-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: radial-gradient(ellipse at center, #2c1a0a 0%, #000 100%);
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        font-family: 'Cinema', 'Courier New', monospace;
-        animation: bgGlow 3s infinite alternate;
-    }
-    @keyframes bgGlow {
-        0% { box-shadow: inset 0 0 0px rgba(212,175,55,0); background: radial-gradient(ellipse at center, #2c1a0a 0%, #000 100%); }
-        100% { box-shadow: inset 0 0 100px rgba(212,175,55,0.3); background: radial-gradient(ellipse at center, #4a2e12 0%, #000 100%); }
-    }
-    .victory-screen::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: repeating-linear-gradient(45deg, rgba(212,175,55,0.05) 0px, rgba(212,175,55,0.05) 2px, transparent 2px, transparent 8px);
-        animation: particles 20s linear infinite;
-        pointer-events: none;
-    }
-    @keyframes particles {
-        0% { transform: translate(0,0) rotate(0deg); }
-        100% { transform: translate(10%,10%) rotate(5deg); }
-    }
-    .vic-text {
-        position: absolute;
-        font-size: 32px;
-        font-weight: 900;
-        color: var(--gold-light);
-        text-shadow: 0 0 30px rgba(212,175,55,0.9), 0 0 60px rgba(212,175,55,0.5);
-        opacity: 0;
-        transform: scale(0.7) rotateY(90deg);
-        transition: all 1.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        text-align: center;
-        line-height: 1.4;
-        max-width: 80%;
-        letter-spacing: 2px;
-    }
-    .vic-text.show {
-        opacity: 1;
-        transform: scale(1) rotateY(0deg);
-    }
-    .vic-text.hide {
-        opacity: 0;
-        transform: scale(1.3) rotateY(-30deg);
-    }
-    .vic-profile {
-        position: absolute;
-        opacity: 0;
-        transform: translateY(100px) scale(0.8);
-        transition: all 1.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-        text-align: center;
-        filter: drop-shadow(0 0 20px rgba(212,175,55,0.8));
-    }
-    .vic-profile.show {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-    .vic-profile.up {
-        transform: translateY(-140px) scale(0.9);
-        filter: drop-shadow(0 0 40px rgba(212,175,55,1));
-    }
-    .v-avatar {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        border: 5px solid var(--gold-main);
-        box-shadow: 0 0 50px rgba(212,175,55,0.9), 0 0 100px rgba(212,175,55,0.4);
-        object-fit: cover;
-        margin-bottom: 15px;
-        animation: avatarPulse 1.5s ease-in-out infinite alternate;
-    }
-    @keyframes avatarPulse {
-        0% { transform: scale(1); box-shadow: 0 0 50px rgba(212,175,55,0.5); }
-        100% { transform: scale(1.05); box-shadow: 0 0 80px rgba(212,175,55,1); }
-    }
-    .vic-stats {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        opacity: 0;
-        transform: translateY(60px);
-        transition: all 1.5s ease 0.5s;
-        position: absolute;
-        top: 55%;
-        width: 100%;
-        max-width: 500px;
-        padding: 0 20px;
-        box-sizing: border-box;
-    }
-    .vic-stats.show {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .v-box {
-        background: rgba(0,0,0,0.7);
-        backdrop-filter: blur(5px);
-        border: 1px solid var(--gold-main);
-        padding: 15px;
-        border-radius: 12px;
-        text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        transition: 0.3s;
-    }
-    .v-box:hover {
-        transform: scale(1.05);
-        border-color: #fff;
-    }
-    .vic-final {
-        position: absolute;
-        bottom: 8%;
-        opacity: 0;
-        font-size: 24px;
-        font-weight: 900;
-        color: #2ecc71;
-        text-shadow: 0 0 20px rgba(46,204,113,0.8);
-        transition: all 1.5s ease 1s;
-        text-align: center;
-        background: rgba(0,0,0,0.6);
-        padding: 15px 30px;
-        border-radius: 40px;
-        border: 1px solid #2ecc71;
-        letter-spacing: 1px;
-    }
-    .vic-final.show {
-        opacity: 1;
-    }
+    /* تأثير طابعة أولاد الجيران */
+    .typewriter-container { max-width: 800px; width: 90%; padding: 20px; background: rgba(20, 10, 0, 0.8); border: 1px dashed var(--gold-dark); border-radius: 10px; text-align: right; box-shadow: inset 0 0 30px rgba(0,0,0,0.9); opacity: 0; transition: opacity 1s; }
+    .typewriter-text { color: var(--gold-light); font-size: 22px; font-family: 'Courier New', Courier, monospace; line-height: 1.8; text-shadow: 0 0 10px rgba(212,175,55,0.8); }
+    .cursor { display: inline-block; width: 10px; height: 25px; background-color: var(--gold-main); animation: blink 0.8s infinite; vertical-align: bottom; margin-right: 5px; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    
+    .close-win { position: absolute; top: 20px; right: 20px; color: #555; font-size: 35px; cursor: pointer; background: none; border: none; transition: 0.3s; }
+    .close-win:hover { color: #fff; transform: rotate(90deg); }
 </style>
 
-{% if not current_user %}
-<div style="text-align: center; padding: 80px 20px;">
-    <h1 style="color: var(--gold-main); font-size: 40px; margin-bottom: 15px;">{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h1>
-    <a href="/login" style="display:inline-block; padding:15px 40px; background:var(--gold-main); color:#000; font-weight:bold; border-radius:8px; text-decoration:none;">دخول المتاهة</a>
-</div>
-{% else %}
-
-    {% if test_winner or (emperor and emperor.status == 'eliminated') %}
-    {% set winner = test_winner if test_winner else current_user %}
-    <script>document.body.classList.add('victory-lock');</script>
-    <div class="victory-screen" id="victory-bg">
-        <div class="vic-text" id="vt-1">من تخطى جميع عراقيل المتاهة...<br>وفاز في معركة الدماء...</div>
-        <div class="vic-text" id="vt-2">من ارتقى باسمه لأعلى البرج؟</div>
-        <div class="vic-text" id="vt-3">ما هو إلا سيّد المتاهة الجديد!</div>
-        <div class="vic-profile" id="vp">
-            <img src="/avatar/{{ winner.hunter_id }}" class="v-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
-            <h1 style="font-size: 40px; color:#fff; margin:0; text-shadow:0 0 20px #000;">{{ winner.username }}</h1>
-        </div>
-        <div class="vic-stats" id="vs">
-            <div class="v-box"><div style="font-size:28px; color:#e74c3c;">{{ dead_count }}</div><div style="color:#aaa; font-size:12px;">أرواح سقطت</div></div>
-            <div class="v-box"><div style="font-size:28px; color:#3498db;">{{ winner.intelligence_points if winner.intelligence_points else 0 }}</div><div style="color:#aaa; font-size:12px;">نقاط الذكاء</div></div>
-            <div class="v-box"><div style="font-size:28px; color:#2ecc71;">{{ winner.points if winner.points else 0 }}</div><div style="color:#aaa; font-size:12px;">الدنانير</div></div>
-            <div class="v-box"><div style="font-size:28px; color:#e67e22;">{{ winner.stats_items_bought if winner.stats_items_bought else 0 }}</div><div style="color:#aaa; font-size:12px;">المشتريات</div></div>
-        </div>
-        <div class="vic-final" id="vf">
-            لقد خضعت المتاهة لإرادتك بالكامل! 👑
-            {% if test_winner and current_user.role == 'admin' %}
-            <br><a href="/admin" style="display:inline-block; margin-top:20px; padding:10px 25px; background:#e74c3c; color:#fff; font-size:14px; border-radius:6px; text-decoration:none;">العودة للإدارة ➔</a>
-            {% endif %}
-        </div>
+<div class="win-overlay" id="winScreen">
+    <button class="close-win" onclick="document.getElementById('winScreen').style.display='none'">×</button>
+    <img src="/avatar/{{ test_winner.hunter_id }}" class="win-avatar" id="winAvatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+    <h1 class="win-name" id="winName">{{ test_winner.username }}</h1>
+    
+    <div class="typewriter-container" id="typeBox">
+        <span class="typewriter-text" id="winText"></span><span class="cursor" id="cursor"></span>
     </div>
-    <script>
-        setTimeout(() => { document.getElementById('vt-1').classList.add('show'); }, 500);
-        setTimeout(() => { document.getElementById('vt-1').classList.replace('show', 'hide'); }, 4000);
-        setTimeout(() => { document.getElementById('vt-2').classList.add('show'); }, 5000);
-        setTimeout(() => { document.getElementById('vt-2').classList.replace('show', 'hide'); }, 7500);
-        setTimeout(() => { document.getElementById('vt-3').classList.add('show'); }, 8500);
-        setTimeout(() => { document.getElementById('vt-3').classList.replace('show', 'hide'); }, 11000);
-        setTimeout(() => { document.getElementById('vp').classList.add('show'); }, 12000);
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(() => { document.getElementById('winAvatar').classList.add('show'); }, 500);
+        setTimeout(() => { document.getElementById('winName').style.opacity = 1; }, 2000);
+        
+        const texts = [
+            "يتم الاتصال بقاعدة بيانات سيفار...",
+            "تحليل البصمة الوراثية...",
+            "سقط الجميع، وتبددت أرواحهم في الرمال.",
+            "شخص واحد فقط استطاع كسر الجدار الحجري...",
+            "المتاهة الآن تركع لصاحبها الجديد.",
+            "باسم الآلهة القديمة، نتوّجك إمبراطوراً لسيفار!"
+        ];
+        
+        let textIndex = 0;
+        let charIndex = 0;
+        const speed = 60; // سرعة الكتابة كطابعة
+        const el = document.getElementById('winText');
+        
+        function typeWriter() {
+            if (textIndex < texts.length) {
+                if (charIndex < texts[textIndex].length) {
+                    el.innerHTML += texts[textIndex].charAt(charIndex);
+                    charIndex++;
+                    setTimeout(typeWriter, speed);
+                } else {
+                    el.innerHTML += "<br><br>"; // سطر جديد
+                    textIndex++;
+                    charIndex = 0;
+                    setTimeout(typeWriter, 1200); // وقفة درامية بين السطور
+                }
+            } else {
+                document.getElementById('cursor').style.display = "none";
+            }
+        }
+        
         setTimeout(() => { 
-            document.getElementById('vp').classList.add('up'); 
-            document.getElementById('vs').classList.add('show');
-        }, 15000);
-        setTimeout(() => { document.getElementById('vf').classList.add('show'); }, 17000);
-    </script>
-    {% else %}
-
-        <div class="epic-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
-            <div class="banner-text">
-                <h1 style="color:#fff; font-size:28px; font-weight:900; text-shadow:0 0 25px var(--gold-main); margin:0;">{{ settings.home_title if settings and settings.home_title else 'البوابة' }}</h1>
-                <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:8px; display:inline-block; font-size: 14px;">📍 {{ current_user.zone }}</div>
-            </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 25px;">
-            <a href="/profile" class="id-card">
-                <img src="/avatar/{{ current_user.hunter_id }}" class="avatar-small"
-                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
-                <div>
-                    <div style="font-size:20px; font-weight:bold;">{{ current_user.username }}</div>
-                    <div style="color:var(--gold-main); font-size:13px; margin-top:5px;">{{ display_rank }} | {{ current_user.points }} دينار</div>
-                </div>
-            </a>
-            <div class="world-stats">
-                <div><div style="font-size:22px; color:#2ecc71; font-weight:900;">{{ alive_count }}</div><div style="color:#888; font-size:12px;">الأحياء</div></div>
-                <div><div style="font-size:22px; color:var(--sand); font-weight:900;">{{ dead_count }}</div><div style="color:#888; font-size:12px;">الجثث</div></div>
-                <div><div style="font-size:22px;">👑</div><div style="color:#888; font-size:12px;">{{ emperor.username if emperor else 'مجهول' }}</div></div>
-            </div>
-        </div>
-
-        <div class="event-indicators">
-            {% if war_mode_active %}
-            <span class="event-badge war-active">⚔️ الحرب الشاملة مشتعلة!</span>
-            {% endif %}
-            {% if final_battle_active %}
-            <span class="event-badge final-active">👑 المعركة الأخيرة!</span>
-            {% endif %}
-            {% if gates_mode_active %}
-            <span class="event-badge gates-active">🚪 البوابات مفتوحة! اختر بوابتك</span>
-            {% endif %}
-            {% if floor3_mode_active %}
-            <span class="event-badge vote-active">🗳️ محكمة الطابق الثالث - صوت الآن!</span>
-            {% endif %}
-        </div>
-
-        <div class="dashboard-grid">
-            <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">{{ settings.nav_news if settings and settings.nav_news else 'المراسيم' }}</h3></a>
-            <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'النقوش والألغاز' }}</h3></a>
-            <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">{{ settings.nav_store if settings and settings.nav_store else 'السوق المظلم' }}</h3></a>
-            <a href="/friends" class="gold-card"><span class="card-icon">🤝</span><h3 class="card-title">{{ settings.nav_friends if settings and settings.nav_friends else 'التحالفات' }}</h3></a>
-            <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">{{ settings.nav_altar if settings and settings.nav_altar else 'مذبح الطلاسم' }}</h3></a>
-            <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات' }}</h3></a>
-        </div>
-        <a href="/graveyard" class="gold-card" style="margin-bottom: 20px;"><span class="card-icon">💀</span><h3 class="card-title">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
-    {% endif %}
+            document.getElementById('typeBox').style.opacity = 1;
+            typeWriter(); 
+        }, 3500);
+    });
+</script>
 {% endif %}
+
+<style>
+    .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
+    .epic-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #0a0806 0%, transparent 100%); }
+    .epic-title { position: relative; z-index: 2; color: var(--gold-main); font-size: 36px; margin: 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); font-weight: 900; letter-spacing: 2px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .gold-card { background: linear-gradient(145deg, #1a140a 0%, #050403 100%); border: 1px solid #44351c; border-radius: 12px; padding: 20px; text-align: center; text-decoration: none; transition: 0.3s; display: block; position: relative; overflow: hidden; }
+    .gold-card:hover { transform: translateY(-5px); border-color: var(--gold-main); box-shadow: 0 5px 20px rgba(212,175,55,0.2); }
+    .card-icon { font-size: 35px; display: block; margin-bottom: 10px; }
+    .card-title { color: #cca; margin: 0; font-size: 16px; }
+</style>
+
+<div class="epic-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
+    <h1 class="epic-title">{{ settings.home_title if settings and settings.home_title else 'البوابة الرئيسية' }}</h1>
+</div>
+
+<div style="background: #110d09; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px;">
+    {% if current_user %}
+        <h3 style="color: #fff; margin: 0 0 10px 0;">مرحباً بك، <span style="color: var(--gold-main);">{{ current_user.username }}</span></h3>
+        <div style="color: #aaa; font-size: 14px;">الرتبة: {{ display_rank }} | الطابق: {{ current_user.zone }} | الدنانير: <span style="color: var(--sand); font-weight: bold;">{{ current_user.points }}</span></div>
+    {% else %}
+        <h3 style="color: #fff; margin: 0 0 10px 0;">أنت غير معروف للمتاهة</h3>
+        <a href="/login" style="color: var(--gold-main); font-weight: bold; text-decoration: none;">سجل دخولك من هنا ➔</a>
+    {% endif %}
+</div>
+
+<div class="dashboard-grid">
+    <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">{{ settings.nav_news if settings and settings.nav_news else 'المراسيم' }}</h3></a>
+    <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'النقوش والألغاز' }}</h3></a>
+    <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">{{ settings.nav_store if settings and settings.nav_store else 'السوق المظلم' }}</h3></a>
+    <a href="/friends" class="gold-card"><span class="card-icon">🤝</span><h3 class="card-title">{{ settings.nav_friends if settings and settings.nav_friends else 'التحالفات' }}</h3></a>
+    <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">{{ settings.nav_altar if settings and settings.nav_altar else 'مذبح الطلاسم' }}</h3></a>
+    <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات' }}</h3></a>
+</div>
+<a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111;"><span class="card-icon">💀</span><h3 class="card-title" style="color: #e74c3c;">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
+
+{% if settings and settings.gates_mode_active %}
+<div style="background: #050403; border: 2px solid var(--gold-main); border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(212,175,55,0.1);">
+    <h2 style="color: var(--gold-main); margin-top: 0;">🚪 اختيار البوابات 🚪</h2>
+    <p style="color: #ddd; line-height: 1.6;">{{ settings.gates_description }}</p>
+    {% if current_user and current_user.chosen_gate == 0 and not settings.gates_selection_locked %}
+        <form action="/choose_gate" method="POST" style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 20px;">
+            <button name="gate_num" value="1" class="btn-gold" style="padding: 10px 20px;">{{ settings.gate_1_name }}</button>
+            <button name="gate_num" value="2" class="btn-gold" style="padding: 10px 20px;">{{ settings.gate_2_name }}</button>
+            <button name="gate_num" value="3" class="btn-gold" style="padding: 10px 20px;">{{ settings.gate_3_name }}</button>
+        </form>
+    {% elif current_user and current_user.chosen_gate > 0 %}
+        <div style="color: #2ecc71; font-weight: bold; font-size: 18px; margin-top: 15px;">لقد اخترت البوابة رقم {{ current_user.chosen_gate }}، انتظر الحكم!</div>
+    {% endif %}
+</div>
+{% endif %}
+
 {% endblock %}
+
