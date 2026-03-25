@@ -5,25 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</title>
     <style>
-        :root { --bg-dark: #0a0806; --bg-card: #14100c; --gold-light: #f1c40f; --gold-main: #d4af37; --gold-dark: #aa8222; --sand: #e67e22; }
+        :root { --bg-dark: #0a0806; --bg-card: #14100c; --gold-light: #f1c40f; --gold-main: #d4af37; --gold-dark: #aa8222; --sand: #e67e22; --zone-1: #2ecc71; --zone-2: #e74c3c; --zone-3-gold: #f1c40f; --zone-4-diamond: #00ffff; }
         body { margin: 0; padding: 0; background-color: var(--bg-dark); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
         .top-header { display: flex; background: #050403; padding: 15px 20px; border-bottom: 2px solid var(--gold-dark); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
         .menu-btn { font-size: 26px; color: var(--gold-main); cursor: pointer; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
         .header-logo { font-size: 22px; color: var(--gold-main); font-weight: 900; text-decoration: none; }
-        .sidebar { position: fixed; right: 0; top: 0; height: 100vh; width: 280px; background: linear-gradient(180deg, #0f0c08 0%, #000 100%); border-left: 2px solid var(--gold-dark); padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 2000; transform: translateX(100%); transition: transform 0.4s; overflow-y: auto; }
+        
+        /* Sidebar Fixes: Added display flex to push logout button to bottom */
+        .sidebar { position: fixed; right: 0; top: 0; height: 100vh; width: 280px; background: linear-gradient(180deg, #0f0c08 0%, #000 100%); border-left: 2px solid var(--gold-dark); padding: 20px; padding-bottom: 40px; box-sizing: border-box; display: flex; flex-direction: column; z-index: 2000; transform: translateX(100%); transition: transform 0.4s; overflow-y: auto; }
         .sidebar.open { transform: translateX(0); box-shadow: -10px 0 40px rgba(0,0,0,0.9); }
         .close-btn { font-size: 30px; color: var(--gold-dark); cursor: pointer; text-align: left; margin-bottom: 10px; }
+        
         .nav-link { display: block; padding: 12px 15px; color: #cca; text-decoration: none; margin-bottom: 5px; font-size: 15px; font-weight: bold; border-right: 3px solid transparent; transition: 0.3s; position: relative; }
         .nav-link:hover { background-color: rgba(212,175,55,0.05); color: var(--gold-light); border-right-color: var(--gold-main); }
         .nav-icon { margin-left: 8px; font-size: 18px; }
         .badge { background: var(--sand); color: #000; padding: 2px 7px; border-radius: 50%; font-size: 11px; position: absolute; left: 15px; top: 12px; font-weight: bold;}
+        
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1500; backdrop-filter: blur(4px); }
         .overlay.open { display: block; }
         .content { flex: 1; width: 100%; }
         .content-inner { padding: 30px; max-width: 1000px; margin: auto; }
+        
         .flash-msg { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; border: 1px solid; }
-        .flash-success { background: rgba(212,175,55,0.1); border-color: var(--gold-main); color: var(--gold-light); }
-        .flash-error { background: rgba(230,126,34,0.1); border-color: var(--sand); color: var(--sand); }
+        .flash-success { background: rgba(46,204,113,0.1); border-color: #2ecc71; color: #2ecc71; }
+        .flash-error { background: rgba(231,76,60,0.1); border-color: #e74c3c; color: #e74c3c; }
+        
         .marquee-container { background: #8b0000; color: #fff; padding: 10px; font-weight: bold; font-size: 14px; overflow: hidden; white-space: nowrap; border-bottom: 1px solid #ff4c4c; }
         .marquee-content { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
@@ -49,40 +55,35 @@
 
     {% if current_user %}
     <div class="sidebar" id="mainSidebar">
-        <div class="close-btn" onclick="toggleSidebar()">&times;</div>
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="/avatar/{{ current_user.hunter_id }}" 
-                 style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; margin-bottom: 10px;"
-                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
-            <strong style="color: var(--gold-main); font-size: 18px; display:block;">{{ current_user.username }}</strong>
+        <div>
+            <div class="close-btn" onclick="toggleSidebar()">&times;</div>
+            <div style="text-align: center; margin-bottom: 20px;">
+                <img src="/avatar/{{ current_user.hunter_id }}" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; margin-bottom: 10px;" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                <strong style="color: var(--gold-main); font-size: 18px; display:block;">{{ current_user.username }}</strong>
+            </div>
+            <hr style="border-color: #332815; margin-bottom: 15px;">
+            
+            <a href="/" class="nav-link"><span class="nav-icon">🏰</span> {{ settings.nav_home | default('الرئيسية', true) }}</a>
+            <a href="/profile" class="nav-link"><span class="nav-icon">👤</span> {{ settings.nav_profile | default('هويتي', true) }}</a>
+            <a href="/friends" class="nav-link"><span class="nav-icon">🤝</span> {{ settings.nav_friends | default('التحالفات', true) }}</a>
+            <a href="/news" class="nav-link"><span class="nav-icon">📜</span> {{ settings.nav_news | default('المراسيم', true) }} {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
+            <a href="/puzzles" class="nav-link"><span class="nav-icon">🧩</span> {{ settings.nav_puzzles | default('النقوش', true) }} {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
+            <a href="/declarations" class="nav-link"><span class="nav-icon">📢</span> {{ settings.nav_decs | default('التصريحات', true) }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
+            <a href="/store" class="nav-link"><span class="nav-icon">🐪</span> {{ settings.nav_store | default('السوق المظلم', true) }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
+            <a href="/altar" class="nav-link"><span class="nav-icon">🔮</span> {{ settings.nav_altar | default('مذبح الطلاسم', true) }}</a>
+            
+            {% if current_user.unlocked_top_room %}
+                <a href="/top_room" class="nav-link"><span class="nav-icon">🏆</span> قاعة الأساطير</a>
+            {% endif %}
+            
+            <a href="/graveyard" class="nav-link"><span class="nav-icon">💀</span> {{ settings.nav_grave | default('المقبرة', true) }}</a>
+            
+            {% if current_user.role == 'admin' %}
+            <a href="/admin" class="nav-link" style="color: var(--gold-light); text-align: center; border: 1px solid var(--gold-main); border-radius: 8px; margin-top: 15px;">👑 لوحة الإمبراطور</a>
+            {% endif %}
         </div>
-        <hr style="border-color: #332815; margin-bottom: 15px;">
         
-        <a href="/" class="nav-link"><span class="nav-icon">🏰</span> {{ settings.nav_home | default('الرئيسية', true) }}</a>
-        <a href="/profile" class="nav-link"><span class="nav-icon">👤</span> {{ settings.nav_profile | default('هويتي', true) }}</a>
-        <a href="/friends" class="nav-link"><span class="nav-icon">🤝</span> {{ settings.nav_friends | default('التحالفات', true) }}</a>
-        <a href="/news" class="nav-link"><span class="nav-icon">📜</span> {{ settings.nav_news | default('المراسيم', true) }} {% if un_news and un_news > 0 %}<span class="badge">{{ un_news }}</span>{% endif %}</a>
-        <a href="/puzzles" class="nav-link"><span class="nav-icon">🧩</span> {{ settings.nav_puzzles | default('النقوش', true) }} {% if un_puz and un_puz > 0 %}<span class="badge">{{ un_puz }}</span>{% endif %}</a>
-        <a href="/declarations" class="nav-link"><span class="nav-icon">📢</span> {{ settings.nav_decs | default('التصريحات', true) }} {% if un_dec and un_dec > 0 %}<span class="badge">{{ un_dec }}</span>{% endif %}</a>
-        <a href="/store" class="nav-link"><span class="nav-icon">🐪</span> {{ settings.nav_store | default('السوق المظلم', true) }} {% if un_store and un_store > 0 %}<span class="badge">{{ un_store }}</span>{% endif %}</a>
-        <a href="/altar" class="nav-link"><span class="nav-icon">🔮</span> {{ settings.nav_altar | default('مذبح الطلاسم', true) }}</a>
-        
-        {% if current_user.unlocked_lore_room %}
-        <a href="/poneglyph" class="nav-link"><span class="nav-icon">🗿</span> غرفة البونغليف</a>
-        {% endif %}
-        
-        {% if current_user.unlocked_top_room %}
-        <a href="/top_room" class="nav-link"><span class="nav-icon">🏆</span> قاعة الأساطير</a>
-        {% endif %}
-        
-        <a href="/graveyard" class="nav-link"><span class="nav-icon">💀</span> {{ settings.nav_grave | default('المقبرة', true) }}</a>
-        
-        {% if current_user.role == 'admin' %}
-        <div style="flex-grow: 1;"></div>
-        <a href="/admin" class="nav-link" style="color: var(--gold-light); text-align: center; border: 1px solid var(--gold-main); border-radius: 8px; margin-top: 15px;">👑 لوحة الإمبراطور</a>
-        {% endif %}
-        
-        <a href="/logout" class="nav-link" style="color: #888; text-align: center; margin-top: 10px;">خروج 🚪</a>
+        <a href="/logout" class="nav-link" style="color: #888; text-align: center; margin-top: auto; padding-top: 20px;">خروج 🚪</a>
     </div>
     {% endif %}
 
@@ -102,4 +103,4 @@
         }
     </script>
 </body>
-                                                                                                                                                                                                        </html>
+</html>
