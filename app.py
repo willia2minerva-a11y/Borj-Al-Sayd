@@ -163,8 +163,6 @@ def fast_health_check():
         return "OK", 200
 
 @app.before_request
-
-@app.before_request
 def pre_process():
     # استثناء الصفحات العامة لمنع الحلقات
     if request.endpoint in ['static', 'get_avatar', 'fast_health_check', 'login', 'register', 'logout']:
@@ -230,6 +228,7 @@ def pre_process():
     user = None
     if 'user_id' in session:
         try:
+            # 🚀 هنا تم إضافة 'hunter_id' لكي لا يدور السيرفر في حلقة مفرغة
             user = User.objects(id=session['user_id']).only(
                 'id', 'hunter_id', 'username', 'role', 'status', 'health', 'points', 'loyalty_points',
                 'intelligence_points', 'zone', 'special_rank', 'avatar', 'inventory',
@@ -252,8 +251,8 @@ def pre_process():
             session.clear()
             return redirect(url_for('login'))
 
-        # ========== إصلاح hunter_id = None (للمستخدمين القدامى) ==========
-        if user.hunter_id is None:
+        # ========== إصلاح hunter_id = None ==========
+        if getattr(user, 'hunter_id', None) is None:
             existing_ids = [u.hunter_id for u in User.objects.only('hunter_id').order_by('hunter_id') if u.hunter_id is not None]
             new_id = 1000
             for eid in existing_ids:
@@ -275,11 +274,11 @@ def pre_process():
 
         # حرق التوتم والوشاح عند دخول الطابق الثالث
         if user.zone == 'الطابق 3' or user.zone == 'المعركة الأخيرة':
-            if user.totem_self:
+            if getattr(user, 'totem_self', False):
                 user.totem_self = False
                 user.save()
                 flash('🔥 احترق توتم إعادة الحياة بفعل قوى الطابق الثالث!', 'error')
-            if user.has_shield:
+            if getattr(user, 'has_shield', False):
                 user.has_shield = False
                 user.save()
                 flash('🛡️ احترق وشاح الحماية بفعل قوى الطابق الثالث!', 'error')
@@ -295,7 +294,6 @@ def pre_process():
             return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
 
     g.user = user
-
 
 # دوال المصادقة
 def login_required(f):
