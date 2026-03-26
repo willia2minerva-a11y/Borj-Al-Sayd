@@ -1019,6 +1019,12 @@ def admin_panel():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    from flask import request
     import traceback
+    
+    # 🚀 تجاهل أخطاء 404 (رابط أو أيقونة مفقودة) لكي لا تظهر الشاشة الحمراء المزعجة
+    if "404 Not Found" in str(e) or "404" in str(e):
+        return f"<div style='direction:rtl; text-align:center; padding:50px; background:#000; color:#fff;'><h2>الصفحة غير موجودة!</h2><p>المسار المفقود: {request.url}</p><a href='/' style='color:#d4af37;'>العودة للمتاهة</a></div>", 404
+        
     error_details = traceback.format_exc()
-    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red; text-align:left;'><h2>🚨 خطأ في النظام</h2><pre>{error_details}</pre></div>", 200
+    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red; text-align:left;'><h2>🚨 خطأ في النظام</h2><p>URL: {request.url}</p><pre>{error_details}</pre></div>", 200
