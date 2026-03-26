@@ -6,13 +6,9 @@
     <title>{{ settings.maze_name if settings else 'متاهة سيفار' }}</title>
     <style>
         :root {
-            --bg-main: #0a0806;
-            --bg-card: #15100a;
-            --gold-main: #d4af37;
-            --gold-light: #f3e5ab;
-            --gold-dark: #aa8529;
-            --blood-red: #8a0303;
-            --sand: #c2b280;
+            --bg-main: #0a0806; --bg-card: #15100a;
+            --gold-main: #d4af37; --gold-light: #f3e5ab; --gold-dark: #aa8529;
+            --blood-red: #8a0303; --sand: #c2b280;
         }
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #1a140a 0%, #000 100%); min-height: 100vh; }
         
@@ -20,23 +16,22 @@
         .logo-area { padding: 30px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
         .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 26px; text-shadow: 0 0 15px rgba(212,175,55,0.6); letter-spacing: 1px; }
         .nav-links { padding: 20px 0; flex-grow: 1; }
-        
         .nav-links a { display: block; padding: 12px 25px; color: #ccc; text-decoration: none; font-size: 15px; font-weight: bold; transition: 0.3s; border-left: 4px solid transparent; margin-bottom: 2px;}
         
-        .nav-home:hover, .nav-home.active { background: rgba(212,175,55,0.1); color: var(--gold-light); border-left-color: var(--gold-main); text-shadow: 0 0 8px rgba(212,175,55,0.5); }
-        .nav-profile:hover, .nav-profile.active { background: rgba(52, 152, 219, 0.1); color: #3498db; border-left-color: #3498db; text-shadow: 0 0 8px rgba(52, 152, 219, 0.5); }
-        .nav-friends:hover, .nav-friends.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-left-color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
-        .nav-news:hover, .nav-news.active { background: rgba(155, 89, 182, 0.1); color: #9b59b6; border-left-color: #9b59b6; text-shadow: 0 0 8px rgba(155, 89, 182, 0.5); }
-        .nav-puz:hover, .nav-puz.active { background: rgba(26, 188, 156, 0.1); color: #1abc9c; border-left-color: #1abc9c; text-shadow: 0 0 8px rgba(26, 188, 156, 0.5); }
-        .nav-store:hover, .nav-store.active { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-left-color: #f1c40f; text-shadow: 0 0 8px rgba(241, 196, 15, 0.5); }
-        .nav-altar:hover, .nav-altar.active { background: rgba(142, 68, 173, 0.1); color: #8e44ad; border-left-color: #8e44ad; text-shadow: 0 0 8px rgba(142, 68, 173, 0.5); }
-        .nav-grave:hover, .nav-grave.active { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-left-color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
-        
+        .nav-home:hover, .nav-home.active { background: rgba(212,175,55,0.1); color: var(--gold-light); border-left-color: var(--gold-main); }
+        .nav-profile:hover, .nav-profile.active { background: rgba(52, 152, 219, 0.1); color: #3498db; border-left-color: #3498db; }
+        .nav-friends:hover, .nav-friends.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-left-color: #2ecc71; }
+        .nav-news:hover, .nav-news.active { background: rgba(155, 89, 182, 0.1); color: #9b59b6; border-left-color: #9b59b6; }
+        .nav-puz:hover, .nav-puz.active { background: rgba(26, 188, 156, 0.1); color: #1abc9c; border-left-color: #1abc9c; }
+        .nav-store:hover, .nav-store.active { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-left-color: #f1c40f; }
+        .nav-altar:hover, .nav-altar.active { background: rgba(142, 68, 173, 0.1); color: #8e44ad; border-left-color: #8e44ad; }
+        .nav-grave:hover, .nav-grave.active { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-left-color: #e74c3c; }
         .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; border-left-color: #e74c3c !important; background: rgba(231,76,60,0.05); margin: 10px 0;}
-        .nav-meeting:hover { background: rgba(231,76,60,0.2); text-shadow: 0 0 10px rgba(231,76,60,0.8); }
-        
         .nav-admin { color: #e74c3c !important; margin-top: 15px; border-top: 1px dashed #332815; padding-top: 15px !important; }
-        .nav-admin:hover, .nav-admin.active { background: rgba(231, 76, 60, 0.15); border-left-color: #e74c3c; text-shadow: 0 0 10px #e74c3c; }
+        
+        /* 🌟 أزرار الأسرار (تظهر بعد فك الختم) */
+        .nav-lore { color: #f39c12 !important; border-left-color: #f39c12 !important; background: rgba(243, 156, 18, 0.05); }
+        .nav-top { color: #00cec9 !important; border-left-color: #00cec9 !important; background: rgba(0, 206, 201, 0.05); }
 
         @keyframes pulseNav { 0% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } 50% { box-shadow: inset 5px 0 10px rgba(231,76,60,0.3); } 100% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } }
 
@@ -49,12 +44,7 @@
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1001; text-shadow: 0 0 5px #000; }
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-right: 0; padding: 20px; padding-top: 60px; }
-            .mobile-menu-btn { display: block; }
-        }
+        @media (max-width: 768px) { .sidebar { transform: translateX(100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-right: 0; padding: 20px; padding-top: 60px; } .mobile-menu-btn { display: block; } }
     </style>
 </head>
 <body>
@@ -64,9 +54,7 @@
 <div class="sidebar" id="sidebar">
     <div class="logo-area">
         <h2>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h2>
-        {% if current_user %}
-            <p style="color: var(--sand); margin: 5px 0 0 0; font-size: 14px;">{{ current_user.username }}</p>
-        {% endif %}
+        {% if current_user %}<p style="color: var(--sand); margin: 5px 0 0 0; font-size: 14px;">{{ current_user.username }}</p>{% endif %}
     </div>
     <div class="nav-links">
         <a href="/" class="nav-home {% if request.path == '/' %}active{% endif %}">🏠 {{ settings.nav_home if settings else 'الرئيسية' }}</a>
@@ -85,6 +73,13 @@
             <a href="/declarations" class="nav-news {% if request.path == '/declarations' %}active{% endif %}">📢 {{ settings.nav_decs if settings else 'التصريحات' }}</a>
             <a href="/graveyard" class="nav-grave {% if request.path == '/graveyard' %}active{% endif %}">💀 {{ settings.nav_grave if settings else 'المقبرة' }}</a>
             
+            {% if current_user.unlocked_lore_room %}
+                <a href="/poneglyph" class="nav-lore {% if request.path == '/poneglyph' %}active{% endif %}">🗿 بونغليف سيفار</a>
+            {% endif %}
+            {% if current_user.unlocked_top_room %}
+                <a href="/top_room" class="nav-top {% if request.path == '/top_room' %}active{% endif %}">🏆 قاعة الأساطير</a>
+            {% endif %}
+            
             {% if current_user.role == 'admin' %}
                 <a href="/admin" class="nav-admin {% if request.path == '/admin' %}active{% endif %}">👑 عرش الإمبراطور</a>
             {% endif %}
@@ -95,8 +90,8 @@
     </div>
     
     {% if current_user %}
-    <div style="padding: 20px; border-top: 1px dashed #332815; text-align: center;">
-        <a href="/logout" style="color: #888; text-decoration: none; font-size: 14px; transition: 0.3s;" onmouseover="this.style.color='#e74c3c'" onmouseout="this.style.color='#888'">الخروج من المتاهة ➔</a>
+    <div style="padding: 20px; background: #050403; border-top: 1px solid var(--gold-dark); text-align: center; margin-top: auto;">
+        <a href="/logout" style="color: #e74c3c; text-decoration: none; font-size: 16px; font-weight: bold; transition: 0.3s; display: block; padding: 10px; border: 1px solid #e74c3c; border-radius: 6px;" onmouseover="this.style.background='#e74c3c'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#e74c3c';">🚪 الخروج من المتاهة</a>
     </div>
     {% endif %}
 </div>
@@ -104,16 +99,15 @@
 <div class="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flash-messages">
+            <div class="flash-messages" id="flash-container">
                 {% for category, message in messages %}
-                    <div class="flash {{ category }}">{{ message }}</div>
+                    <div class="flash {{ category }}" data-msg="{{ message }}">{{ message }}</div>
                 {% endfor %}
             </div>
         {% endif %}
     {% endwith %}
-    
     {% block content %}{% endblock %}
 </div>
-
 </body>
 </html>
+
