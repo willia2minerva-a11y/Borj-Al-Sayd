@@ -15,19 +15,29 @@
             --sand: #c2b280;
         }
         body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #1a140a 0%, #000 100%); min-height: 100vh; }
+        
+        /* 🎨 القائمة الجانبية بألوان المتاهة */
         .sidebar { width: 250px; background: var(--bg-card); position: fixed; height: 100vh; border-left: 2px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; transition: 0.3s; }
         .logo-area { padding: 30px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
-        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 26px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; }
+        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 26px; text-shadow: 0 0 15px rgba(212,175,55,0.6); letter-spacing: 1px; }
         .nav-links { padding: 20px 0; flex-grow: 1; }
-        .nav-links a { display: block; padding: 15px 25px; color: #ccc; text-decoration: none; font-size: 16px; font-weight: bold; transition: 0.3s; border-left: 4px solid transparent; }
-        .nav-links a:hover { background: rgba(212,175,55,0.1); color: var(--gold-light); border-left-color: var(--gold-main); }
-        .nav-links .active { background: rgba(212,175,55,0.15); color: var(--gold-main); border-left-color: var(--gold-main); }
-        .main-content { margin-right: 250px; padding: 40px; }
         
-        /* 🚀 زر غرفة الاجتماعات (يظهر فقط في الطابق الأول) */
-        .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; }
-        @keyframes pulseNav { 0% { text-shadow: 0 0 0 rgba(231,76,60,0.7); } 50% { text-shadow: 0 0 10px rgba(231,76,60,0.7); } 100% { text-shadow: 0 0 0 rgba(231,76,60,0); } }
+        /* تأثيرات الروابط الجانبية بالألوان */
+        .nav-links a { display: block; padding: 15px 25px; color: #ccc; text-decoration: none; font-size: 16px; font-weight: bold; transition: 0.3s; border-left: 4px solid transparent; }
+        
+        .nav-home:hover, .nav-home.active { background: rgba(212,175,55,0.1); color: var(--gold-light); border-left-color: var(--gold-main); text-shadow: 0 0 8px rgba(212,175,55,0.5); }
+        .nav-profile:hover, .nav-profile.active { background: rgba(52, 152, 219, 0.1); color: #3498db; border-left-color: #3498db; text-shadow: 0 0 8px rgba(52, 152, 219, 0.5); }
+        .nav-friends:hover, .nav-friends.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-left-color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
+        
+        .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; border-left-color: #e74c3c !important; background: rgba(231,76,60,0.05); margin: 5px 0;}
+        .nav-meeting:hover { background: rgba(231,76,60,0.2); text-shadow: 0 0 10px rgba(231,76,60,0.8); }
+        
+        .nav-admin { color: #e74c3c !important; margin-top: 15px; border-top: 1px dashed #332815; padding-top: 20px !important; }
+        .nav-admin:hover, .nav-admin.active { background: rgba(231, 76, 60, 0.15); border-left-color: #e74c3c; text-shadow: 0 0 10px #e74c3c; }
 
+        @keyframes pulseNav { 0% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } 50% { box-shadow: inset 5px 0 10px rgba(231,76,60,0.3); } 100% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } }
+
+        .main-content { margin-right: 250px; padding: 40px; }
         .flash-messages { margin-bottom: 20px; }
         .flash { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; font-weight: bold; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: slideDown 0.5s ease-out; }
         .flash.success { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid #2ecc71; }
@@ -35,10 +45,8 @@
         .flash.info { background: rgba(52,152,219,0.1); color: #3498db; border: 1px solid #3498db; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .notif-badge { background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 12px; margin-right: 5px; font-weight: bold; }
-        
         /* Mobile adjustments */
-        .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1001; }
+        .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1001; text-shadow: 0 0 5px #000; }
         @media (max-width: 768px) {
             .sidebar { transform: translateX(100%); }
             .sidebar.open { transform: translateX(0); }
@@ -59,24 +67,22 @@
         {% endif %}
     </div>
     <div class="nav-links">
-        <a href="/" {% if request.path == '/' %}class="active"{% endif %}>{{ settings.nav_home if settings else 'الرئيسية' }}</a>
+        <a href="/" class="nav-home {% if request.path == '/' %}active{% endif %}">🏠 {{ settings.nav_home if settings else 'الرئيسية' }}</a>
         
         {% if current_user %}
             {% if settings and settings.floor1_mode_active %}
-                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">
-                    🚨 غرفة الاجتماعات
-                </a>
+                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">🚨 غرفة الاجتماعات</a>
             {% endif %}
 
-            <a href="/profile" {% if request.path == '/profile' %}class="active"{% endif %}>{{ settings.nav_profile if settings else 'هويتي' }}</a>
-            <a href="/friends" {% if request.path == '/friends' %}class="active"{% endif %}>{{ settings.nav_friends if settings else 'التحالفات' }}</a>
+            <a href="/profile" class="nav-profile {% if request.path == '/profile' %}active{% endif %}">👤 {{ settings.nav_profile if settings else 'هويتي' }}</a>
+            <a href="/friends" class="nav-friends {% if request.path == '/friends' %}active{% endif %}">🤝 {{ settings.nav_friends if settings else 'التحالفات' }}</a>
             
             {% if current_user.role == 'admin' %}
-                <a href="/admin" {% if request.path == '/admin' %}class="active"{% endif %} style="color: var(--blood-red); border-bottom: 1px dashed var(--blood-red);">عرش الإمبراطور</a>
+                <a href="/admin" class="nav-admin {% if request.path == '/admin' %}active{% endif %}">👑 عرش الإمبراطور</a>
             {% endif %}
         {% else %}
-            <a href="/login">تسجيل الدخول</a>
-            <a href="/register">بناء هوية</a>
+            <a href="/login" class="nav-profile">🚪 تسجيل الدخول</a>
+            <a href="/register" class="nav-friends">📜 بناء هوية</a>
         {% endif %}
     </div>
     
