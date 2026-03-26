@@ -53,6 +53,10 @@ class User(db.Document):
     stats_puzzles_solved = db.IntField(default=0)
     stats_items_bought = db.IntField(default=0)
     destroyed_seals = db.IntField(default=0)
+    
+    # 🚀 الميزة الجديدة: قائمة الأختام الأربعة الفريدة التي تم جمعها
+    collected_seals = db.ListField(db.StringField(), default=list)
+    
     gate_test_answer = db.StringField(default='')
     last_name_change = db.DateTimeField()
     last_password_change = db.DateTimeField()
@@ -62,21 +66,11 @@ class User(db.Document):
     last_seen_puzzles = db.DateTimeField()
     facebook_link = db.StringField(default='')
     secret_achievements = db.ListField(db.StringField(), default=list)
-    
-    # الحقول الجديدة للميكانيكيات المضافة
-    has_shield = db.BooleanField(default=False)      # وشاح الحماية
-    totem_self = db.BooleanField(default=False)      # توتم إحياء النفس
+    has_shield = db.BooleanField(default=False)
+    totem_self = db.BooleanField(default=False)
 
 class News(db.Document):
-    meta = {
-        'strict': False,
-        'indexes': [
-            'category',
-            'status',
-            'created_at',
-            ('category', 'status', 'created_at')
-        ]
-    }
+    meta = {'strict': False}
     title = db.StringField(required=True)
     content = db.StringField(required=True)
     category = db.StringField(default='news')
@@ -96,18 +90,11 @@ class News(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class StoreItem(db.Document):
-    meta = {
-        'strict': False,
-        'indexes': [
-            'name',
-            'item_type',
-            'created_at'
-        ]
-    }
+    meta = {'strict': False}
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(default=0)
-    item_type = db.StringField(default='box')  # weapon, heal, spy, steal, seal, shield, totem_self, totem_other
+    item_type = db.StringField(default='box')
     effect_amount = db.IntField(default=0)
     is_mirage = db.BooleanField(default=False)
     mirage_message = db.StringField(default='')
@@ -118,12 +105,7 @@ class StoreItem(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GlobalSettings(db.Document):
-    meta = {
-        'strict': False,
-        'indexes': [
-            'setting_name'
-        ]
-    }
+    meta = {'strict': False}
     setting_name = db.StringField(unique=True, default='main_config')
     maze_name = db.StringField(default='متاهة سيفار')
     home_title = db.StringField(default='البوابة')
@@ -147,6 +129,10 @@ class GlobalSettings(db.Document):
     war_kill_target = db.IntField(default=15)
     bleed_rate_minutes = db.IntField(default=60)
     bleed_amount = db.IntField(default=1)
+    
+    # 🚀 الميزة الجديدة: مدة التهدئة (Cooldown) بين الهجمات في الحرب
+    attack_cooldown_minutes = db.IntField(default=5)
+    
     final_battle_mode = db.BooleanField(default=False)
     gates_mode_active = db.BooleanField(default=False)
     gates_end_time = db.DateTimeField()
@@ -179,3 +165,4 @@ class SpellConfig(db.Document):
     used_by = db.ListField(db.StringField(), default=list)
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
+
