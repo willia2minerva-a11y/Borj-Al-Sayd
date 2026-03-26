@@ -1,28 +1,66 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .altar-container { background: radial-gradient(circle at center, #2c1e16 0%, #050403 100%); border: 2px solid #5a3e1b; border-radius: 15px; padding: 40px 20px; text-align: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 0 30px rgba(212,175,55,0.1); margin-top: 20px; position: relative; overflow: hidden; }
-    .altar-container::before { content: '🔮'; position: absolute; font-size: 150px; opacity: 0.05; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulse 3s infinite alternate; pointer-events: none; }
-    @keyframes pulse { 0% { opacity: 0.02; transform: translate(-50%, -50%) scale(0.9); } 100% { opacity: 0.08; transform: translate(-50%, -50%) scale(1.1); } }
+    .altar-container { background: linear-gradient(180deg, #0a0806 0%, #1a0a0a 100%); border: 2px solid #551111; border-radius: 15px; padding: 40px 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(138,3,3,0.2); margin-top: 30px; }
+    .altar-container::before { content: '👁️‍🗨️'; font-size: 150px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.03; z-index: 0; }
+    .altar-title { color: #e74c3c; font-size: 35px; margin: 0 0 10px 0; position: relative; z-index: 1; text-shadow: 0 0 20px rgba(231,76,60,0.6); font-weight: 900; }
+    .altar-desc { color: #aaa; font-size: 16px; margin-bottom: 30px; position: relative; z-index: 1; }
+    .spell-input { background: #000; color: #fff; border: 2px dashed #e74c3c; padding: 20px; font-size: 24px; text-align: center; border-radius: 10px; width: 80%; max-width: 400px; margin-bottom: 20px; outline: none; position: relative; z-index: 1; transition: 0.3s; letter-spacing: 5px; font-weight: bold; }
+    .spell-input:focus { border-color: #f1c40f; box-shadow: 0 0 20px rgba(241,196,15,0.4); }
+    .btn-cast { background: linear-gradient(45deg, #8a0303, #e74c3c); color: #fff; border: none; padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 5px 15px rgba(231,76,60,0.4); }
+    .btn-cast:hover { transform: scale(1.05); box-shadow: 0 5px 25px rgba(231,76,60,0.6); }
+
+    /* تأثيرات الأنميشن */
+    .shake-screen { animation: shake 0.5s infinite; }
+    .blood-flash { animation: bloodFlash 1s ease-out 3; }
+    @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 90% { transform: translate(1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+    @keyframes bloodFlash { 0% { box-shadow: inset 0 0 0px #8a0303; } 50% { box-shadow: inset 0 0 150px #e74c3c; } 100% { box-shadow: inset 0 0 0px #8a0303; } }
     
-    .altar-title { color: var(--gold-main); font-size: 35px; margin-bottom: 10px; text-shadow: 0 0 15px rgba(212,175,55,0.5); font-weight: 900; }
-    .altar-desc { color: #aaa; font-size: 15px; margin-bottom: 30px; line-height: 1.6; }
-    
-    .spell-input { background: rgba(0,0,0,0.8); color: var(--gold-light); border: 2px dashed #5a3e1b; padding: 15px; width: 80%; max-width: 400px; border-radius: 8px; font-size: 20px; text-align: center; outline: none; margin-bottom: 20px; transition: 0.3s; font-family: monospace; letter-spacing: 2px; }
-    .spell-input:focus { border-color: var(--gold-main); box-shadow: 0 0 20px rgba(212,175,55,0.2); }
-    
-    .btn-cast { background: linear-gradient(45deg, #8b0000, #e74c3c); color: #fff; border: none; padding: 15px 40px; border-radius: 8px; cursor: pointer; font-weight: 900; font-size: 18px; transition: 0.3s; box-shadow: 0 5px 15px rgba(231,76,60,0.4); text-transform: uppercase; }
-    .btn-cast:hover { transform: scale(1.05); box-shadow: 0 8px 25px rgba(231,76,60,0.6); }
+    .coin { position: fixed; top: -50px; z-index: 9999; font-size: 25px; animation: fall linear forwards; }
+    @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
 </style>
 
-<div class="altar-container">
-    <h1 class="altar-title">مذبح الطلاسم</h1>
-    <p class="altar-desc">هنا تُتلى الكلمات المنسية... قد تمنحك القوة، وقد تسلب روحك.<br>انطق التعويذة إذا كنت تملك الشجاعة.</p>
+<div class="altar-container" id="altarZone">
+    <h2 class="altar-title">مذبح الطلاسم 🔮</h2>
+    <p class="altar-desc">اكتب الكلمة السحرية.. قد تمنحك الحياة، وقد تسحب روحك إلى الأبد.</p>
     
-    <form action="/altar" method="POST" style="position: relative; z-index: 2;">
-        <input type="text" name="spell_word" class="spell-input" placeholder="اكتب التعويذة هنا..." required autocomplete="off">
+    <form action="/altar" method="POST">
+        <input type="text" name="spell_word" class="spell-input" placeholder="التعويذة..." required autocomplete="off">
         <br>
-        <button type="submit" class="btn-cast">إلقاء التعويذة ⚡</button>
+        <button type="submit" class="btn-cast">إلقاء التعويذة 🪄</button>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const flashes = document.querySelectorAll(".flash");
+        let msgText = "";
+        flashes.forEach(f => { msgText += f.innerText + " "; });
+
+        // 1. تأثير الثراء (أمطار الدنانير)
+        if(msgText.includes("مُنحت") || msgText.includes("ثراء")) {
+            for(let i=0; i<30; i++) {
+                let coin = document.createElement("div");
+                coin.className = "coin";
+                coin.innerText = "🪙";
+                coin.style.left = Math.random() * 100 + "vw";
+                coin.style.animationDuration = (Math.random() * 2 + 1) + "s";
+                document.body.appendChild(coin);
+                setTimeout(() => coin.remove(), 3000);
+            }
+        }
+        
+        // 2. تأثير ضريبة الدم (وميض أحمر)
+        if(msgText.includes("ضريبة الدم") || msgText.includes("أحرقته") || msgText.includes("تبخرت")) {
+            document.body.classList.add("blood-flash");
+            setTimeout(() => document.body.classList.remove("blood-flash"), 3000);
+        }
+
+        // 3. تأثير كشف الأسرار (اهتزاز الشاشة)
+        if(msgText.includes("بونغليف") || msgText.includes("قاعة الأساطير")) {
+            document.body.classList.add("shake-screen");
+            setTimeout(() => document.body.classList.remove("shake-screen"), 1500);
+        }
+    });
+</script>
 {% endblock %}
