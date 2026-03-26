@@ -4,6 +4,7 @@ from models import db, User, News, StoreItem, GlobalSettings, SpellConfig
 from functools import wraps
 from datetime import datetime, timedelta
 import os, base64, random, math, traceback, time
+import io
 
 try:
     from PIL import Image
@@ -14,7 +15,6 @@ except ImportError:
 app = Flask(__name__)
 app.jinja_env.globals.update(getattr=getattr)
 
-# ==================== إعدادات قاعدة البيانات ====================
 MONGO_URI = os.getenv('MONGO_URI')
 if not MONGO_URI:
     raise Exception("MONGO_URI environment variable not set")
@@ -66,7 +66,6 @@ def compress_image(image_data, quality=70, max_size=(500, 500)):
         img.save(output, format="JPEG", quality=quality, optimize=True)
         return output.getvalue()
     except Exception as e:
-        app.logger.error(f"Image compression error: {e}")
         return image_data
 
 @app.before_request
@@ -128,6 +127,27 @@ def pre_process():
             GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=False); User.objects(status='active').update(set__health=100); _settings_cache['timestamp'] = 0
         if settings.gates_mode_active and settings.gates_end_time and now >= settings.gates_end_time:
             User.objects(status='active', chosen_gate=0, hunter_id__ne=1000).update(set__status='eliminated', set__freeze_reason='انتهى وقت البوابات'); GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=False); _settings_cache['timestamp'] = 0
+        
+        # 🚀 الميزة الجديدة: توزيع إرث الأصوات في المحكمة بشكل صحيح
+        if settings.floor3_mode_active and settings.vote_end_time and now >= settings.vote_end_time:
+            slackers = User.objects(has_voted=False, status='active', role='hunter')
+            active_voters = User.objects(has_voted=True, status='active', role='hunter')
+            slacker_count = slackers.count()
+            
+            if active_voters.count() > 0 and slacker_count > 0:
+                bonus_votes = (slacker_count * 100) // active_voters.count()
+                for v in active_voters:
+                    v.update(inc__survival_votes=bonus_votes)
+                    
+            for s in slackers:
+                s.update(set__status='eliminated', set__freeze_reason='تخاذل في المحكمة')
+                
+            top_n = settings.vote_top_n
+            top_users = User.objects(status='active', role='hunter').order_by('-survival_votes')[:top_n]
+            for u in top_users:
+                u.update(set__zone='المعركة الأخيرة')
+            GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=False)
+            _settings_cache['timestamp'] = 0
 
     if settings and settings.maintenance_mode:
         m_until = settings.maintenance_until
@@ -152,6 +172,12 @@ def pre_process():
 
         if not user.last_active or (now - user.last_active).total_seconds() > 3600: user.update(set__last_active=now)
         check_lazy_death_and_bleed(user, settings)
+
+        if user.zone == 'الطابق 3' or user.zone == 'المعركة الأخيرة':
+            if getattr(user, 'totem_self', False):
+                user.update(set__totem_self=False); flash('🔥 احترق توتم إعادة الحياة بفعل قوى الطابق الثالث!', 'error')
+            if getattr(user, 'has_shield', False):
+                user.update(set__has_shield=False); flash('🛡️ احترق وشاح الحماية بفعل قوى الطابق الثالث!', 'error')
 
         if user.quicksand_lock_until and now < user.quicksand_lock_until:
             tl = user.quicksand_lock_until - now
@@ -207,7 +233,13 @@ def home():
     alive_count = User.objects(status='active', hunter_id__ne=1000).count()
     dead_count = User.objects(status='eliminated', hunter_id__ne=1000).count()
     emperor = User.objects(hunter_id=1000).first()
-    return render_template('index.html', alive_count=alive_count, dead_count=dead_count, emperor=emperor, test_winner=test_winner)
+    
+    # 🚀 الميزة الجديدة: إرسال قائمة اللاعبين الأحياء لتسهيل التصويت في الواجهة
+    active_hunters = []
+    if settings and settings.floor3_mode_active:
+        active_hunters = User.objects(status='active', role='hunter', hunter_id__ne=1000, id__ne=user.id if user else None)
+        
+    return render_template('index.html', alive_count=alive_count, dead_count=dead_count, emperor=emperor, test_winner=test_winner, active_hunters=active_hunters)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -324,16 +356,43 @@ def use_item(target_id):
     if not item or item_name not in getattr(attacker, 'inventory', []) or not target or target.status != 'active': return redirect(request.referrer or url_for('home'))
         
     now = datetime.utcnow(); item_type = getattr(item, 'item_type', '')
+    
+    # 🚀 الميزة الجديدة: مهدئ الهجوم (Cooldown)
+    if item_type in ['weapon', 'steal', 'spy']:
+        cooldown_mins = getattr(settings, 'attack_cooldown_minutes', 0)
+        if cooldown_mins > 0 and attacker.last_action_time:
+            if (now - attacker.last_action_time).total_seconds() < (cooldown_mins * 60):
+                rem_sec = int((cooldown_mins * 60) - (now - attacker.last_action_time).total_seconds())
+                flash(f'سلاحك يحتاج للراحة والهدوء! انتظر {rem_sec} ثانية قبل الهجوم مجدداً.', 'error')
+                return redirect(request.referrer or url_for('home'))
+
+    # 🚀 الميزة الجديدة: نظام الأختام الأربعة الفريدة للفوز
     if item_type == 'seal':
         if target.id == attacker.id:
-            attacker.update(inc__destroyed_seals=1, pull__inventory=item_name)
-            if attacker.destroyed_seals >= 3:
-                if settings: GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=False, set__final_battle_mode=False)
-                User.objects(status='active').update(set__health=100); flash('دُمرت اللعنة النهائية وانتهت المعركة!', 'success')
-            else: flash('تم تدمير الختم!', 'success')
+            collected = getattr(attacker, 'collected_seals', [])
+            if item_name not in collected:
+                attacker.update(push__collected_seals=item_name, pull__inventory=item_name)
+                attacker.reload() # تحديث البيانات من القاعدة
+                seals_count = len(attacker.collected_seals)
+                
+                if seals_count >= 4:
+                    if settings: GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=False, set__final_battle_mode=False)
+                    User.objects(status='active').update(set__health=100)
+                    flash('🔥 دُمرت اللعنة النهائية وجمعت الأختام الأربعة الفريدة! لقد فزت في المتاهة!', 'success')
+                else:
+                    flash(f'تم تفعيل هذا الختم العظيم! لقد جمعت {seals_count} من أصل 4 أختام فريدة.', 'success')
+            else:
+                attacker.update(pull__inventory=item_name)
+                flash('لقد قمت بتفعيل هذا النوع من الأختام مسبقاً! الختم تبخر دون أي فائدة.', 'error')
         return redirect(request.referrer or url_for('home'))
 
     is_combat_active = getattr(settings, 'war_mode', False) or getattr(settings, 'final_battle_mode', False)
+    
+    # 🚀 الميزة الجديدة: منع الاقتتال الداخلي في الطابق الأخير
+    if getattr(settings, 'final_battle_mode', False) and target.hunter_id != 1000 and item_type in ['weapon', 'steal', 'spy']:
+        flash('في هذه المرحلة الحاسمة، الإمبراطور هو عدوك الوحيد! لا يمكنك ضرب الآخرين.', 'error')
+        return redirect(request.referrer or url_for('home'))
+        
     if item_type == 'weapon' and is_combat_active and target.hunter_id not in getattr(attacker, 'friends', []):
         if getattr(target, 'role', '') == 'admin' and not getattr(settings, 'final_battle_mode', False): flash('🛡️ الإمبراطور محصن!', 'error'); return redirect(request.referrer or url_for('home'))
         if getattr(target, 'has_shield', False): target.update(set__has_shield=False); flash('الهدف يمتلك درعاً، لقد انكسر درعه وضاعت ضربتك!', 'error')
@@ -356,14 +415,14 @@ def use_item(target_id):
             if target.id != attacker.id: attacker.update(inc__loyalty_points=5)
             attacker.update(pull__inventory=item_name, set__last_action_time=now); flash('تم العلاج!', 'success')
     elif item_type == 'spy':
-        if getattr(target, 'has_shield', False): attacker.update(pull__inventory=item_name); flash('الهدف محصن ضد التجسس بشعاع الوشاح!', 'error')
-        else: attacker.update(set__tajis_eye_until=now + timedelta(hours=1), pull__inventory=item_name); flash('تجسست بنجاح، ملفه مفتوح لك الآن!', 'success')
+        if getattr(target, 'has_shield', False): attacker.update(pull__inventory=item_name, set__last_action_time=now); flash('الهدف محصن ضد التجسس بشعاع الوشاح!', 'error')
+        else: attacker.update(set__tajis_eye_until=now + timedelta(hours=1), pull__inventory=item_name, set__last_action_time=now); flash('تجسست بنجاح، ملفه مفتوح لك الآن!', 'success')
     elif item_type == 'steal':
         stolen_item = request.form.get('target_item')
         if stolen_item in getattr(target, 'inventory', []):
-            if getattr(target, 'has_shield', False): attacker.update(pull__inventory=item_name); flash('الهدف محمي ضد السرقة!', 'error')
+            if getattr(target, 'has_shield', False): attacker.update(pull__inventory=item_name, set__last_action_time=now); flash('الهدف محمي ضد السرقة!', 'error')
             else:
-                target.update(pull__inventory=stolen_item); attacker.update(push__inventory=stolen_item, pull__inventory=item_name, inc__intelligence_points=5); flash(f'تمت سرقة {stolen_item} بنجاح!', 'success')
+                target.update(pull__inventory=stolen_item); attacker.update(push__inventory=stolen_item, pull__inventory=item_name, inc__intelligence_points=5, set__last_action_time=now); flash(f'تمت سرقة {stolen_item} بنجاح!', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/altar', methods=['GET', 'POST'])
@@ -467,7 +526,15 @@ def add_friend():
         elif trap and str(user.id) not in getattr(trap, 'winners_list', []) and getattr(trap, 'current_winners', 0) < getattr(trap, 'max_winners', 1):
             user.update(inc__points=getattr(trap, 'reward_points', 0), inc__stats_ghosts_caught=1, inc__intelligence_points=10)
             trap.update(inc__current_winners=1, push__winners_list=str(user.id))
-            check_achievements(user); flash('اصطدت شبحاً وحصلت على المكافأة!', 'success')
+            
+            # 🚀 الميزة الجديدة: سقوط ختم الأرواح من الأشباح بنسبة حظ 20%
+            if random.random() < 0.20 and "ختم الأرواح" not in user.inventory and "ختم الأرواح" not in getattr(user, 'collected_seals', []):
+                user.update(push__inventory="ختم الأرواح")
+                flash('اصطدت شبحاً وحصلت على المكافأة.. ووجدت [ختم الأرواح] النادر!', 'success')
+            else:
+                flash('اصطدت شبحاً وحصلت على المكافأة!', 'success')
+                
+            check_achievements(user)
         return redirect(request.referrer or url_for('home'))
         
     if target.hunter_id not in getattr(user, 'friends', []) and user.hunter_id not in getattr(target, 'friend_requests', []):
@@ -533,7 +600,14 @@ def secret_link(puzzle_id):
     try: puzzle = News.objects(id=puzzle_id).first()
     except: return redirect(url_for('home'))
     if puzzle and getattr(puzzle, 'puzzle_type', '') == 'quicksand_trap':
-        user.update(set__quicksand_lock_until=datetime.utcnow() + timedelta(minutes=getattr(puzzle, 'trap_duration_minutes', 5)), dec__intelligence_points=5); flash('وقعت في فخ الرمال!', 'error')
+        user.update(set__quicksand_lock_until=datetime.utcnow() + timedelta(minutes=getattr(puzzle, 'trap_duration_minutes', 5)), dec__intelligence_points=5)
+        # 🚀 الميزة الجديدة: إعطاء ختم الخديعة عند الوقوع في فخ الرمال
+        if "ختم الخديعة" not in user.inventory and "ختم الخديعة" not in getattr(user, 'collected_seals', []):
+            user.update(push__inventory="ختم الخديعة")
+            flash('وقعت في فخ الرمال! لكنك وجدت [ختم الخديعة] في القاع.', 'error')
+        else:
+            flash('وقعت في فخ الرمال!', 'error')
+            
     elif puzzle and str(user.id) not in getattr(puzzle, 'winners_list', []) and getattr(puzzle, 'current_winners', 0) < getattr(puzzle, 'max_winners', 1):
         user.update(inc__points=getattr(puzzle, 'reward_points', 0), inc__intelligence_points=15)
         puzzle.update(inc__current_winners=1, push__winners_list=str(user.id)); flash('جائزة سرية!', 'success')
@@ -651,6 +725,7 @@ def submit_gate_test():
     if user.gate_status == 'testing': user.update(set__gate_test_answer=request.form.get('test_answer', '')); flash('تم إرسال الإجابة للإمبراطور.', 'success')
     return redirect(url_for('home'))
 
+# 🚀 الميزة الجديدة: التحقق الصارم في المحكمة
 @app.route('/submit_floor3_votes', methods=['POST'])
 @login_required
 def submit_floor3_votes():
@@ -658,12 +733,15 @@ def submit_floor3_votes():
     if getattr(user, 'hunter_id', 0) == 1000 or getattr(user, 'has_voted', False) or getattr(user, 'status', '') != 'active': return redirect(url_for('home'))
     try:
         tids = [int(request.form.get(f'target_{i}')) for i in range(1, 6)]; amts = [int(request.form.get(f'amount_{i}')) for i in range(1, 6)]
+        
+        # التأكد أن اللاعب اختار 5 مختلفين، ولم يختر الإمبراطور (1000)، ولم يختر نفسه
         if len(set(tids)) == 5 and sum(amts) == 100 and 1000 not in tids and user.hunter_id not in tids:
             for i, tid in enumerate(tids):
-                target_user = User.objects(hunter_id=tid).first()
+                # التأكد أن الهدف حي ونشط قبل منحه الصوت
+                target_user = User.objects(hunter_id=tid, status='active').first()
                 if target_user: target_user.update(inc__survival_votes=amts[i])
-            user.update(set__has_voted=True); flash('تم تثبيت أصواتك للمحكمة!', 'success')
-        else: flash('خطأ في التوزيع! اختر 5 أشخاص مختلفين ومجموعهم 100.', 'error')
+            user.update(set__has_voted=True); flash('تم تثبيت أصواتك للمحكمة بنجاح!', 'success')
+        else: flash('خطأ في التوزيع! لا يمكنك التصويت لنفسك أو للإمبراطور أو لأموات، ويجب أن يكون المجموع 100.', 'error')
     except: pass
     return redirect(url_for('home'))
 
@@ -745,7 +823,10 @@ def admin_panel():
                 new_state = not getattr(settings, 'floor3_mode_active', False); vote_hours = int(request.form.get('vote_hours') or 0); top_n = int(request.form.get('top_n', 5))
                 end_time = datetime.utcnow() + timedelta(hours=vote_hours) if vote_hours > 0 and new_state else None
                 GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=new_state, set__vote_end_time=end_time, set__vote_top_n=top_n)
-            elif act == 'update_war_settings': GlobalSettings.objects(setting_name='main_config').update_one(set__bleed_rate_minutes=int(request.form.get('bleed_rate_minutes') or 60), set__bleed_amount=int(request.form.get('bleed_amount') or 1), set__war_kill_target=int(request.form.get('war_kill_target') or 15))
+            
+            # 🚀 إضافة حفظ خانة مهدئ الهجوم في السيرفر
+            elif act == 'update_war_settings': GlobalSettings.objects(setting_name='main_config').update_one(set__bleed_rate_minutes=int(request.form.get('bleed_rate_minutes') or 60), set__bleed_amount=int(request.form.get('bleed_amount') or 1), set__war_kill_target=int(request.form.get('war_kill_target') or 15), set__attack_cooldown_minutes=int(request.form.get('attack_cooldown_minutes') or 5))
+            
             elif act == 'update_poneglyph': GlobalSettings.objects(setting_name='main_config').update_one(set__poneglyph_text=request.form.get('poneglyph_text', '')); flash('تم نقش البونغليف بنجاح!', 'success')
         except: pass
         return redirect(url_for('admin_panel', search_user=search_query))
@@ -771,3 +852,4 @@ def handle_exception(e):
 
 if __name__ == '__main__': 
     app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+
