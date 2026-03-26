@@ -1019,9 +1019,6 @@ def admin_panel():
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    app.logger.error(traceback.format_exc())
-    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red;'><h2>🚨 خطأ في النظام</h2><p>تم تسجيل الخطأ. يرجى المحاولة لاحقاً.</p></div>", 200
-
-if __name__ == '__main__': 
-    app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
-
+    import traceback
+    error_details = traceback.format_exc()
+    return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; font-family:monospace; border:2px solid red; text-align:left;'><h2>🚨 خطأ في النظام</h2><pre>{error_details}</pre></div>", 200
