@@ -26,8 +26,6 @@ class User(db.Document):
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
     role = db.StringField(default='hunter')
-    
-    # حالات اللاعب: 'active', 'inactive', 'eliminated', 'frozen', 'dead_body' (جثة لم يبلغ عنها أحد)
     status = db.StringField(default='active')
     health = db.IntField(default=100)
     points = db.IntField(default=0)
@@ -70,18 +68,20 @@ class User(db.Document):
     has_shield = db.BooleanField(default=False)
     totem_self = db.BooleanField(default=False)
 
-    # ==========================================
-    # 🚀 إضافات الطابق الأول (Among Us Style)
-    # ==========================================
-    current_room = db.StringField(default='الساحة') # الغرفة الحالية
-    is_cursed = db.BooleanField(default=False) # هل هو الملعون (القاتل)؟
-    group_id = db.IntField(default=0) # رقم المجموعة
-    gems_collected = db.IntField(default=0) # عدد الأحجار التي جمعها
-    last_move_time = db.DateTimeField() # آخر مرة انتقل فيها بين الغرف
-    last_kill_time = db.DateTimeField() # آخر مرة قتل فيها (للملعون)
-    emergency_used = db.BooleanField(default=False) # هل استخدم زر الطوارئ؟
-    used_sabotage = db.BooleanField(default=False) # هل استخدم مهارة التخريب (للملعون)؟
-    used_vent = db.BooleanField(default=False) # هل استخدم النفق (للملعون)؟
+    # 🚀 إضافات الطابق الأول (Among Us)
+    current_room = db.StringField(default='الساحة')
+    is_cursed = db.BooleanField(default=False)
+    group_id = db.IntField(default=0)
+    gems_collected = db.IntField(default=0)
+    last_move_time = db.DateTimeField()
+    last_kill_time = db.DateTimeField()
+    emergency_used = db.BooleanField(default=False)
+    used_sabotage = db.BooleanField(default=False)
+    used_vent = db.BooleanField(default=False)
+    
+    # 🚀 نظام التصويت في اجتماعات الطابق الأول
+    f1_has_voted = db.BooleanField(default=False)
+    f1_votes_received = db.IntField(default=0)
 
 class News(db.Document):
     meta = {'strict': False}
@@ -139,7 +139,6 @@ class GlobalSettings(db.Document):
     maintenance_until = db.DateTimeField()
     maintenance_pages = db.ListField(db.StringField(), default=list)
     
-    # إعدادات الطابق الثاني (الحرب)
     war_mode = db.BooleanField(default=False)
     war_end_time = db.DateTimeField()
     war_kill_target = db.IntField(default=15)
@@ -147,7 +146,6 @@ class GlobalSettings(db.Document):
     bleed_amount = db.IntField(default=1)
     attack_cooldown_minutes = db.IntField(default=5)
     
-    # إعدادات الطوابق الأخرى
     final_battle_mode = db.BooleanField(default=False)
     gates_mode_active = db.BooleanField(default=False)
     gates_end_time = db.DateTimeField()
@@ -163,18 +161,16 @@ class GlobalSettings(db.Document):
     poneglyph_text = db.StringField(default='')
     dead_count = db.IntField(default=0)
 
-    # ==========================================
-    # 🚀 إعدادات الطابق الأول
-    # ==========================================
+    # إعدادات الطابق الأول
     floor1_mode_active = db.BooleanField(default=False)
-    floor1_meeting_active = db.BooleanField(default=False) # هل هناك اجتماع طارئ الآن؟
-    floor1_meeting_end_time = db.DateTimeField() # متى ينتهي التصويت؟
-    floor1_move_cooldown = db.IntField(default=30) # مدة تبريد التنقل بالدقائق
-    floor1_kill_cooldown = db.IntField(default=60) # مدة تبريد القتل للملعون بالدقائق
-    floor1_gems_target = db.IntField(default=10) # عدد الأحجار المطلوبة لفتح الباب
-    floor1_darkness_until = db.DateTimeField() # توقيت إطفاء الأنوار (التخريب)
-    floor1_locked_room = db.StringField(default='') # الغرفة المغلقة حالياً (التخريب)
-    floor1_locked_until = db.DateTimeField() # توقيت فتح الغرفة المغلقة
+    floor1_meeting_active = db.BooleanField(default=False)
+    floor1_meeting_end_time = db.DateTimeField()
+    floor1_move_cooldown = db.IntField(default=30)
+    floor1_kill_cooldown = db.IntField(default=60)
+    floor1_gems_target = db.IntField(default=10)
+    floor1_darkness_until = db.DateTimeField()
+    floor1_locked_room = db.StringField(default='')
+    floor1_locked_until = db.DateTimeField()
 
 class SpellConfig(db.Document):
     meta = {'strict': False, 'indexes': ['spell_word', 'expires_at']}
@@ -188,26 +184,21 @@ class SpellConfig(db.Document):
     expires_at = db.DateTimeField()
     created_at = db.DateTimeField(default=datetime.utcnow)
 
-# ==========================================
-# 🚀 جداول جديدة كلياً للمتاهة
-# ==========================================
-
 class Notification(db.Document):
-    """نظام الإشعارات المباشرة للاعبين (مثل: تعرضت للضرب، تم اكتشاف جثة)"""
     meta = {'strict': False, 'indexes': ['target_hunter_id', 'is_read', 'created_at']}
-    target_hunter_id = db.IntField(default=0) # 0 تعني إشعار عام للمجموعة
+    target_hunter_id = db.IntField(default=0)
     group_id = db.IntField(default=0)
     message = db.StringField(required=True)
-    notif_type = db.StringField(default='info') # 'info', 'danger', 'success', 'hint'
+    notif_type = db.StringField(default='info')
     is_read = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
 
 class GroupMessage(db.Document):
-    """نظام شات اجتماعات الطابق الأول لكل مجموعة"""
     meta = {'strict': False, 'indexes': ['group_id', 'created_at']}
     group_id = db.IntField(required=True)
     sender_id = db.IntField()
     sender_name = db.StringField(required=True)
     message = db.StringField(required=True)
-    is_system_msg = db.BooleanField(default=False) # رسائل النظام (فلان صوت لفلان)
+    is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
+
