@@ -12,59 +12,6 @@
     {% endif %}
 {% endif %}
 
-{% if test_winner %}
-<style>
-    .win-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: center; padding-top: 10vh; overflow: hidden;}
-    .win-avatar { width: 180px; height: 180px; border-radius: 50%; border: 5px solid var(--gold-main); box-shadow: 0 0 80px var(--gold-main); margin-bottom: 20px; opacity: 0; transform: translateY(-50px) scale(0.5); transition: all 2s cubic-bezier(0.25, 1, 0.5, 1); }
-    .win-avatar.show { opacity: 1; transform: translateY(0) scale(1); }
-    .win-name { color: #fff; font-size: 45px; margin: 0 0 30px 0; opacity: 0; transition: opacity 2s ease-in; text-shadow: 0 0 20px rgba(255,255,255,0.5); }
-    .typewriter-container { max-width: 800px; width: 90%; padding: 20px; background: rgba(20, 10, 0, 0.8); border: 1px dashed var(--gold-dark); border-radius: 10px; text-align: right; box-shadow: inset 0 0 30px rgba(0,0,0,0.9); opacity: 0; transition: opacity 1s; }
-    .typewriter-text { color: var(--gold-light); font-size: 22px; font-family: 'Courier New', Courier, monospace; line-height: 1.8; text-shadow: 0 0 10px rgba(212,175,55,0.8); }
-    .cursor { display: inline-block; width: 10px; height: 25px; background-color: var(--gold-main); animation: blink 0.8s infinite; vertical-align: bottom; margin-right: 5px; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .close-win { position: absolute; top: 20px; right: 20px; color: #555; font-size: 35px; cursor: pointer; background: none; border: none; transition: 0.3s; }
-    .close-win:hover { color: #fff; transform: rotate(90deg); }
-</style>
-
-<div class="win-overlay" id="winScreen">
-    <button class="close-win" onclick="document.getElementById('winScreen').style.display='none'">×</button>
-    <img src="/avatar/{{ test_winner.hunter_id }}" class="win-avatar" id="winAvatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-    <h1 class="win-name" id="winName">{{ test_winner.username }}</h1>
-    
-    <div class="typewriter-container" id="typeBox">
-        <span class="typewriter-text" id="winText"></span><span class="cursor" id="cursor"></span>
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        setTimeout(() => { document.getElementById('winAvatar').classList.add('show'); }, 500);
-        setTimeout(() => { document.getElementById('winName').style.opacity = 1; }, 2000);
-        
-        const texts = [
-            "يتم الاتصال بقاعدة بيانات سيفار...",
-            "تحليل البصمة الوراثية...",
-            "سقط الجميع، وتبددت أرواحهم في الرمال.",
-            "شخص واحد فقط استطاع كسر الجدار الحجري...",
-            "جمع الأختام الأربعة، وكسر اللعنة النهائية...",
-            "باسم الآلهة القديمة، نتوّجك إمبراطوراً لسيفار!"
-        ];
-        
-        let textIndex = 0; let charIndex = 0; const speed = 60; const el = document.getElementById('winText');
-        function typeWriter() {
-            if (textIndex < texts.length) {
-                if (charIndex < texts[textIndex].length) {
-                    el.innerHTML += texts[textIndex].charAt(charIndex); charIndex++; setTimeout(typeWriter, speed);
-                } else {
-                    el.innerHTML += "<br><br>"; textIndex++; charIndex = 0; setTimeout(typeWriter, 1200);
-                }
-            } else { document.getElementById('cursor').style.display = "none"; }
-        }
-        setTimeout(() => { document.getElementById('typeBox').style.opacity = 1; typeWriter(); }, 3500);
-    });
-</script>
-{% endif %}
-
 <style>
     .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
     .epic-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #0a0806 0%, transparent 100%); }
@@ -75,11 +22,34 @@
     .card-icon { font-size: 35px; display: block; margin-bottom: 10px; }
     .card-title { color: #cca; margin: 0; font-size: 16px; }
     .form-control-smart { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; outline:none; }
+    .notif-box { background: rgba(231,76,60,0.15); border: 1px solid #e74c3c; border-right: 5px solid #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #fff; animation: pulseRed 2s infinite; }
+    .notif-success { background: rgba(46,204,113,0.15); border-color: #2ecc71; border-right-color: #2ecc71; animation: none; }
+    @keyframes pulseRed { 0% { box-shadow: 0 0 0 rgba(231,76,60,0.4); } 70% { box-shadow: 0 0 15px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 rgba(231,76,60,0); } }
+    
+    /* تنسيقات الطابق الأول */
+    .room-card { background: #0a0a0a; border: 1px solid #333; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+    .player-chip { display: inline-block; background: #222; border: 1px solid #555; padding: 5px 15px; border-radius: 20px; margin: 5px; color: #ddd; font-weight: bold; }
+    .btn-danger { background: #c0392b; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+    .btn-action { background: #2980b9; color: #fff; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+    .btn-emergency { background: #e74c3c; color: #fff; border: 3px solid #c0392b; padding: 15px 30px; border-radius: 50px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(231,76,60,0.4); transition: 0.3s; margin: 20px 0; width: 100%;}
+    .btn-emergency:hover { transform: scale(1.05); }
+    .chat-box { height: 300px; overflow-y: auto; background: #000; border: 1px solid #444; padding: 15px; border-radius: 8px; text-align: right; margin-bottom: 15px; }
+    .chat-msg { margin-bottom: 10px; border-bottom: 1px dashed #222; padding-bottom: 5px; }
+    .chat-sys { color: #f1c40f; font-weight: bold; font-style: italic; }
 </style>
 
 <div class="epic-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
     <h1 class="epic-title">{{ settings.home_title if settings and settings.home_title else 'البوابة الرئيسية' }}</h1>
 </div>
+
+{% if my_notifications %}
+    {% for notif in my_notifications %}
+        <div class="notif-box {% if notif.notif_type == 'success' %}notif-success{% endif %}">
+            <strong>رسالة من المتاهة:</strong> {{ notif.message }}
+            <div style="font-size: 11px; color: #aaa; margin-top: 5px;">{{ notif.created_at.strftime('%H:%M') }}</div>
+        </div>
+    {% endfor %}
+{% endif %}
 
 <div style="background: #110d09; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px;">
     {% if current_user %}
@@ -91,7 +61,122 @@
     {% endif %}
 </div>
 
-{% if settings and settings.floor3_mode_active %}
+{% if settings and settings.floor1_mode_active and current_user %}
+    <div style="background: #050403; border: 2px solid #3498db; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(52, 152, 219, 0.1);">
+        <h2 style="color: #3498db; text-align: center; margin-top: 0;">🕵️ الطابق الأول (المجموعة {{ current_user.group_id }})</h2>
+        
+        {% if settings.floor1_meeting_active %}
+            <h3 style="color: #e74c3c; text-align: center;">🚨 اجتماع طارئ! 🚨</h3>
+            <p style="text-align: center; color: #aaa;">تحدثوا بسرعة، وقت التصويت يقترب!</p>
+            
+            <div class="chat-box" id="chatBox">
+                {% for msg in meeting_messages %}
+                    <div class="chat-msg {% if msg.is_system_msg %}chat-sys{% endif %}">
+                        {% if not msg.is_system_msg %}<strong style="color:var(--gold-main);">[{{ msg.sender_name }}]:</strong>{% endif %}
+                        {{ msg.message }}
+                    </div>
+                {% endfor %}
+            </div>
+            <form action="/f1_chat" method="POST" style="display: flex; gap: 10px;">
+                <input type="text" name="message" class="form-control-smart" placeholder="اكتب دفاعك أو اتهامك هنا..." required>
+                <button type="submit" class="btn-action">إرسال</button>
+            </form>
+            <script>document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;</script>
+            
+        {% else %}
+            <div class="room-card">
+                <h3 style="color: var(--gold-light); margin-top: 0;">📍 أنت الآن في: {{ current_user.current_room }}</h3>
+                
+                {% if is_dark %}
+                    <div style="background: #000; padding: 30px; border: 1px solid #333; color: #666; font-style: italic;">الظلام دامس جداً... لا تستطيع رؤية من معك في الغرفة!</div>
+                {% else %}
+                    <p style="color: #888; font-size: 13px;">الأشخاص المتواجدون معك الآن:</p>
+                    {% if room_players %}
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                        {% for p in room_players %}
+                            <div class="player-chip">
+                                {{ p.username }}
+                                {% if current_user.is_cursed %}
+                                    <form action="/f1_kill/{{ p.hunter_id }}" method="POST" style="display:inline; margin-right: 10px;">
+                                        <button type="submit" class="btn-danger" style="padding: 2px 8px; font-size: 12px;" onclick="return confirm('تأكيد التضحية؟');">🔪 قتل</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="color: #555;">أنت وحدك في هذه الغرفة...</p>
+                    {% endif %}
+                {% endif %}
+                
+                {% if dead_bodies_in_room %}
+                    <div style="border-top: 1px dashed #444; padding-top: 15px; margin-top: 15px;">
+                        <strong style="color: #e74c3c;">⚠️ تم العثور على جثث في الغرفة!</strong><br>
+                        {% for b in dead_bodies_in_room %}
+                            <form action="/f1_report/{{ b.hunter_id }}" method="POST" style="display:inline-block; margin-top: 10px;">
+                                <button type="submit" class="btn-danger">📢 بلّغ عن جثة ({{ b.username }})</button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    <strong style="color: #ccc; display: block; margin-bottom: 10px;">🗺️ التنقل (وقت التبريد: {{ settings.floor1_move_cooldown }}د)</strong>
+                    <form action="/f1_move" method="POST">
+                        <select name="room" class="form-control-smart" style="margin-bottom: 10px;">
+                            <option value="الساحة">الساحة</option>
+                            <option value="المكتبة">المكتبة</option>
+                            <option value="الممر الرئيسي">الممر الرئيسي</option>
+                            <option value="المستودع">المستودع</option>
+                            <option value="غرفة الكاميرات">غرفة الكاميرات</option>
+                            <option value="مذبح الطلاسم">مذبح الطلاسم</option>
+                            <option value="بوابة الطابق 2">بوابة الطابق 2</option>
+                        </select>
+                        <button type="submit" class="btn-action" style="width: 100%;">تحرك ➔</button>
+                    </form>
+                </div>
+
+                <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; text-align: center;">
+                    <strong style="color: #2ecc71; display: block; margin-bottom: 10px;">💎 جمع الأحجار</strong>
+                    <div style="font-size: 24px; font-weight: bold; color: #2ecc71;">{{ current_user.gems_collected }}</div>
+                    <p style="font-size: 11px; color: #888;">اذهب لصفحة النقوش لحل المهام وجمع الأحجار لكشف الملعون.</p>
+                </div>
+            </div>
+
+            {% if not current_user.emergency_used %}
+                <form action="/f1_emergency" method="POST">
+                    <button type="submit" class="btn-emergency" onclick="return confirm('استخدام زر الطوارئ مسموح مرة واحدة فقط! هل أنت متأكد؟');">🚨 زر الطوارئ 🚨</button>
+                </form>
+            {% else %}
+                <div style="text-align: center; color: #666; margin-top: 20px;">استخدمت حقك في استدعاء الطوارئ.</div>
+            {% endif %}
+
+            {% if current_user.is_cursed %}
+                <div style="background: rgba(192, 57, 43, 0.1); border: 1px solid #c0392b; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h3 style="color: #e74c3c; margin-top: 0;">🔪 قدرات اللعنة</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        {% if not current_user.used_sabotage %}
+                            <form action="/f1_sabotage" method="POST" style="flex: 1;">
+                                <input type="hidden" name="sabotage_type" value="darkness">
+                                <button type="submit" class="btn-danger" style="width: 100%; background: #000; border: 1px solid #e74c3c;">🌑 إطفاء الأنوار</button>
+                            </form>
+                        {% endif %}
+                        {% if not current_user.used_vent %}
+                            <form action="/f1_vent" method="POST" style="flex: 1; display: flex; gap: 5px;">
+                                <select name="target_room" class="form-control-smart" style="width: auto;">
+                                    <option value="الساحة">الساحة</option><option value="المستودع">المستودع</option>
+                                </select>
+                                <button type="submit" class="btn-danger" style="background: #333;">🕳️ نفق</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+        {% endif %} </div>
+{% endif %} {% if settings and settings.floor3_mode_active %}
 <div style="background: #050403; border: 2px solid #e74c3c; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(231,76,60,0.1);">
     <h2 style="color: #e74c3c; margin-top: 0;">⚖️ محكمة الطابق الثالث ⚖️</h2>
     <p style="color: #ddd;">لديك 100 صوت نجاة، يجب توزيعها على 5 رحالة مختلفين لإنقاذهم.</p>
@@ -117,6 +202,7 @@
 </div>
 {% endif %}
 
+{% if not settings or (not settings.floor1_mode_active and not settings.floor3_mode_active) %}
 <div class="dashboard-grid">
     <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">{{ settings.nav_news if settings and settings.nav_news else 'المراسيم' }}</h3></a>
     <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">{{ settings.nav_puzzles if settings and settings.nav_puzzles else 'النقوش والألغاز' }}</h3></a>
@@ -125,6 +211,7 @@
     <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">{{ settings.nav_altar if settings and settings.nav_altar else 'مذبح الطلاسم' }}</h3></a>
     <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">{{ settings.nav_decs if settings and settings.nav_decs else 'التصريحات' }}</h3></a>
 </div>
+{% endif %}
 
 <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111;"><span class="card-icon">💀</span><h3 class="card-title" style="color: #e74c3c;">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
 
