@@ -1,16 +1,57 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .lore-container { background: #0a0a0a; border: 2px solid #333; padding: 30px; border-radius: 10px; max-width: 800px; margin: auto; box-shadow: inset 0 0 50px rgba(0,0,0,0.9); }
-    .lore-title { color: #f1c40f; text-align: center; text-shadow: 0 0 10px #f1c40f; font-size: 28px; margin-bottom: 30px; border-bottom: 1px dashed #444; padding-bottom: 15px; }
-    .lore-entry { color: #ccc; font-size: 16px; line-height: 1.8; margin-bottom: 20px; padding-left: 15px; border-left: 2px solid #444; font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; }
-    .lore-epic { color: #e74c3c; font-weight: bold; border-left-color: #e74c3c; text-shadow: 0 0 5px rgba(231,76,60,0.5); }
+    .stone-wall { 
+        background-color: #1a1a1a; 
+        background-image: radial-gradient(circle, #2a2a2a 0%, #050505 100%);
+        border: 4px solid #333; 
+        border-radius: 15px; 
+        padding: 50px 30px; 
+        min-height: 50vh; 
+        text-align: center; 
+        box-shadow: inset 0 0 50px #000, 0 10px 30px rgba(0,0,0,0.8); 
+        position: relative;
+    }
+    .stone-text { 
+        color: #f39c12; 
+        font-size: 22px; 
+        line-height: 2; 
+        font-family: 'Courier New', Courier, monospace; 
+        text-shadow: 0 0 10px rgba(243, 156, 18, 0.8), 0 0 20px rgba(243, 156, 18, 0.4); 
+        white-space: pre-wrap;
+        font-weight: bold;
+    }
+    .admin-edit-panel { background: rgba(0,0,0,0.8); border: 1px dashed #f39c12; padding: 20px; border-radius: 10px; margin-top: 30px; }
+    .form-control-smart { width: 100%; padding: 15px; background: #000; color: #f39c12; border: 1px solid #555; border-radius: 8px; outline: none; font-size: 16px; margin-bottom: 15px; font-family: monospace; }
+    .btn-gold { background: linear-gradient(45deg, #f39c12, #e67e22); color: #000; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
+    .btn-danger { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-right: 10px;}
+    .btn-danger:hover { background: #e74c3c; color:#fff;}
 </style>
 
-<div class="lore-container">
-    <h2 class="lore-title">📜 غرفة البونغليف (نقوش سيفار)</h2>
-    <div class="lore-entry lore-epic">
-        {{ poneglyph_text | safe }}
-    </div>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: #f39c12; margin: 0; font-size: 32px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5);">🗿 بونغليف سيفار 🗿</h2>
+    <p style="color: #888;">من يقرأ هذه الكلمات، فقد فك الختم واقترب من الحقيقة.</p>
+</div>
+
+<div class="stone-wall">
+    {% if poneglyph_text and poneglyph_text != '' %}
+        <div class="stone-text">{{ poneglyph_text }}</div>
+    {% else %}
+        <div class="stone-text" style="color: #555; text-shadow: none;">النقوش ممسوحة... الجدار صامت.</div>
+    {% endif %}
+    
+    {% if current_user.role == 'admin' %}
+        <div class="admin-edit-panel">
+            <h4 style="color: #fff; margin-top: 0; text-align: right;">👑 تعديل البونغليف (يظهر لك فقط)</h4>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="action" value="update_poneglyph">
+                <textarea name="poneglyph_text" class="form-control-smart" rows="5" placeholder="اكتب أسرار المتاهة هنا...">{{ poneglyph_text }}</textarea>
+                <div style="text-align: right;">
+                    <button type="submit" class="btn-gold">حفظ النقش الجديد ➔</button>
+                    <button type="button" class="btn-danger" onclick="document.querySelector('textarea[name=\'poneglyph_text\']').value=''; this.form.submit();">مسح النقش بالكامل ✖</button>
+                </div>
+            </form>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
