@@ -1,164 +1,138 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .hunter-avatar {
-        width: 160px;
-        height: 160px;
-        border-radius: 50%;
-        border: 4px solid var(--gold-main);
-        object-fit: cover;
-        box-shadow: 0 0 20px rgba(212,175,55,0.4);
-        margin-bottom: 15px;
-        background: #000;
-        animation: float 6s ease-in-out infinite;
-    }
-    @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-        100% { transform: translateY(0px); }
-    }
-    @media (max-width: 600px) {
-        .hunter-avatar {
-            width: 130px;
-            height: 130px;
-        }
-    }
-    .stat-card {
-        background: var(--bg-card);
-        border: 1px solid #332815;
-        padding: 20px;
-        border-radius: 12px;
-        text-align: center;
-        transition: 0.3s;
-    }
-    .stat-card:hover {
-        border-color: var(--gold-main);
-        transform: translateY(-5px);
-    }
-    .action-card {
-        background: #050403;
-        border: 1px dashed var(--gold-dark);
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 20px;
-        text-align: center;
-        transition: 0.2s;
-    }
-    .action-card:hover {
-        border-color: var(--gold-main);
-    }
-    .form-control {
-        width: 100%;
-        padding: 12px;
-        background: #000;
-        color: #fff;
-        border: 1px solid #44351c;
-        border-radius: 6px;
-        outline: none;
-        box-sizing: border-box;
-        margin-bottom: 10px;
-    }
-    .btn-gold {
-        background: linear-gradient(45deg, var(--gold-dark), var(--gold-light));
-        color: #000;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: 0.2s;
-        width: 100%;
-        margin-top: 10px;
-        font-size: 16px;
-    }
-    .btn-gold:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.05);
-    }
-    .btn-danger {
-        background: linear-gradient(45deg, #8b0000, #e74c3c);
-        color: #fff;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: bold;
-        width: 100%;
-        margin-top: 10px;
-        font-size: 16px;
-        transition: 0.2s;
-    }
-    .btn-danger:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.05);
-    }
+    .profile-header { text-align: center; margin-bottom: 30px; position: relative; }
+    .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
+    .hunter-name { color: var(--gold-main); font-size: 28px; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+    .hunter-id { color: #888; font-size: 14px; margin-top: 5px; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: #110d09; border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); transition: 0.3s; }
+    .stat-card:hover { border-color: var(--gold-dark); }
+    .stat-val { font-size: 24px; font-weight: bold; color: #fff; display: flex; justify-content: center; align-items: center; gap: 5px;}
+    .stat-label { color: #aaa; font-size: 13px; margin-top: 5px; }
+
+    /* ✏️ تنسيقات أدوات الإمبراطور (التعديل الحي) */
+    .edit-icon { cursor: pointer; font-size: 14px; opacity: 0.5; transition: 0.3s; margin-right: 5px; filter: grayscale(100%);}
+    .edit-icon:hover { opacity: 1; filter: grayscale(0%); transform: scale(1.2); }
+    .inline-edit-form { display: none; align-items: center; justify-content: center; gap: 5px; margin-top: 5px; }
+    .inline-input { background: #000; color: #fff; border: 1px solid var(--gold-main); padding: 5px 10px; border-radius: 4px; outline: none; text-align: center; width: 100px; font-weight: bold;}
+    .btn-inline-save { background: #2ecc71; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .btn-inline-cancel { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 </style>
 
-<div style="text-align: center; margin-bottom: 30px;">
-    <img src="/avatar/{{ target_user.hunter_id }}" class="hunter-avatar"
-         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ccircle%20cx%3D%2250%22%20cy%3D%2235%22%20r%3D%2220%22%20fill%3D%22%23d4af37%22%2F%3E%3Cpath%20d%3D%22M20%2090c0-20%2015-35%2030-35s30%2015%2030%2035%22%20fill%3D%22%23d4af37%22%2F%3E%3C%2Fsvg%3E'">
-    <h1 style="color:#fff; margin:0;">{{ target_user.username }}</h1>
-    <div style="color:var(--gold-main); font-weight:bold; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px; border:1px solid var(--gold-dark); margin-top:10px; display:inline-block;">ID: {{ target_user.hunter_id }} | 📍 {{ target_user.zone }}</div>
+<div class="profile-header">
+    <img src="/avatar/{{ target_user.hunter_id }}" class="profile-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+    <h2 class="hunter-name">
+        <span id="txt_name">{{ target_user.username }}</span>
+        {% if current_user and current_user.role == 'admin' %}
+            <span class="edit-icon" onclick="toggleEdit('name')">✏️</span>
+            <form id="form_name" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+                <input type="hidden" name="action" value="edit_name">
+                <input type="text" name="new_val" value="{{ target_user.username }}" class="inline-input">
+                <button type="submit" class="btn-inline-save">✔️</button>
+                <button type="button" class="btn-inline-cancel" onclick="toggleEdit('name')">❌</button>
+            </form>
+        {% endif %}
+    </h2>
+    <div class="hunter-id">ID: {{ target_user.hunter_id }} | الحالة: <span style="color: {% if target_user.status=='active' %}#2ecc71{% else %}#e74c3c{% endif %};">{{ target_user.status }}</span></div>
 </div>
 
-{% if current_user.role == 'admin' %}
-<div class="action-card" style="border-color: #9b59b6; background: rgba(155, 89, 182, 0.05);">
-    <h3 style="color: #9b59b6; margin-top:0;">👑 التعديل الإمبراطوري</h3>
-    <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-        <input type="hidden" name="action" id="admin_action" value="edit_details">
-        <div><label style="color:#aaa; font-size:12px;">تعديل الاسم:</label><input type="text" name="new_name" value="{{ target_user.username }}" class="form-control"></div>
-        <div><label style="color:#aaa; font-size:12px;">تعديل النقاط:</label><input type="number" name="new_points" value="{{ target_user.points }}" class="form-control"></div>
-        <div><label style="color:#aaa; font-size:12px;">تعديل الصحة (%):</label><input type="number" name="new_hp" value="{{ target_user.health }}" class="form-control"></div>
-        <div><label style="color:#aaa; font-size:12px;">تعديل الطابق:</label><input type="text" name="zone" value="{{ target_user.zone }}" class="form-control"></div>
-        <div style="grid-column: span 2; display: flex; gap: 10px;">
-            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_action').value='edit_name';">تغيير الاسم</button>
-            <button type="submit" class="btn-gold" onclick="document.getElementById('admin_action').value='edit_points';">تحديث النقاط</button>
-            <button type="submit" class="btn-gold" style="background: #e74c3c; color: #fff;" onclick="document.getElementById('admin_action').value='edit_hp';">تحديث الصحة</button>
-            <button type="submit" class="btn-gold" style="background: #3498db; color: #fff;" onclick="document.getElementById('admin_action').value='edit_details';">حفظ الطابق</button>
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-val" style="color: #f1c40f;">
+            <span id="txt_points">{{ target_user.points }}</span>
+            {% if current_user and current_user.role == 'admin' %}<span class="edit-icon" onclick="toggleEdit('points')">✏️</span>{% endif %}
         </div>
-    </form>
-</div>
-{% endif %}
-
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:15px; margin-bottom:30px;">
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:var(--gold-light);">{{ target_user.points }}</div><div style="color:#888; font-size:13px;">الغنائم</div></div>
-    <div class="stat-card"><div style="font-size:28px; font-weight:bold; color:#3498db;">{{ target_user.loyalty_points }}</div><div style="color:#888; font-size:13px;">الولاء</div></div>
-</div>
-
-<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:15px;">
-    <div class="action-card">
-        <h3 style="color:var(--gold-main); margin-top:0;">🤝 حالة التحالف</h3>
-        {% if current_user.hunter_id in target_user.friends %}
-            <p style="color:#2ecc71; font-weight:bold; font-size:18px;">أنتما حلفاء ✔️</p>
-            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">خيانة (إلغاء)</button></form>
-        {% elif current_user.hunter_id in target_user.friend_requests %}
-            <p style="color:#e67e22; font-weight:bold; font-size:18px;">طلبك معلق ⏳</p>
-            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST"><button type="submit" class="btn-danger">سحب الطلب</button></form>
-        {% else %}
-            <form action="/add_friend" method="POST"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-gold">طلب تحالف</button></form>
+        <div class="stat-label">دنانير 🪙</div>
+        {% if current_user and current_user.role == 'admin' %}
+        <form id="form_points" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+            <input type="hidden" name="action" value="edit_points">
+            <input type="number" name="new_val" value="{{ target_user.points }}" class="inline-input" style="width:70px;">
+            <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('points')">❌</button>
+        </form>
         {% endif %}
     </div>
 
-    <div class="action-card">
-        <h3 style="color:var(--gold-main); margin-top:0;">📦 إرسال دعم للحليف</h3>
-        <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
-            <select name="transfer_type" class="form-control" onchange="document.getElementById('amt_div').style.display = this.value == 'points' ? 'block' : 'none'; document.getElementById('itm_div').style.display = this.value == 'item' ? 'block' : 'none';">
-                <option value="points" selected>إرسال دنانير</option>
-                <option value="item">إعطاء أداة من حقيبتي</option>
-            </select>
-            <div id="amt_div"><input type="number" name="amount" placeholder="عدد الدنانير..." class="form-control" min="1"></div>
-            <div id="itm_div" style="display:none;">
-                <select name="item_name" class="form-control">
-                    {% for item in current_user.inventory %}
-                        <option value="{{ item }}">{{ item }}</option>
-                    {% else %}
-                        <option value="" disabled selected>حقيبتك فارغة!</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <button type="submit" class="btn-gold">إرسال ➔</button>
+    <div class="stat-card">
+        <div class="stat-val" style="color: #e74c3c;">
+            <span id="txt_hp">{{ target_user.health }}</span>
+            {% if current_user and current_user.role == 'admin' %}<span class="edit-icon" onclick="toggleEdit('hp')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-label">نقاط الحياة (HP) ❤️</div>
+        {% if current_user and current_user.role == 'admin' %}
+        <form id="form_hp" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+            <input type="hidden" name="action" value="edit_hp">
+            <input type="number" name="new_val" value="{{ target_user.health }}" class="inline-input" style="width:70px;">
+            <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('hp')">❌</button>
         </form>
-        <p style="color:#888; font-size:12px; margin-top:10px;">يمكنك إرسال الدنانير أو الأدوات إلى حلفائك فقط.</p>
+        {% endif %}
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-val" style="color: #1abc9c;">
+            <span id="txt_iq">{{ target_user.intelligence_points }}</span>
+            {% if current_user and current_user.role == 'admin' %}<span class="edit-icon" onclick="toggleEdit('iq')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-label">نقاط الذكاء 🧠</div>
+        {% if current_user and current_user.role == 'admin' %}
+        <form id="form_iq" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+            <input type="hidden" name="action" value="edit_iq">
+            <input type="number" name="new_val" value="{{ target_user.intelligence_points }}" class="inline-input" style="width:70px;">
+            <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('iq')">❌</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-val" style="color: #3498db;">
+            <span id="txt_loyal">{{ target_user.loyalty_points }}</span>
+            {% if current_user and current_user.role == 'admin' %}<span class="edit-icon" onclick="toggleEdit('loyal')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-label">نقاط الولاء 🤝</div>
+        {% if current_user and current_user.role == 'admin' %}
+        <form id="form_loyal" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+            <input type="hidden" name="action" value="edit_loyalty">
+            <input type="number" name="new_val" value="{{ target_user.loyalty_points }}" class="inline-input" style="width:70px;">
+            <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('loyal')">❌</button>
+        </form>
+        {% endif %}
     </div>
 </div>
+
+<div style="background: #110d09; border: 1px dashed #332815; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 30px;">
+    <p style="color: #ccc; margin: 5px 0;">الطابق الحالي: 
+        <span id="txt_zone" style="color: var(--gold-light); font-weight: bold;">{{ target_user.zone }}</span>
+        {% if current_user and current_user.role == 'admin' %}<span class="edit-icon" onclick="toggleEdit('zone')">✏️</span>{% endif %}
+    </p>
+    {% if current_user and current_user.role == 'admin' %}
+    <form id="form_zone" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+        <input type="hidden" name="action" value="edit_zone">
+        <input type="text" name="new_val" value="{{ target_user.zone }}" class="inline-input">
+        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('zone')">❌</button>
+    </form>
+    {% endif %}
+</div>
+
+<h3 style="color: var(--gold-main); border-bottom: 1px dashed #332815; padding-bottom: 10px;">🎒 مقتنيات اللاعب</h3>
+<div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    {% for item in target_user.inventory %}
+        <span style="background: #000; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; font-size: 13px; color: #ccc;">{{ item }}</span>
+    {% else %}
+        <span style="color: #666; font-style: italic;">الحقيبة فارغة...</span>
+    {% endfor %}
+</div>
+
+<script>
+    function toggleEdit(field) {
+        var txt = document.getElementById('txt_' + field);
+        var frm = document.getElementById('form_' + field);
+        if(frm.style.display === 'none' || frm.style.display === '') {
+            txt.style.display = 'none'; frm.style.display = 'flex';
+        } else {
+            txt.style.display = 'inline'; frm.style.display = 'none';
+        }
+    }
+</script>
 {% endblock %}
+
