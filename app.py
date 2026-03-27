@@ -33,7 +33,7 @@ app.config['MONGODB_SETTINGS'] = {
     'maxPoolSize': 5
 }
 
-app.config['SECRET_KEY'] = 'sephar-maze-emperor-v16-final-master'
+app.config['SECRET_KEY'] = 'sephar-maze-emperor-v17-smart-traps'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
 
@@ -85,6 +85,34 @@ def process_f1_meeting_end(settings):
         
     User.objects(status='dead_body').update(set__status='eliminated')
     settings.update(set__floor1_meeting_active=False)
+
+# 🚀 العقل المدبر لتنفيذ جميع الفخاخ والأشباح بذكاء
+def execute_trap_effect(user, trap):
+    eff = trap.puzzle_type.split('_', 1)[1] if '_' in trap.puzzle_type else ''
+    if eff == 'give_points':
+        user.update(inc__points=trap.reward_points, inc__intelligence_points=10)
+        flash(f'نجاح! حصلت على {trap.reward_points} دنانير!', 'success')
+    elif eff == 'steal_points':
+        user.update(set__points=max(0, user.points - trap.trap_penalty_points), dec__intelligence_points=5)
+        flash(f'فخ مرعب! سُرق منك {trap.trap_penalty_points} دنانير!', 'error')
+    elif eff == 'give_item':
+        if trap.reward_item: user.update(push__inventory=trap.reward_item)
+        flash(f'نجاح! حصلت على الأداة: {trap.reward_item}', 'success')
+    elif eff == 'steal_item':
+        if user.inventory:
+            stolen = random.choice(user.inventory)
+            user.update(pull__inventory=stolen)
+            flash(f'فخ مرعب! سُرقت منك الأداة: {stolen}', 'error')
+        else: flash('نجوت! حاول الفخ سرقتك لكن حقيبتك فارغة.', 'info')
+    elif eff == 'give_seal':
+        if trap.reward_item and trap.reward_item not in user.collected_seals:
+            user.update(push__inventory=trap.reward_item)
+            flash(f'نجاح أسطوري! حصلت على ختم: {trap.reward_item}', 'success')
+        else: flash('حصلت على ختم تملكه مسبقاً!', 'info')
+    elif eff == 'quicksand':
+        dur = trap.trap_duration_minutes or 5
+        user.update(set__quicksand_lock_until=datetime.utcnow() + timedelta(minutes=dur))
+        flash(f'وقعت في فخ الرمال! أنت مجمد لمدة {dur} دقائق.', 'error')
 
 @app.before_request
 def fast_health_check():
@@ -320,16 +348,18 @@ def admin_update_profile(target_id):
     if target_user:
         try:
             action = request.form.get('action')
-            if action == 'edit_name': target_user.update(set__username=request.form.get('new_name'))
-            elif action == 'edit_points': target_user.update(set__points=int(request.form.get('new_points') or 0))
+            val = request.form.get('new_val')
+            if action == 'edit_name': target_user.update(set__username=val)
+            elif action == 'edit_points': target_user.update(set__points=int(val or 0))
             elif action == 'edit_hp':
-                hp = int(request.form.get('new_hp') or 0)
-                if hp <= 0: target_user.update(set__health=0, set__status='eliminated')
-                else: target_user.update(set__health=hp, set__status='active')
-            elif action == 'edit_details': target_user.update(set__zone=request.form.get('zone', ''), set__special_rank=request.form.get('special_rank', ''))
-            flash('تم التعديل الإمبراطوري!', 'success')
-        except: pass
+                hp = int(val or 0); target_user.update(set__health=hp, set__status='eliminated' if hp <= 0 else 'active')
+            elif action == 'edit_iq': target_user.update(set__intelligence_points=int(val or 0))
+            elif action == 'edit_loyalty': target_user.update(set__loyalty_points=int(val or 0))
+            elif action == 'edit_zone': target_user.update(set__zone=val)
+            flash('تم التعديل الإمبراطوري بنجاح!', 'success')
+        except: flash('حدث خطأ في الإدخال', 'error')
     return redirect(url_for('hunter_profile', target_id=target_id))
+
 # =======================================================
 # 🚀 عمليات الطابق الأول و غرفة الاجتماع
 # =======================================================
@@ -338,11 +368,9 @@ def admin_update_profile(target_id):
 def meeting_room():
     user = g.user; settings = g.settings
     if not settings or not getattr(settings, 'floor1_mode_active', False): return redirect(url_for('home'))
-    
     if getattr(user, 'role', '') == 'admin':
         groups_chat = {}
-        all_msgs = GroupMessage.objects().order_by('created_at')
-        for msg in all_msgs:
+        for msg in GroupMessage.objects().order_by('created_at'):
             if msg.group_id not in groups_chat: groups_chat[msg.group_id] = []
             groups_chat[msg.group_id].append(msg)
         return render_template('meeting.html', user=user, settings=settings, groups_chat=groups_chat)
@@ -365,9 +393,7 @@ def f1_chat():
 @login_required
 def f1_vote(target_id):
     user = g.user; settings = g.settings
-    if not settings or not getattr(settings, 'floor1_meeting_active', False) or user.status != 'active' or getattr(user, 'f1_has_voted', False):
-        return redirect(url_for('meeting_room'))
-    
+    if not settings or not getattr(settings, 'floor1_meeting_active', False) or user.status != 'active' or getattr(user, 'f1_has_voted', False): return redirect(url_for('meeting_room'))
     target = User.objects(hunter_id=target_id, status='active', group_id=user.group_id).first()
     if target:
         target.update(inc__f1_votes_received=1); user.update(set__f1_has_voted=True)
@@ -444,7 +470,7 @@ def f1_vent():
     return redirect(url_for('home'))
 
 # =======================================================
-# 🚀 المسارات العامة والأنظمة
+# 🚀 المسارات العامة، المتجر، المذبح والألعاب
 # =======================================================
 @app.route('/transfer/<int:target_id>', methods=['POST'])
 @login_required
@@ -525,10 +551,10 @@ def altar():
         spell_word = request.form.get('spell_word', '').strip(); spell = SpellConfig.objects(spell_word=spell_word).first(); settings = g.settings
         if not spell: flash('خطأ! كلمة لا معنى لها... المذبح صامت.', 'error'); return redirect(url_for('altar'))
         now = datetime.utcnow()
-        if getattr(spell, 'expires_at', None) and now > spell.expires_at: flash('تلاشت طاقة هذه التعويذة!', 'error'); return redirect(url_for('altar'))
+        if getattr(spell, 'expires_at', None) and now > spell.expires_at: flash('خطأ! تلاشت طاقة هذه التعويذة.', 'error'); return redirect(url_for('altar'))
         used_list = getattr(spell, 'used_by', []); max_u = getattr(spell, 'max_uses', 0)
-        if str(user.id) in used_list: flash('استخدمت التعويذة مسبقاً!', 'error'); return redirect(url_for('altar'))
-        if max_u > 0 and len(used_list) >= max_u: flash('استنفدت الطاقة!', 'error'); return redirect(url_for('altar'))
+        if str(user.id) in used_list: flash('خطأ! استخدمت التعويذة مسبقاً.', 'error'); return redirect(url_for('altar'))
+        if max_u > 0 and len(used_list) >= max_u: flash('خطأ! استنفدت طاقة التعويذة.', 'error'); return redirect(url_for('altar'))
         try:
             stype = getattr(spell, 'spell_type', ''); val = getattr(spell, 'effect_value', 0); is_perc = getattr(spell, 'is_percentage', False)
             if stype == 'hp_loss':
@@ -537,12 +563,12 @@ def altar():
                 else: user.update(set__health=new_hp)
                 flash('ضريبة الدم! نقص من صحتك.', 'error')
             elif stype == 'hp_gain': gain = int(user.health * (val / 100.0)) if is_perc else val; user.update(set__health=min(100, user.health + gain)); flash('نجاح! طاقة غريبة تشفيك.', 'success')
-            elif stype == 'points_loss': loss = int(user.points * (val / 100.0)) if is_perc else val; user.update(set__points=max(0, user.points - loss)); flash('سحب منك المذبح دنانير!', 'error')
-            elif stype == 'points_gain': user.update(inc__points=val); flash('ثراء! دنانير تتدفق إليك!', 'success')
+            elif stype == 'points_loss': loss = int(user.points * (val / 100.0)) if is_perc else val; user.update(set__points=max(0, user.points - loss)); flash('خطأ! سحب منك المذبح دنانير.', 'error')
+            elif stype == 'points_gain': user.update(inc__points=val); flash('نجاح ثراء! دنانير تتدفق إليك.', 'success')
             elif stype == 'item_reward': 
                 if getattr(spell, 'item_name', ''): user.update(push__inventory=getattr(spell, 'item_name', '')); flash('نجاح! استدعيت أداة من العدم.', 'success')
-            elif stype == 'unlock_lore': user.update(set__unlocked_lore_room=True); flash('نجاح! اهتزت الأرض.. ظهر بونغليف سيفار!', 'success')
-            elif stype == 'unlock_top': user.update(set__unlocked_top_room=True); flash('نجاح! اهتزت الأرض.. فُتحت قاعة الأساطير!', 'success')
+            elif stype == 'unlock_lore': user.update(set__unlocked_lore_room=True); flash('نجاح! اهتزت الأرض.. ظهر بونغليف سيفار.', 'success')
+            elif stype == 'unlock_top': user.update(set__unlocked_top_room=True); flash('نجاح! اهتزت الأرض.. فُتحت قاعة الأساطير.', 'success')
             elif stype == 'kill_emperor':
                 if getattr(settings, 'final_battle_mode', False): User.objects(hunter_id=1000).update(set__health=0, set__status='eliminated'); GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=False, set__war_mode=False); flash('نجاح! التعويذة المحرمة.. سقط الإمبراطور.', 'success')
                 else: flash('خطأ! الإمبراطور محصن حالياً.', 'error'); return redirect(url_for('altar'))
@@ -576,23 +602,19 @@ def add_friend():
     user = g.user; target = User.objects(hunter_id=int(request.form.get('target_id') or 0)).first()
     if user.status != 'active' or not target or target.status != 'active': return redirect(request.referrer or url_for('home'))
     
-    # 🚀 منع إرسال طلب تحالف للنفس
     if target.id == user.id: 
         flash('الجنون يتسرب إليك.. لا يمكنك التحالف مع نفسك!', 'error')
         return redirect(request.referrer or url_for('home'))
     
-    if target.role in ['ghost', 'cursed_ghost']:
-        trap = News.objects(puzzle_type__in=['fake_account', 'cursed_ghost'], puzzle_answer=str(target.hunter_id)).first()
-        if target.role == 'cursed_ghost' and trap: 
-            if getattr(user, 'inventory', []) and random.choice([True, False]):
-                stolen_item = random.choice(user.inventory); user.update(pull__inventory=stolen_item, dec__intelligence_points=5); flash(f'شبح ملعون سرق [{stolen_item}]!', 'error')
-            else: user.update(set__points=max(0, user.points - getattr(trap, 'trap_penalty_points', 10)), dec__intelligence_points=5); flash(f'شبح ملعون نهبك الدنانير!', 'error')
-        elif trap and str(user.id) not in getattr(trap, 'winners_list', []) and getattr(trap, 'current_winners', 0) < getattr(trap, 'max_winners', 1):
-            user.update(inc__points=getattr(trap, 'reward_points', 0), inc__stats_ghosts_caught=1, inc__intelligence_points=10); trap.update(inc__current_winners=1, push__winners_list=str(user.id))
-            if random.random() < 0.20 and "ختم الأرواح" not in getattr(user, 'inventory', []) and "ختم الأرواح" not in getattr(user, 'collected_seals', []): user.update(push__inventory="ختم الأرواح"); flash('اصطدت شبحاً وحصلت على ختم الأرواح العظيم!', 'success')
-            else: flash('اصطدت شبحاً وحصلت على المكافأة!', 'success')
-            check_achievements(user)
-    elif target.hunter_id not in getattr(user, 'friends', []) and user.hunter_id not in getattr(target, 'friend_requests', []): target.update(push__friend_requests=user.hunter_id); flash('أُرسل طلب التحالف بنجاح', 'success')
+    if target.role == 'ghost':
+        trap = News.objects(puzzle_answer=str(target.hunter_id), category='hidden').first()
+        if trap and str(user.id) not in getattr(trap, 'winners_list', []) and getattr(trap, 'current_winners', 0) < getattr(trap, 'max_winners', 1):
+            if trap.puzzle_type.startswith('ghost_'):
+                execute_trap_effect(user, trap)
+                trap.update(inc__current_winners=1, push__winners_list=str(user.id))
+        else: flash('اختفى الشبح أو نفدت المكافآت.', 'info')
+    elif target.hunter_id not in getattr(user, 'friends', []) and user.hunter_id not in getattr(target, 'friend_requests', []): 
+        target.update(push__friend_requests=user.hunter_id); flash('أُرسل طلب التحالف بنجاح', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/cancel_friend/<int:target_id>', methods=['POST'])
@@ -651,13 +673,9 @@ def secret_link(puzzle_id):
     except: return redirect(url_for('home'))
     
     if puzzle and str(user.id) not in getattr(puzzle, 'winners_list', []) and getattr(puzzle, 'current_winners', 0) < getattr(puzzle, 'max_winners', 1):
-        if getattr(puzzle, 'puzzle_type', '') == 'quicksand_trap':
-            user.update(set__quicksand_lock_until=datetime.utcnow() + timedelta(minutes=getattr(puzzle, 'trap_duration_minutes', 5)), dec__intelligence_points=5)
+        if puzzle.puzzle_type.startswith('link_'):
+            execute_trap_effect(user, puzzle)
             puzzle.update(inc__current_winners=1, push__winners_list=str(user.id))
-            if "ختم الخديعة" not in getattr(user, 'inventory', []) and "ختم الخديعة" not in getattr(user, 'collected_seals', []): user.update(push__inventory="ختم الخديعة"); flash('وقعت في فخ الرمال! وجدت [ختم الخديعة]', 'error')
-            else: flash('وقعت في فخ الرمال!', 'error')
-        elif getattr(puzzle, 'puzzle_type', '') == 'secret_item':
-            user.update(inc__points=getattr(puzzle, 'reward_points', 0), inc__intelligence_points=15); puzzle.update(inc__current_winners=1, push__winners_list=str(user.id)); flash('جائزة سرية للثراء تم إضافتها لحسابك!', 'success')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/declarations', methods=['GET', 'POST'])
@@ -779,7 +797,7 @@ def admin_panel():
                     group_id += 1
             GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_mode_active=True, set__floor1_move_cooldown=int(request.form.get('move_cooldown', 30)), set__floor1_meeting_active=False); flash('بدأ الطابق 1!', 'success')
         elif act == 'end_floor1_meeting':
-            process_f1_meeting_end(settings); flash('انتهى الاجتماع!', 'success')
+            process_f1_meeting_end(settings); flash('انتهى الاجتماع وتم الطرد!', 'success')
         elif act == 'eliminate_player':
             u = User.objects(id=request.form.get('target_id')).first()
             if u:
@@ -789,32 +807,35 @@ def admin_panel():
             dur = int(request.form.get('m_duration') or 0)
             if dur > 0: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=True, set__maintenance_until=datetime.utcnow() + timedelta(minutes=dur), set__maintenance_pages=request.form.getlist('m_pages'))
             else: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=False, set__maintenance_pages=[])
-            flash('تم حفظ إعدادات الصيانة!', 'success')
+            flash('تم تفعيل إعدادات الصيانة!', 'success')
         elif act == 'update_home_settings':
             GlobalSettings.objects(setting_name='main_config').update_one(set__home_title=request.form.get('home_title', 'البوابة'), set__global_news_active=bool(request.form.get('global_news_active')), set__global_news_text=request.form.get('global_news_text', ''))
             file = request.files.get('banner_file')
             if file and file.filename != '': GlobalSettings.objects(setting_name='main_config').update_one(set__banner_url=f"data:{file.content_type};base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}")
-            flash('تم تحديث الواجهة!', 'success')
+            flash('تم تحديث الواجهة والبانر!', 'success')
         elif act == 'update_nav_names':
             GlobalSettings.objects(setting_name='main_config').update_one(set__nav_home=request.form.get('nav_home', 'الرئيسية'), set__nav_profile=request.form.get('nav_profile', 'هويتي'), set__nav_friends=request.form.get('nav_friends', 'التحالفات'), set__nav_news=request.form.get('nav_news', 'المراسيم'), set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش'), set__nav_store=request.form.get('nav_store', 'السوق المظلم'), set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم'), set__nav_decs=request.form.get('nav_decs', 'التصريحات'), set__nav_grave=request.form.get('nav_grave', 'المقبرة'))
-            flash('تم تحديث الأسماء!', 'success')
+            flash('تم تحديث أسماء القائمة!', 'success')
         elif act == 'toggle_war':
             new_state = not getattr(settings, 'war_mode', False); war_hours = int(request.form.get('war_hours') or 0)
             end_time = datetime.utcnow() + timedelta(hours=war_hours) if war_hours > 0 and new_state else None
             GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=new_state, set__war_end_time=end_time)
             if not new_state: User.objects(status='active').update(set__health=100)
-            flash('تغيرت حالة الحرب!', 'success')
+            flash('تغيرت حالة الطابق الثاني!', 'success')
         elif act == 'toggle_final_battle': 
             GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=not getattr(settings, 'final_battle_mode', False))
             flash('تغيرت حالة المعركة الأخيرة!', 'success')
         elif act == 'add_news': 
             News(title=request.form.get('title'), content=request.form.get('content'), category='puzzle' if request.form.get('puzzle_type') != 'none' else 'news', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points') or 0), max_winners=int(request.form.get('max_winners') or 1)).save()
-            flash('تم الإصدار!', 'success')
+            flash('تم إصدار النقش/المرسوم!', 'success')
         elif act == 'add_standalone_puzzle':
-            puzzle_type = request.form.get('puzzle_type'); puzzle_answer = request.form.get('puzzle_answer', '')
-            News(title="لغز مخفي", content="خفي", category='hidden', puzzle_type=puzzle_type, puzzle_answer=puzzle_answer, reward_points=int(request.form.get('reward_points') or 0), max_winners=int(request.form.get('max_winners') or 1), trap_duration_minutes=int(request.form.get('trap_duration') or 0), trap_penalty_points=int(request.form.get('trap_penalty') or 0)).save()
-            if puzzle_type in ['fake_account', 'cursed_ghost']: User(hunter_id=int(puzzle_answer), username=f"شبح_{puzzle_answer}", password_hash="dummy", role='ghost' if puzzle_type == 'fake_account' else 'cursed_ghost', status='active').save()
-            flash('تم زرع الفخ/الشبح بنجاح!', 'success')
+            cat = request.form.get('trap_category'); eff = request.form.get('trap_effect'); ans = request.form.get('puzzle_answer')
+            News(title="كيان مخفي", content="خفي", category='hidden', puzzle_type=f"{cat}_{eff}", puzzle_answer=ans, reward_points=int(request.form.get('reward_points') or 0), trap_penalty_points=int(request.form.get('trap_penalty') or 0), reward_item=request.form.get('reward_item', ''), trap_duration_minutes=int(request.form.get('trap_duration') or 0), max_winners=int(request.form.get('max_winners') or 1)).save()
+            if cat == 'ghost': User(hunter_id=int(ans), username=f"شبح_{ans}", password_hash="dummy", role='ghost', status='active').save()
+            flash('تم زرع الفخ/الشبح بذكاء!', 'success')
+        elif act == 'delete_trap':
+            try: News.objects(id=request.form.get('trap_id')).delete(); flash('تم حذف الكيان من المتاهة.', 'success')
+            except: pass
         elif act == 'add_store_item':
             im = ''; file = request.files.get('item_image')
             if file: im = f"data:{file.content_type};base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}"
@@ -848,7 +869,7 @@ def admin_panel():
                 if fate == 'pass': u.update(set__gate_status='passed', set__zone='الطابق 1')
                 elif fate == 'kill': u.update(set__status='eliminated', set__freeze_reason='البوابة التهمته')
                 elif fate == 'test': u.update(set__gate_status='testing')
-            flash('تم إطلاق الحكم!', 'success')
+            flash('تم إطلاق الحكم على البوابات!', 'success')
         elif act == 'judge_test_user':
             u = User.objects(id=request.form.get('user_id')).first()
             if u: 
@@ -863,7 +884,7 @@ def admin_panel():
             GlobalSettings.objects(setting_name='main_config').update_one(set__bleed_rate_minutes=int(request.form.get('bleed_rate_minutes') or 60), set__bleed_amount=int(request.form.get('bleed_amount') or 1), set__war_kill_target=int(request.form.get('war_kill_target') or 15), set__attack_cooldown_minutes=int(request.form.get('attack_cooldown_minutes') or 5))
             flash('تم حفظ إعدادات الحرب!', 'success')
         elif act == 'update_poneglyph': 
-            GlobalSettings.objects(setting_name='main_config').update_one(set__poneglyph_text=request.form.get('poneglyph_text', '')); flash('تم نقش البونغليف بنجاح!', 'success')
+            GlobalSettings.objects(setting_name='main_config').update_one(set__poneglyph_text=request.form.get('poneglyph_text', '')); flash('تم تعديل البونغليف بنجاح!', 'success')
         return redirect(url_for('admin_panel'))
     
     users_query = User.objects(hunter_id__ne=1000)
@@ -872,7 +893,8 @@ def admin_panel():
         if search_query.isdigit(): users_query = users_query.filter(hunter_id=int(search_query))
         else: users_query = users_query.filter(username__icontains=search_query)
         
-    return render_template('admin.html', users=users_query.order_by('-last_active')[:100], settings=settings, search_query=search_query)
+    hidden_traps = News.objects(category='hidden')
+    return render_template('admin.html', users=users_query.order_by('-last_active')[:100], settings=settings, search_query=search_query, hidden_traps=hidden_traps)
 
 @app.errorhandler(Exception)
 def handle_exception(e):
@@ -881,4 +903,3 @@ def handle_exception(e):
     return f"<div style='direction:ltr; background:#0a0a0a; color:#ff5555; padding:20px; border:2px solid red; text-align:left;'><h2>🚨 خطأ برمجي</h2><p>{request.url}</p><pre>{traceback.format_exc()}</pre></div>", 200
 
 if __name__ == '__main__': app.run(debug=False, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
-
