@@ -6,34 +6,33 @@
     <title>{{ settings.maze_name if settings else 'متاهة سيفار' }}</title>
     <style>
         :root {
-            --bg-main: #0a0806; --bg-card: #15100a;
-            --gold-main: #d4af37; --gold-light: #f3e5ab; --gold-dark: #aa8529;
+            --bg-main: #0a0806; --bg-card: #110d09;
+            --gold-main: #d4af37; --gold-light: #f3e5ab; --gold-dark: #8c7322;
             --blood-red: #8a0303; --sand: #c2b280;
         }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #1a140a 0%, #000 100%); min-height: 100vh; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #110d09 0%, #000 100%); min-height: 100vh; overflow-x: hidden; }
         
-        .sidebar { width: 250px; background: var(--bg-card); position: fixed; height: 100vh; border-left: 2px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.8); display: flex; flex-direction: column; z-index: 1000; overflow-y: auto; transition: 0.3s; }
-        .logo-area { padding: 30px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
-        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 26px; text-shadow: 0 0 15px rgba(212,175,55,0.6); letter-spacing: 1px; }
-        .nav-links { padding: 20px 0; flex-grow: 1; }
-        .nav-links a { display: block; padding: 12px 25px; color: #ccc; text-decoration: none; font-size: 15px; font-weight: bold; transition: 0.3s; border-left: 4px solid transparent; margin-bottom: 2px;}
+        .sidebar { width: 250px; background: var(--bg-card); position: fixed; top:0; bottom:0; right: 0; border-left: 1px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.9); display: flex; flex-direction: column; z-index: 1000; transition: 0.3s; }
         
-        .nav-home:hover, .nav-home.active { background: rgba(212,175,55,0.1); color: var(--gold-light); border-left-color: var(--gold-main); }
-        .nav-profile:hover, .nav-profile.active { background: rgba(52, 152, 219, 0.1); color: #3498db; border-left-color: #3498db; }
-        .nav-friends:hover, .nav-friends.active { background: rgba(46, 204, 113, 0.1); color: #2ecc71; border-left-color: #2ecc71; }
-        .nav-news:hover, .nav-news.active { background: rgba(155, 89, 182, 0.1); color: #9b59b6; border-left-color: #9b59b6; }
-        .nav-puz:hover, .nav-puz.active { background: rgba(26, 188, 156, 0.1); color: #1abc9c; border-left-color: #1abc9c; }
-        .nav-store:hover, .nav-store.active { background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-left-color: #f1c40f; }
-        .nav-altar:hover, .nav-altar.active { background: rgba(142, 68, 173, 0.1); color: #8e44ad; border-left-color: #8e44ad; }
-        .nav-grave:hover, .nav-grave.active { background: rgba(231, 76, 60, 0.1); color: #e74c3c; border-left-color: #e74c3c; }
-        .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; border-left-color: #e74c3c !important; background: rgba(231,76,60,0.05); margin: 10px 0;}
+        .logo-area { padding: 30px 20px 20px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
+        .sidebar-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 22px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; }
+        
+        .nav-links { padding: 15px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-links a { display: block; padding: 12px 25px; color: #bbb; text-decoration: none; font-size: 15px; font-weight: bold; transition: 0.3s; border-right: 3px solid transparent; margin-bottom: 2px; }
+        .nav-links a:hover, .nav-links a.active { background: rgba(212,175,55,0.05); color: var(--gold-light); border-right-color: var(--gold-main); }
+        
+        .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; border-right-color: #e74c3c !important; background: rgba(231,76,60,0.05); margin: 10px 0; }
         .nav-admin { color: #e74c3c !important; margin-top: 15px; border-top: 1px dashed #332815; padding-top: 15px !important; }
         
-        /* 🌟 أزرار الأسرار (تظهر بعد فك الختم) */
-        .nav-lore { color: #f39c12 !important; border-left-color: #f39c12 !important; background: rgba(243, 156, 18, 0.05); }
-        .nav-top { color: #00cec9 !important; border-left-color: #00cec9 !important; background: rgba(0, 206, 201, 0.05); }
+        .nav-lore { color: #f39c12 !important; border-right-color: #f39c12 !important; background: rgba(243, 156, 18, 0.05); }
+        .nav-top { color: #00cec9 !important; border-right-color: #00cec9 !important; background: rgba(0, 206, 201, 0.05); }
 
-        @keyframes pulseNav { 0% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } 50% { box-shadow: inset 5px 0 10px rgba(231,76,60,0.3); } 100% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } }
+        @keyframes pulseNav { 0% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } 50% { box-shadow: inset -5px 0 10px rgba(231,76,60,0.3); } 100% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } }
+
+        .logout-area { padding: 15px; background: #050403; border-top: 1px solid var(--gold-dark); text-align: center; }
+        .btn-logout { display: block; color: #e74c3c; text-decoration: none; font-size: 15px; font-weight: bold; padding: 10px; border: 1px solid #e74c3c; border-radius: 6px; transition: 0.3s; }
+        .btn-logout:hover { background: #e74c3c; color: #fff; }
 
         .main-content { margin-right: 250px; padding: 40px; }
         .flash-messages { margin-bottom: 20px; }
@@ -43,8 +42,15 @@
         .flash.info { background: rgba(52,152,219,0.1); color: #3498db; border: 1px solid #3498db; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .mobile-menu-btn { display: none; background: transparent; border: none; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; left: 15px; z-index: 1001; text-shadow: 0 0 5px #000; }
-        @media (max-width: 768px) { .sidebar { transform: translateX(100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-right: 0; padding: 20px; padding-top: 60px; } .mobile-menu-btn { display: block; } }
+        /* ☰ الزر في اليمين */
+        .mobile-menu-btn { display: none; background: #000; border: 1px solid var(--gold-main); border-radius: 6px; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; right: 15px; z-index: 1001; padding: 5px 12px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        
+        @media (max-width: 768px) { 
+            .sidebar { transform: translateX(100%); } 
+            .sidebar.open { transform: translateX(0); } 
+            .main-content { margin-right: 0; padding: 20px; padding-top: 70px; } 
+            .mobile-menu-btn { display: block; } 
+        }
     </style>
 </head>
 <body>
@@ -53,45 +59,49 @@
 
 <div class="sidebar" id="sidebar">
     <div class="logo-area">
+        {% if current_user %}
+            <img src="/avatar/{{ current_user.hunter_id }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+        {% endif %}
         <h2>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h2>
-        {% if current_user %}<p style="color: var(--sand); margin: 5px 0 0 0; font-size: 14px;">{{ current_user.username }}</p>{% endif %}
+        {% if current_user %}<p style="color: var(--sand); margin: 5px 0 0 0; font-size: 12px;">{{ current_user.username }}</p>{% endif %}
     </div>
+    
     <div class="nav-links">
-        <a href="/" class="nav-home {% if request.path == '/' %}active{% endif %}">🏠 {{ settings.nav_home if settings else 'الرئيسية' }}</a>
+        <a href="/" class="nav-home {% if request.path == '/' %}active{% endif %}">الرئيسية</a>
         
         {% if current_user %}
             {% if settings and settings.floor1_mode_active %}
-                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">🚨 غرفة الاجتماعات</a>
+                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">غرفة الاجتماعات</a>
             {% endif %}
 
-            <a href="/profile" class="nav-profile {% if request.path == '/profile' %}active{% endif %}">👤 {{ settings.nav_profile if settings else 'هويتي' }}</a>
-            <a href="/friends" class="nav-friends {% if request.path == '/friends' %}active{% endif %}">🤝 {{ settings.nav_friends if settings else 'التحالفات' }}</a>
-            <a href="/news" class="nav-news {% if request.path == '/news' %}active{% endif %}">📜 {{ settings.nav_news if settings else 'المراسيم' }}</a>
-            <a href="/puzzles" class="nav-puz {% if request.path == '/puzzles' %}active{% endif %}">🧩 {{ settings.nav_puzzles if settings else 'النقوش' }}</a>
-            <a href="/store" class="nav-store {% if request.path == '/store' %}active{% endif %}">🐪 {{ settings.nav_store if settings else 'السوق المظلم' }}</a>
-            <a href="/altar" class="nav-altar {% if request.path == '/altar' %}active{% endif %}">🔮 {{ settings.nav_altar if settings else 'مذبح الطلاسم' }}</a>
-            <a href="/declarations" class="nav-news {% if request.path == '/declarations' %}active{% endif %}">📢 {{ settings.nav_decs if settings else 'التصريحات' }}</a>
-            <a href="/graveyard" class="nav-grave {% if request.path == '/graveyard' %}active{% endif %}">💀 {{ settings.nav_grave if settings else 'المقبرة' }}</a>
+            <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">هويتي</a>
+            <a href="/friends" class="{% if request.path == '/friends' %}active{% endif %}">التحالفات</a>
+            <a href="/news" class="{% if request.path == '/news' %}active{% endif %}">المراسيم</a>
+            <a href="/puzzles" class="{% if request.path == '/puzzles' %}active{% endif %}">النقوش</a>
+            <a href="/store" class="{% if request.path == '/store' %}active{% endif %}">السوق المظلم</a>
+            <a href="/altar" class="{% if request.path == '/altar' %}active{% endif %}">مذبح الطلاسم</a>
+            <a href="/declarations" class="{% if request.path == '/declarations' %}active{% endif %}">التصريحات</a>
+            <a href="/graveyard" class="{% if request.path == '/graveyard' %}active{% endif %}">المقبرة</a>
             
             {% if current_user.unlocked_lore_room %}
-                <a href="/poneglyph" class="nav-lore {% if request.path == '/poneglyph' %}active{% endif %}">🗿 بونغليف سيفار</a>
+                <a href="/poneglyph" class="nav-lore {% if request.path == '/poneglyph' %}active{% endif %}">بونغليف سيفار</a>
             {% endif %}
             {% if current_user.unlocked_top_room %}
-                <a href="/top_room" class="nav-top {% if request.path == '/top_room' %}active{% endif %}">🏆 قاعة الأساطير</a>
+                <a href="/top_room" class="nav-top {% if request.path == '/top_room' %}active{% endif %}">قاعة الأساطير</a>
             {% endif %}
             
             {% if current_user.role == 'admin' %}
                 <a href="/admin" class="nav-admin {% if request.path == '/admin' %}active{% endif %}">👑 عرش الإمبراطور</a>
             {% endif %}
         {% else %}
-            <a href="/login" class="nav-profile">🚪 تسجيل الدخول</a>
-            <a href="/register" class="nav-friends">📜 بناء هوية</a>
+            <a href="/login">تسجيل الدخول</a>
+            <a href="/register">بناء هوية</a>
         {% endif %}
     </div>
     
     {% if current_user %}
-    <div style="padding: 20px; background: #050403; border-top: 1px solid var(--gold-dark); text-align: center; margin-top: auto;">
-        <a href="/logout" style="color: #e74c3c; text-decoration: none; font-size: 16px; font-weight: bold; transition: 0.3s; display: block; padding: 10px; border: 1px solid #e74c3c; border-radius: 6px;" onmouseover="this.style.background='#e74c3c'; this.style.color='#fff';" onmouseout="this.style.background='transparent'; this.style.color='#e74c3c';">🚪 الخروج من المتاهة</a>
+    <div class="logout-area">
+        <a href="/logout" class="btn-logout">الخروج من المتاهة</a>
     </div>
     {% endif %}
 </div>
@@ -110,4 +120,3 @@
 </div>
 </body>
 </html>
-
