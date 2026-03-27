@@ -8,8 +8,9 @@
     .item-image { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--gold-dark); }
     .item-price { position: absolute; top: 12px; left: 12px; background: #000; color: var(--gold-light); font-weight: 900; font-size: 14px; padding: 6px 12px; border-radius: 8px; border: 2px solid var(--gold-main); box-shadow: 0 4px 10px rgba(0,0,0,0.9); z-index: 10;}
     .btn-buy { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-top: 10px;}
-    .btn-disabled { background: #333; color: #888; border: none; padding: 12px 20px; border-radius: 6px; width: 100%; font-weight: bold; cursor: not-allowed; margin-top: 10px;}
-    .admin-store-panel { background: #0a0806; border: 2px dashed #f1c40f; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+    .btn-disabled { background: #111; color: #555; border: 1px solid #333; padding: 12px 20px; border-radius: 6px; width: 100%; font-weight: bold; cursor: not-allowed; margin-top: 10px;}
+    .admin-store-panel { background: #050403; border: 1px solid var(--gold-main); padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+    .form-control-smart { width: 100%; padding: 12px; background: #110d09; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; outline:none; }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -22,27 +23,40 @@
 
 {% if current_user and current_user.role == 'admin' %}
 <div class="admin-store-panel">
-    <h3 style="color: #f1c40f; margin-top: 0; text-align: center;">👑 إضافة أداة جديدة للسوق (يظهر للإمبراطور فقط)</h3>
+    <h3 style="color: var(--gold-main); margin-top: 0;">👑 إضافة أداة للسوق</h3>
     <form action="/admin" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="action" value="add_store_item">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" name="item_name" placeholder="اسم الأداة" class="form-control-smart" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px;" required>
-            <input type="number" name="item_price" placeholder="السعر" class="form-control-smart" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px;" required>
-            <select name="item_type" class="form-control-smart" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px;" required>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <input type="text" name="item_name" placeholder="اسم الأداة" class="form-control-smart" required>
+            <input type="number" name="item_price" placeholder="السعر" class="form-control-smart" required>
+            <select name="item_type" class="form-control-smart" required>
                 <option value="box">صندوق عادي</option><option value="weapon">سلاح (هجوم)</option><option value="heal">علاج (HP)</option>
                 <option value="spy">جاسوس (كشف)</option><option value="steal">خطاف (سرقة)</option><option value="shield">وشاح (حماية)</option>
-                <option value="totem_self">توتم حياة</option><option value="seal">ختم (للفوز بالمتاهة)</option>
+                <option value="totem_self">توتم حياة</option><option value="seal">ختم المتاهة</option>
             </select>
-            <input type="number" name="effect_amount" placeholder="قوة التأثير (للسلاح/العلاج)" class="form-control-smart" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px;">
+            <input type="number" name="effect_amount" placeholder="قوة التأثير (للسلاح/العلاج)" class="form-control-smart">
         </div>
-        <textarea name="item_desc" placeholder="وصف الأداة..." class="form-control-smart" rows="2" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px; margin-top:10px;"></textarea>
-        <div style="background: #111; padding: 10px; border: 1px dashed #444; border-radius: 6px; margin: 15px 0;">
-            <label style="color:#aaa;"><input type="checkbox" name="is_mirage" value="True"> فخ سراب</label> | 
-            <label style="color:#aaa;"><input type="checkbox" name="is_luck" value="True"> صندوق حظ</label>
+        <textarea name="item_desc" placeholder="وصف الأداة..." class="form-control-smart" rows="2" style="margin-bottom: 10px;"></textarea>
+        
+        <div style="background: #000; padding: 15px; border: 1px dashed #332815; border-radius: 6px; margin-bottom: 15px;">
+            <label style="color:#aaa; display:block; margin-bottom:10px;"><input type="checkbox" id="check_mirage" name="is_mirage" value="True" onchange="toggleOpts()"> فخ سراب (يخصم الدنانير و 10 ذكاء)</label>
+            <input type="text" id="mirage_msg" name="mirage_message" placeholder="رسالة الخديعة التي تظهر للضحية..." class="form-control-smart" style="display:none; margin-bottom:10px;">
+            
+            <label style="color:#aaa; display:block; margin-bottom:10px;"><input type="checkbox" id="check_luck" name="is_luck" value="True" onchange="toggleOpts()"> صندوق حظ (يمنح أو يخصم عشوائياً)</label>
+            <div id="luck_opts" style="display:none; gap:10px;">
+                <input type="number" name="luck_min" placeholder="أسوأ نتيجة (مثال: -50)" class="form-control-smart">
+                <input type="number" name="luck_max" placeholder="أفضل نتيجة (مثال: 100)" class="form-control-smart">
+            </div>
         </div>
-        <input type="file" name="item_image" class="form-control-smart" accept="image/*" style="width:100%; padding:10px; background:#000; color:#fff; border:1px solid #333; border-radius:6px; margin-bottom:10px;">
-        <button type="submit" class="btn-buy" style="background:#f1c40f; color:#000;">إضافة للسوق</button>
+        <input type="file" name="item_image" class="form-control-smart" accept="image/*" style="margin-bottom:10px;">
+        <button type="submit" class="btn-buy" style="background:transparent; color:var(--gold-main); border:1px solid var(--gold-main);">طرح في السوق</button>
     </form>
+    <script>
+        function toggleOpts() {
+            document.getElementById('mirage_msg').style.display = document.getElementById('check_mirage').checked ? 'block' : 'none';
+            document.getElementById('luck_opts').style.display = document.getElementById('check_luck').checked ? 'flex' : 'none';
+        }
+    </script>
 </div>
 {% endif %}
 
@@ -62,7 +76,7 @@
         
         {% if current_user and current_user.points >= item.price %}
             <form action="/buy/{{ item.id }}" method="POST" style="margin:0;">
-                <button type="submit" class="btn-buy" onclick="return confirm('شراء [{{ item.name }}] مقابل {{ item.price }} دينار؟');">شراء الأداة</button>
+                <button type="submit" class="btn-buy" onclick="return confirm('تأكيد الشراء؟');">شراء الأداة</button>
             </form>
         {% else %}
             <button class="btn-disabled" disabled>دنانيرك لا تكفي</button>
@@ -70,12 +84,12 @@
         
         {% if current_user and current_user.role == 'admin' %}
         <form action="/delete_store_item/{{ item.id }}" method="POST" style="margin-top: 15px; border-top: 1px dashed #332815; padding-top: 10px;">
-            <button type="submit" style="background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; width: 100%;">حذف (إمبراطور)</button>
+            <button type="submit" style="background: transparent; color: #e74c3c; border: none; cursor: pointer; font-size: 12px; width: 100%;">حذف من السوق</button>
         </form>
         {% endif %}
     </div>
     {% else %}
-    <p style="color: #888; grid-column: 1/-1; text-align: center;">السوق فارغ حالياً... التجار في طريقهم.</p>
+    <p style="color: #555; grid-column: 1/-1; text-align: center; padding:50px;">السوق فارغ حالياً...</p>
     {% endfor %}
 </div>
 {% endblock %}
