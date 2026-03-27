@@ -1,97 +1,106 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .profile-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; background: #000; animation: float 6s ease-in-out infinite; }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-    @media (max-width: 600px) { .profile-avatar { width: 130px; height: 130px; } }
-    .stat-card { background: var(--bg-card); border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; transition: 0.3s; }
-    .stat-card:hover { border-color: var(--gold-main); transform: translateY(-5px); }
-    .section-card { background: #050403; border: 1px solid #332815; border-radius: 12px; padding: 25px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; outline:none; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+    /* 🌟 النبض السحري في الخلفية */
+    .ambient-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.03) 0%, transparent 70%); z-index: -1; pointer-events: none; animation: pulseBg 5s infinite alternate ease-in-out; }
+    @keyframes pulseBg { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
+
+    .profile-header { text-align: center; margin-bottom: 30px; }
+    .profile-avatar { width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
+    .hunter-name { color: var(--gold-main); font-size: 28px; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.5); font-weight: bold;}
+    .hunter-id { color: #888; font-size: 14px; margin-top: 5px; font-family: monospace;}
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+    .stat-card { background: #110d09; border: 1px solid #332815; padding: 20px; border-radius: 12px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); transition: 0.3s; }
+    .stat-card:hover { border-color: var(--gold-dark); transform: translateY(-2px); }
+    .stat-val { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 5px;}
+    .stat-label { color: #aaa; font-size: 13px; }
+
+    .section-title { color: var(--gold-main); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 15px; font-size: 18px; }
+    
+    .inventory-container { background: #0a0806; border: 1px solid #332815; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+    .item-chip { display: inline-block; background: #111; border: 1px solid #444; padding: 8px 15px; border-radius: 20px; margin: 5px; color: #ccc; font-size: 13px; }
+
+    .settings-card { background: #050403; border: 1px solid #222; padding: 20px; border-radius: 12px; }
+    .form-control-smart { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; outline: none; }
+    .form-control-smart:focus { border-color: var(--gold-main); }
+    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
     .btn-gold:hover { transform: scale(1.02); }
 </style>
 
-<div style="text-align: center; margin-bottom: 40px; position: relative;">
+<div class="ambient-bg"></div>
+
+<div class="profile-header">
     <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-    <h1 style="color: var(--gold-main); margin: 0; font-size: 32px; text-shadow: 0 0 10px rgba(212,175,55,0.5);">{{ user.username }}</h1>
-    <div style="color: #aaa; font-size: 16px; margin-top: 5px;">ID: {{ user.hunter_id }}</div>
-    
-    {% if user.facebook_link %}
+    <h2 class="hunter-name">{{ user.username }}</h2>
+    <div class="hunter-id">ID: {{ user.hunter_id }}</div>
     <div style="margin-top: 10px;">
-        <a href="{{ user.facebook_link }}" target="_blank" style="color: #3b5998; text-decoration: none; font-weight: bold; background: rgba(59, 89, 152, 0.1); padding: 5px 15px; border-radius: 20px; border: 1px solid #3b5998;">🔗 فيسبوك الرحالة</a>
-    </div>
-    {% endif %}
-
-    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-        <span style="background: rgba(212,175,55,0.2); color: var(--gold-light); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold-main); font-size: 13px;">الطابق: {{ user.zone }}</span>
-        {% if user.special_rank %}<span style="background: rgba(46,204,113,0.2); color: #2ecc71; padding: 5px 15px; border-radius: 20px; border: 1px solid #2ecc71; font-size: 13px;">{{ user.special_rank }}</span>{% endif %}
-        {% if user.status == 'inactive' %}<span style="background: rgba(231,76,60,0.2); color: #e74c3c; padding: 5px 15px; border-radius: 20px; border: 1px solid #e74c3c; font-size: 13px;">قيد المراجعة</span>{% endif %}
+        <span style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 5px 15px; border-radius: 20px; font-size: 12px; border: 1px solid #2ecc71; margin-left: 5px;">{{ 'حي يُرزق' if user.status == 'active' else ('حساب قيد المراجعة' if user.status == 'inactive' else 'جثة هامدة') }}</span>
+        <span style="background: rgba(212,175,55,0.1); color: var(--gold-main); padding: 5px 15px; border-radius: 20px; font-size: 12px; border: 1px solid var(--gold-main);">الطابق: {{ user.zone }}</span>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 40px;">
+<div class="stats-grid">
     <div class="stat-card">
-        <div style="font-size: 24px; color: var(--sand); font-weight: 900;">{{ user.points }}</div>
-        <div style="color: #888; font-size: 12px; margin-top: 5px;">دنانير 🪙</div>
+        <div class="stat-val" style="color: #f1c40f;">{{ user.points }}</div>
+        <div class="stat-label">دنانير 🪙</div>
     </div>
     <div class="stat-card">
-        <div style="font-size: 24px; color: #2ecc71; font-weight: 900;">{{ user.loyalty_points }}</div>
-        <div style="color: #888; font-size: 12px; margin-top: 5px;">شرف ووفاء 🤝</div>
+        <div class="stat-val" style="color: #e74c3c;">{{ user.health }}%</div>
+        <div class="stat-label">الروح (HP) ❤️</div>
     </div>
     <div class="stat-card">
-        <div style="font-size: 24px; color: #3498db; font-weight: 900;">{{ user.intelligence_points }}</div>
-        <div style="color: #888; font-size: 12px; margin-top: 5px;">معدل ذكاء 🧠</div>
+        <div class="stat-val" style="color: #1abc9c;">{{ user.intelligence_points }}</div>
+        <div class="stat-label">معدل الذكاء 🧠</div>
     </div>
     <div class="stat-card">
-        <div style="font-size: 24px; color: #e74c3c; font-weight: 900;">{{ user.health }}%</div>
-        <div style="color: #888; font-size: 12px; margin-top: 5px;">الروح (HP) ❤️</div>
+        <div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div>
+        <div class="stat-label">شرف ووفاء 🤝</div>
     </div>
 </div>
 
-<div class="section-card">
-    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">🎒 حقيبة النجاة</h3>
-    {% if current_user.has_shield %} <span style="font-size:30px;" title="وشاح الحماية">🛡️</span> {% endif %}
-    {% if current_user.totem_self %} <span style="font-size:30px;" title="توتم إعادة الحياة">🌀</span> {% endif %}
-    {% if my_items %}
-        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top: 15px;">
-            {% for item in my_items %}
-            <div style="background:#111; border:1px solid #44351c; padding:8px 15px; border-radius:6px; color:#ddd; font-size:13px;">{{ item.name }}</div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p style="color:#888; text-align:center;">حقيبتك فارغة، اذهب للسوق للتجهّز.</p>
-    {% endif %}
+<div class="inventory-container">
+    <h3 class="section-title">🎒 حقيبة النجاة</h3>
+    <div style="text-align: center;">
+        {% for item in user.inventory %}
+            <span class="item-chip">{{ item }}</span>
+        {% else %}
+            <span style="color: #666; font-style: italic;">حقيبتك فارغة، اذهب للسوق للتجهّز.</span>
+        {% endfor %}
+    </div>
 </div>
 
-<div class="section-card">
-    <h3 style="color:var(--gold-main); border-bottom:1px dashed #332815; padding-bottom:10px;">⚙️ إعدادات الهوية</h3>
+<div class="settings-card">
+    <h3 class="section-title">⚙️ إعدادات الهوية</h3>
     
-    <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom:25px;">
+    <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="change_avatar">
         <label style="color:#aaa; font-size:13px;">تحديث النقش (الصورة):</label>
-        <div style="display:flex; gap:10px;"><input type="file" name="avatar_file" accept="image/*" class="form-control" style="margin:0; padding:9px;" required><button type="submit" class="btn-gold" style="width:auto;">رفع</button></div>
+        <div style="display: flex; gap: 10px;">
+            <input type="file" name="avatar_file" class="form-control-smart" accept="image/*" required style="flex: 1; margin: 0;">
+            <button type="submit" class="btn-gold" style="width: auto;">رفع</button>
+        </div>
     </form>
-    
-    <form action="/settings" method="POST" style="margin-bottom:25px;">
+
+    <form action="/settings" method="POST" style="margin-bottom: 20px;">
         <input type="hidden" name="action" value="change_name">
-        <label style="color:#aaa; font-size:13px;">تغيير اسم الرحالة (مرة كل 15 يوم):</label>
-        <div style="display:flex; gap:10px;">
-            <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control" style="margin:0;" required>
-            <button type="submit" class="btn-gold" style="width:auto;">تغيير</button>
+        <label style="color:#aaa; font-size:13px;">تغيير اسم الرحالة (مرة كل 15 يوماً):</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control-smart" required style="flex: 1; margin: 0;">
+            <button type="submit" class="btn-gold" style="width: auto;">تغيير</button>
         </div>
     </form>
 
     <form action="/settings" method="POST">
         <input type="hidden" name="action" value="change_password">
         <label style="color:#aaa; font-size:13px;">تغيير كلمة المرور السرية:</label>
-        <input type="password" name="old_password" placeholder="الحالية" class="form-control" style="margin-bottom:10px;" required>
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-            <input type="password" name="new_password" placeholder="الجديدة" class="form-control" required>
-            <input type="password" name="confirm_password" placeholder="تأكيد" class="form-control" required>
+        <input type="password" name="old_password" placeholder="الحالية" class="form-control-smart" required>
+        <div style="display: flex; gap: 10px;">
+            <input type="password" name="new_password" placeholder="الجديدة" class="form-control-smart" required>
+            <input type="password" name="confirm_password" placeholder="تأكيد" class="form-control-smart" required>
         </div>
         <button type="submit" class="btn-gold">حفظ الختم السري</button>
     </form>
 </div>
-{% endblock %}
 
+{% endblock %}
