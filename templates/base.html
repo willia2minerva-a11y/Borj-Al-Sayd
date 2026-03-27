@@ -14,9 +14,10 @@
         
         .sidebar { width: 250px; background: var(--bg-card); position: fixed; top:0; bottom:0; right: 0; border-left: 1px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.9); display: flex; flex-direction: column; z-index: 1000; transition: 0.3s; }
         
-        .logo-area { padding: 30px 20px 20px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
+        .logo-area { padding: 25px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
+        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 24px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; }
+        .sidebar-divider { border: 0; border-top: 1px dashed #332815; margin: 15px 0; }
         .sidebar-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; box-shadow: 0 0 10px rgba(212,175,55,0.3); }
-        .logo-area h2 { margin: 0; color: var(--gold-main); font-size: 22px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; }
         
         .nav-links { padding: 15px 0; flex-grow: 1; overflow-y: auto; }
         .nav-links a { display: block; padding: 12px 25px; color: #bbb; text-decoration: none; font-size: 15px; font-weight: bold; transition: 0.3s; border-right: 3px solid transparent; margin-bottom: 2px; }
@@ -42,7 +43,6 @@
         .flash.info { background: rgba(52,152,219,0.1); color: #3498db; border: 1px solid #3498db; }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* ☰ الزر في اليمين */
         .mobile-menu-btn { display: none; background: #000; border: 1px solid var(--gold-main); border-radius: 6px; color: var(--gold-main); font-size: 24px; cursor: pointer; position: fixed; top: 15px; right: 15px; z-index: 1001; padding: 5px 12px; box-shadow: 0 0 10px rgba(0,0,0,0.8); }
         
         @media (max-width: 768px) { 
@@ -59,11 +59,12 @@
 
 <div class="sidebar" id="sidebar">
     <div class="logo-area">
-        {% if current_user %}
-            <img src="/avatar/{{ current_user.hunter_id }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-        {% endif %}
         <h2>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h2>
-        {% if current_user %}<p style="color: var(--sand); margin: 5px 0 0 0; font-size: 12px;">{{ current_user.username }}</p>{% endif %}
+        {% if current_user %}
+            <hr class="sidebar-divider">
+            <img src="/avatar/{{ current_user.hunter_id }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+            <p style="color: var(--sand); margin: 5px 0 0 0; font-size: 14px; font-weight: bold;">{{ current_user.username }}</p>
+        {% endif %}
     </div>
     
     <div class="nav-links">
