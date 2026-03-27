@@ -7,18 +7,10 @@ class User(db.Document):
     meta = {
         'strict': False,
         'indexes': [
-            'hunter_id',
-            'username',
-            'status',
-            'chosen_gate',
-            ('status', 'role'),
-            'last_active',
-            'gate_status',
-            'friends',
-            'friend_requests',
-            'created_at',
-            'group_id',
-            'current_room'
+            'hunter_id', 'username', 'status', 'chosen_gate',
+            ('status', 'role'), 'last_active', 'gate_status',
+            'friends', 'friend_requests', 'created_at',
+            'group_id', 'current_room'
         ]
     }
     
@@ -68,7 +60,6 @@ class User(db.Document):
     has_shield = db.BooleanField(default=False)
     totem_self = db.BooleanField(default=False)
 
-    # 🚀 إضافات الطابق الأول (Among Us)
     current_room = db.StringField(default='الساحة')
     is_cursed = db.BooleanField(default=False)
     group_id = db.IntField(default=0)
@@ -78,8 +69,6 @@ class User(db.Document):
     emergency_used = db.BooleanField(default=False)
     used_sabotage = db.BooleanField(default=False)
     used_vent = db.BooleanField(default=False)
-    
-    # 🚀 نظام التصويت في اجتماعات الطابق الأول
     f1_has_voted = db.BooleanField(default=False)
     f1_votes_received = db.IntField(default=0)
 
@@ -96,6 +85,7 @@ class News(db.Document):
     winners_list = db.ListField(db.StringField(), default=list)
     trap_duration_minutes = db.IntField(default=0)
     trap_penalty_points = db.IntField(default=0)
+    reward_item = db.StringField(default='') # حقل جديد للفخاخ التي تعطي أدوات وأختام
     author = db.StringField(default='الإمبراطور')
     status = db.StringField(default='approved')
     image_data = db.StringField(default='')
@@ -161,7 +151,6 @@ class GlobalSettings(db.Document):
     poneglyph_text = db.StringField(default='')
     dead_count = db.IntField(default=0)
 
-    # إعدادات الطابق الأول
     floor1_mode_active = db.BooleanField(default=False)
     floor1_meeting_active = db.BooleanField(default=False)
     floor1_meeting_end_time = db.DateTimeField()
