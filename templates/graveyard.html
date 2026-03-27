@@ -1,13 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="global-banner"><h2 style="color: #e74c3c;">💀 مقبرة الساقطين</h2></div>
-<div style="display:flex; flex-wrap:wrap; justify-content:center;">
-    {% for u in users %}
-    <div class="hunter-card ghost-card" style="width: 150px; text-align: center; margin: 10px; padding:15px;">
-        <div style="font-size: 40px; margin-bottom:10px;">{{ u.avatar if not u.avatar.startswith('data:') else '👤' }}</div>
-        <h4 style="margin:0;">{{ u.username }}</h4>
-        <p style="font-size: 11px; color: #ff9999; margin-top:5px;">"{{ u.freeze_reason }}"</p>
-    </div>
-    {% endfor %}
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: #e74c3c; margin: 0; text-shadow: 0 0 10px rgba(231,76,60,0.5);">مقبرة الساقطين 💀</h2>
+    <p style="color: #888;">أرواحهم عالقة هنا إلى الأبد...</p>
 </div>
+
+{% if users %}
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        {% for u in users %}
+        <div style="background: #110d09; border: 1px solid #551111; padding: 20px; border-radius: 8px; text-align: center; box-shadow: inset 0 0 20px rgba(138,3,3,0.1);">
+            <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;">🪦</div>
+            <strong style="color: #ccc; display: block; font-size: 18px;">{{ u.username }}</strong>
+            <div style="color: #e74c3c; font-size: 13px; margin-top: 10px;">السبب: {{ u.freeze_reason if u.freeze_reason else 'ابتلعته الرمال' }}</div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div style="text-align: center; padding: 50px; border: 1px dashed #332815; border-radius: 12px; background: #050403;">
+        <h1 style="font-size: 60px; margin: 0; opacity: 0.3;">🌫️</h1>
+        <h3 style="color: #888; font-weight: normal;">المقبرة صامتة وموحشة...</h3>
+        <p style="color: #555;">لم تبتلع الرمال أحداً بعد، الأرواح لا تزال تقاتل بشراسة.</p>
+    </div>
+{% endif %}
 {% endblock %}
