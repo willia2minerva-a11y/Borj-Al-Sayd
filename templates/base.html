@@ -8,68 +8,70 @@
         :root {
             --bg-main: #0a0806; --bg-card: #110d09;
             --gold-main: #d4af37; --gold-light: #f3e5ab; --gold-dark: #8c7322;
-            --blood-red: #8a0303; --sand: #c2b280;
+            --blood-red: #8a0303; --sand: #c2b280; --text-gray: #aaa;
         }
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #110d09 0%, #000 100%); min-height: 100vh; overflow-x: hidden; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-main); color: #ddd; background-image: radial-gradient(circle at center, #110d09 0%, #000 100%); min-height: 100vh; overflow-x: hidden; display: flex; }
         
-        /* 📱 الشريط العلوي للموبايل لإصلاح تداخل الزر */
-        .mobile-header { display: none; background: #050403; border-bottom: 1px solid var(--gold-dark); padding: 15px 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.8); }
-        .mobile-header h3 { margin: 0; color: var(--gold-main); font-size: 20px; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
-        .mobile-menu-btn { background: transparent; border: 1px solid var(--gold-main); border-radius: 6px; color: var(--gold-main); font-size: 24px; cursor: pointer; padding: 4px 12px; }
+        /* 📱 الشريط العلوي للموبايل (تم توسيط الاسم ونقل الزر لليمين) */
+        .mobile-header { display: none; background: #050403; border-bottom: 1px solid var(--gold-dark); padding: 15px 20px; position: fixed; top: 0; left: 0; right: 0; z-index: 1001; text-align: center; }
+        .mobile-header h3 { margin: 0; color: var(--gold-main); font-size: 20px; text-shadow: 0 0 10px rgba(212,175,55,0.5); display: inline-block; }
+        .mobile-menu-btn { position: absolute; right: 15px; top: 10px; background: transparent; border: 1px solid var(--gold-main); border-radius: 6px; color: var(--gold-main); font-size: 24px; cursor: pointer; padding: 4px 12px; }
 
-        /* 🖥️ القائمة الجانبية (تتحرك ككتلة واحدة الآن) */
-        .sidebar { width: 250px; background: var(--bg-card); position: fixed; top: 0; bottom: 0; right: 0; border-left: 1px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; transition: 0.3s; display: block; }
+        /* 🖥️ القائمة الجانبية */
+        .sidebar { width: 250px; background: var(--bg-card); position: fixed; top: 0; bottom: 0; right: 0; border-left: 1px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; transition: 0.3s; }
         
-        .logo-area { padding: 30px 20px 20px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; }
-        .logo-area h2 { margin: 0 0 15px 0; color: var(--gold-main); font-size: 24px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; }
+        .logo-area { padding: 30px 20px 20px 20px; text-align: center; border-bottom: 1px dashed var(--gold-dark); background: #050403; flex-shrink: 0;}
+        .logo-area h2 { margin: 0 0 15px 0; color: var(--gold-main); font-size: 24px; text-shadow: 0 0 10px rgba(212,175,55,0.5); letter-spacing: 1px; transition: 0.3s;}
+        .logo-area h2:hover { transform: scale(1.05); }
         
-        /* جعل الصورة والاسم روابط للبروفايل */
         .profile-link-area { display: block; text-decoration: none; transition: 0.3s; }
         .profile-link-area:hover { transform: scale(1.05); }
         .sidebar-avatar { width: 75px; height: 75px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; box-shadow: 0 0 10px rgba(212,175,55,0.3); }
         .sidebar-name { color: var(--sand); margin: 0; font-size: 15px; font-weight: bold; }
         
-        .nav-links { padding: 15px 0; }
+        .nav-links { padding: 15px 0; flex-grow: 1; overflow-y: auto; }
+        .nav-links::-webkit-scrollbar { width: 5px; }
+        .nav-links::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 5px; }
+        
         .nav-links a { display: block; padding: 12px 25px; color: #bbb; text-decoration: none; font-size: 15px; font-weight: bold; transition: 0.3s; border-right: 3px solid transparent; margin-bottom: 2px; }
         .nav-links a:hover, .nav-links a.active { background: rgba(212,175,55,0.05); color: var(--gold-light); border-right-color: var(--gold-main); }
         
         .nav-meeting { color: #e74c3c !important; animation: pulseNav 2s infinite; border-right-color: #e74c3c !important; background: rgba(231,76,60,0.05); margin: 10px 0; }
         .nav-admin { color: #e74c3c !important; margin-top: 15px; border-top: 1px dashed #332815; padding-top: 15px !important; }
-        .nav-lore { color: #f39c12 !important; border-right-color: #f39c12 !important; background: rgba(243, 156, 18, 0.05); }
-        .nav-top { color: #00cec9 !important; border-right-color: #00cec9 !important; background: rgba(0, 206, 201, 0.05); }
 
         @keyframes pulseNav { 0% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } 50% { box-shadow: inset -5px 0 10px rgba(231,76,60,0.3); } 100% { box-shadow: inset 0 0 0 rgba(231,76,60,0); } }
 
-        .logout-area { padding: 20px; text-align: center; border-top: 1px dashed #332815; margin-top: 10px; margin-bottom: 20px; }
+        .logout-area { padding: 20px; text-align: center; border-top: 1px dashed #332815; background: #050403; flex-shrink: 0; margin-bottom: 0;}
         .btn-logout { display: block; color: #e74c3c; text-decoration: none; font-size: 15px; font-weight: bold; padding: 12px; border: 1px solid #e74c3c; border-radius: 6px; transition: 0.3s; }
         .btn-logout:hover { background: #e74c3c; color: #fff; }
 
-        .main-content { margin-right: 250px; padding: 40px; position: relative; z-index: 1; }
-        .flash-messages { margin-bottom: 20px; }
-        .flash { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; font-weight: bold; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); animation: slideDown 0.5s ease-out; }
+        .main-content { margin-right: 250px; padding: 40px; position: relative; z-index: 1; flex-grow: 1; width: calc(100% - 250px);}
+        .flash { padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; font-weight: bold; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .flash.success { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid #2ecc71; }
         .flash.error { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; }
-        .flash.info { background: rgba(52,152,219,0.1); color: #3498db; border: 1px solid #3498db; }
-        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         @media (max-width: 768px) { 
-            .mobile-header { display: flex; }
+            .mobile-header { display: block; }
             .sidebar { transform: translateX(100%); top: 65px; height: calc(100vh - 65px); } 
             .sidebar.open { transform: translateX(0); } 
-            .main-content { margin-right: 0; padding: 20px; padding-top: 90px; } 
+            .main-content { margin-right: 0; padding: 20px; padding-top: 90px; width: 100%;} 
         }
     </style>
 </head>
 <body>
 
 <div class="mobile-header">
-    <h3>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h3>
+    <a href="/" style="text-decoration: none;">
+        <h3>{{ settings.maze_name if settings else 'متاهة سيفار' }}</h3>
+    </a>
     <button class="mobile-menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
 </div>
 
 <div class="sidebar" id="sidebar">
     <div class="logo-area">
-        <h2>{{ settings.maze_name if settings and settings.maze_name else 'متاهة سيفار' }}</h2>
+        <a href="/" style="text-decoration: none;">
+            <h2>{{ settings.maze_name if settings else 'متاهة سيفار' }}</h2>
+        </a>
         {% if current_user %}
             <a href="/profile" class="profile-link-area">
                 <img src="/avatar/{{ current_user.hunter_id }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
@@ -79,35 +81,17 @@
     </div>
     
     <div class="nav-links">
-        <a href="/" class="nav-home {% if request.path == '/' %}active{% endif %}">الرئيسية</a>
-        
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">الرئيسية</a>
         {% if current_user %}
-            {% if settings and settings.floor1_mode_active %}
-                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">غرفة الاجتماعات</a>
-            {% endif %}
-
             <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">هويتي</a>
-            <a href="/friends" class="{% if request.path == '/friends' %}active{% endif %}">التحالفات</a>
             <a href="/news" class="{% if request.path == '/news' %}active{% endif %}">المراسيم</a>
             <a href="/puzzles" class="{% if request.path == '/puzzles' %}active{% endif %}">النقوش</a>
             <a href="/store" class="{% if request.path == '/store' %}active{% endif %}">السوق المظلم</a>
             <a href="/altar" class="{% if request.path == '/altar' %}active{% endif %}">مذبح الطلاسم</a>
             <a href="/declarations" class="{% if request.path == '/declarations' %}active{% endif %}">التصريحات</a>
-            <a href="/graveyard" class="{% if request.path == '/graveyard' %}active{% endif %}">المقبرة</a>
-            
-            {% if current_user.unlocked_lore_room %}
-                <a href="/poneglyph" class="nav-lore {% if request.path == '/poneglyph' %}active{% endif %}">بونغليف سيفار</a>
-            {% endif %}
-            {% if current_user.unlocked_top_room %}
-                <a href="/top_room" class="nav-top {% if request.path == '/top_room' %}active{% endif %}">قاعة الأساطير</a>
-            {% endif %}
-            
             {% if current_user.role == 'admin' %}
                 <a href="/admin" class="nav-admin {% if request.path == '/admin' %}active{% endif %}">👑 عرش الإمبراطور</a>
             {% endif %}
-        {% else %}
-            <a href="/login">تسجيل الدخول</a>
-            <a href="/register">بناء هوية</a>
         {% endif %}
     </div>
     
@@ -121,18 +105,15 @@
 <div class="main-content">
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flash-messages" id="flash-container">
-                {% for category, message in messages %}
-                    <div class="flash {{ category }}" data-msg="{{ message }}">{{ message }}</div>
-                {% endfor %}
-            </div>
+            {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
         {% endif %}
     {% endwith %}
     {% block content %}{% endblock %}
 </div>
 
 <script>
-    // إغلاق القائمة الجانبية في الموبايل عند النقر خارجها
     document.addEventListener('click', function(event) {
         var sidebar = document.getElementById('sidebar');
         var menuBtn = document.querySelector('.mobile-menu-btn');
