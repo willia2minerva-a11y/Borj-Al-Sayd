@@ -33,7 +33,7 @@ app.config['MONGODB_SETTINGS'] = {
     'maxPoolSize': 5
 }
 
-# 🚀 المفتاح السري الخالد
+# 🚀 المفتاح السري الخالد لضمان عدم خروج اللاعبين عند تحديث السيرفر
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'SEPHAR_MAZE_IMMORTAL_SECRET_KEY_999_NEVER_CHANGE')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
@@ -219,7 +219,6 @@ def get_avatar(hunter_id):
     try:
         user = User.objects(hunter_id=hunter_id).only('avatar', 'status').first()
         if user:
-            # 💀 إرجاع جمجمة للمقصيين و 🧊 للمجمدين
             if getattr(user, 'status', '') in ['eliminated', 'dead_body']:
                 return Response('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#110d09"/><text x="50" y="55" font-size="60" text-anchor="middle" dominant-baseline="middle">💀</text></svg>''', mimetype="image/svg+xml", headers={'Cache-Control': 'public, max-age=31536000'})
             if getattr(user, 'status', '') == 'frozen':
@@ -302,7 +301,7 @@ def login():
         if user and check_password_hash(getattr(user, 'password_hash', ''), request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); user.update(set__last_active=datetime.utcnow())
             if user.status == 'inactive': flash('حسابك قيد المراجعة، وضع التصفح فقط متاح لك.', 'info')
-            if user.status in ['eliminated', 'frozen']: flash('حسابك موقوف عن اللعب. وضع التصفح متاح لك فقط.', 'error')
+            if user.status in ['eliminated', 'frozen', 'dead_body']: flash('حسابك موقوف عن اللعب. وضع التصفح متاح لك فقط.', 'error')
             return redirect(url_for('home'))
         flash('البيانات خاطئة.', 'error')
     return render_template('login.html')
@@ -363,7 +362,7 @@ def admin_update_profile(target_id):
             elif action == 'edit_zone': target_user.update(set__zone=val)
             flash('تم التعديل الإمبراطوري بنجاح!', 'success')
         except: flash('حدث خطأ في الإدخال', 'error')
-    return redirect(url_for('hunter_profile', target_id=target_id))
+    return redirect(request.referrer or url_for('hunter_profile', target_id=target_id))
 
 @app.route('/meeting')
 @login_required
@@ -684,7 +683,7 @@ def secret_link(puzzle_id):
 def declarations():
     user = g.user
     if request.method == 'POST':
-        if user.status != 'active': flash('حسابك موقوف عن اللعب والنشر.', 'error'); return redirect(url_for('declarations'))
+        if user.status != 'active': flash('حسابك موقوف عن النشر.', 'error'); return redirect(url_for('declarations'))
         img = ''; file = request.files.get('image_file')
         if file: img = f"data:image/jpeg;base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}"
         News(title=f"تصريح من {user.username}", content=request.form.get('content', '').strip(), image_data=img, category='declaration', author=user.username, status='approved' if user.role == 'admin' else 'pending').save()
