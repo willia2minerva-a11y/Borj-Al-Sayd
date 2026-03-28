@@ -208,9 +208,10 @@ def pre_process():
             if getattr(user, 'totem_self', False): user.update(set__totem_self=False); flash('🔥 احترق توتم إعادة الحياة بفعل قوى الطابق الثالث!', 'error')
             if getattr(user, 'has_shield', False): user.update(set__has_shield=False); flash('🛡️ احترق وشاح الحماية بفعل قوى الطابق الثالث!', 'error')
             
-        if user.quicksand_lock_until and now < user.quicksand_lock_until:
+        if user.status == 'active' and user.quicksand_lock_until and now < user.quicksand_lock_until:
             tl = user.quicksand_lock_until - now
             return render_template('locked.html', message=f'مقيّد في الرمال لـ {tl.seconds // 60}د')
+            
         if user.gate_status == 'testing' and request.endpoint not in ['submit_gate_test', 'logout']: return render_template('gate_test.html', message=getattr(settings, 'gates_test_message', 'الاختبار'), user=user)
     g.user = user
 
