@@ -15,17 +15,13 @@
 <style>
     .epic-banner { position: relative; width: 100%; height: 200px; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 20px; border: 2px solid var(--gold-dark); box-shadow: 0 10px 30px rgba(212,175,55,0.15); display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; overflow:hidden;}
     .epic-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #0a0806 0%, transparent 100%); }
-    .epic-title { position: relative; z-index: 2; color: var(--gold-main); font-size: 36px; margin: 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); font-weight: 900; letter-spacing: 2px; }
+    .epic-title { position: relative; z-index: 2; color: var(--gold-main); font-size: 36px; margin: 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); font-weight: 900; letter-spacing: 2px; text-align: center;}
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; margin-bottom: 30px; }
     .gold-card { background: linear-gradient(145deg, #1a140a 0%, #050403 100%); border: 1px solid #44351c; border-radius: 12px; padding: 20px; text-align: center; text-decoration: none; transition: 0.3s; display: block; position: relative; overflow: hidden; }
     .gold-card:hover { transform: translateY(-5px); border-color: var(--gold-main); box-shadow: 0 5px 20px rgba(212,175,55,0.2); }
     .card-icon { font-size: 35px; display: block; margin-bottom: 10px; }
     .card-title { color: #cca; margin: 0; font-size: 16px; }
     .form-control-smart { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #44351c; border-radius: 6px; box-sizing: border-box; outline:none; }
-    
-    .notif-box { background: rgba(231,76,60,0.15); border: 1px solid #e74c3c; border-right: 5px solid #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #fff; animation: pulseRed 2s infinite; }
-    .notif-success { background: rgba(46,204,113,0.15); border-color: #2ecc71; border-right-color: #2ecc71; animation: none; }
-    @keyframes pulseRed { 0% { box-shadow: 0 0 0 rgba(231,76,60,0.4); } 70% { box-shadow: 0 0 15px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 rgba(231,76,60,0); } }
     
     .room-card { background: #0a0a0a; border: 1px solid #333; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; position: relative; overflow: hidden; }
     .player-chip { display: inline-block; background: #222; border: 1px solid #555; padding: 8px 15px; border-radius: 20px; margin: 5px; color: #ddd; font-weight: bold; }
@@ -36,35 +32,39 @@
     .btn-emergency { background: #e74c3c; color: #fff; border: 3px solid #c0392b; padding: 15px 30px; border-radius: 50px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 20px rgba(231,76,60,0.4); transition: 0.3s; margin: 20px auto; display: block; width: 80%; max-width: 300px; text-align: center;}
     .btn-emergency:hover { transform: scale(1.05); }
     
-    /* 🖼️ تصميم صورة البروفايل في الرئيسية */
-    .home-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; box-shadow: 0 0 15px rgba(212,175,55,0.4); }
+    .home-avatar { width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; box-shadow: 0 0 15px rgba(212,175,55,0.4); transition: 0.3s;}
+    .home-avatar:hover { transform: scale(1.1); }
+    .clickable-profile { display: inline-block; text-decoration: none; transition: 0.3s; }
 </style>
 
 <div class="epic-banner" {% if settings and settings.banner_url %}style="background-image: url('{{ settings.banner_url }}');"{% endif %}>
-    <h1 class="epic-title">{{ settings.home_title if settings and settings.home_title else 'البوابة الرئيسية' }}</h1>
+    <h1 class="epic-title">{{ settings.home_title if settings and settings.home_title else 'البوابة' }}</h1>
 </div>
 
-{% if my_notifications %}
-    {% for notif in my_notifications %}
-        <div class="notif-box {% if notif.notif_type == 'success' %}notif-success{% endif %}">
-            <strong>رسالة من المتاهة:</strong> {{ notif.message }}
-            <div style="font-size: 11px; color: #aaa; margin-top: 5px;">{{ notif.created_at.strftime('%H:%M') }}</div>
-        </div>
-    {% endfor %}
+{% if settings and settings.global_news_active and settings.global_news_text %}
+<div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+    <strong style="color: #e74c3c; font-size: 18px;">📢 إعلان إمبراطوري عاجل:</strong>
+    <p style="color: #fff; margin: 10px 0 0 0; font-size: 16px;">{{ settings.global_news_text }}</p>
+</div>
 {% endif %}
 
 <div style="background: #110d09; border: 1px dashed var(--gold-dark); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 30px;">
     {% if current_user %}
-        <img src="/avatar/{{ current_user.hunter_id }}" class="home-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-        <h3 style="color: #fff; margin: 0 0 10px 0;">مرحباً بك، <span style="color: var(--gold-main);">{{ current_user.username }}</span></h3>
+        <a href="/profile" class="clickable-profile">
+            <img src="/avatar/{{ current_user.hunter_id }}" class="home-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+            <h3 style="color: #fff; margin: 0 0 10px 0;">مرحباً بك، <span style="color: var(--gold-main);">{{ current_user.username }}</span></h3>
+        </a>
         <div style="color: #aaa; font-size: 14px;">الرتبة: {{ display_rank }} | الطابق: {{ current_user.zone }} | الدنانير: <span style="color: var(--sand); font-weight: bold;">{{ current_user.points }}</span></div>
+        {% if current_user.status == 'inactive' %}
+            <div style="margin-top: 15px; color: #e67e22; background: rgba(230, 126, 34, 0.1); padding: 10px; border: 1px solid #e67e22; border-radius: 6px;">حسابك قيد المراجعة. التصفح متاح لك فقط.</div>
+        {% endif %}
     {% else %}
         <h3 style="color: #fff; margin: 0 0 10px 0;">أنت غير معروف للمتاهة</h3>
         <a href="/login" style="color: var(--gold-main); font-weight: bold; text-decoration: none;">سجل دخولك من هنا ➔</a>
     {% endif %}
 </div>
 
-{% if settings and settings.floor1_mode_active and current_user and current_user.role != 'admin' %}
+{% if settings and settings.floor1_mode_active and current_user and current_user.role != 'admin' and current_user.status == 'active' %}
     <div style="background: #050403; border: 2px solid #3498db; border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(52, 152, 219, 0.1);">
         <h2 style="color: #3498db; text-align: center; margin-top: 0; border-bottom: 1px dashed #333; padding-bottom: 15px;">🕵️ ساحة الطابق الأول (المجموعة {{ current_user.group_id }})</h2>
         {% if settings.floor1_meeting_active %}
@@ -113,7 +113,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
                 <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                     <strong style="color: #ccc; display: block; margin-bottom: 10px;">🗺️ التنقل </strong>
-                    <div style="font-size: 11px; color: #888; margin-bottom: 10px;">(وقت التبريد: {{ settings.floor1_move_cooldown }} دقيقة)</div>
+                    <div style="font-size: 11px; color: #888; margin-bottom: 10px;">(تبريد: {{ settings.floor1_move_cooldown }} د)</div>
                     <form action="/f1_move" method="POST">
                         <select name="room" class="form-control-smart" style="margin-bottom: 10px;">
                             <option value="الساحة">الساحة</option><option value="المكتبة">المكتبة</option>
@@ -127,11 +127,11 @@
                 <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; text-align: center;">
                     <strong style="color: #2ecc71; display: block; margin-bottom: 10px;">💎 جمع الأحجار لتفعيل البوابة</strong>
                     <div style="font-size: 32px; font-weight: bold; color: #2ecc71;">{{ current_user.gems_collected }} <span style="font-size:14px; color:#888;">/ {{ settings.floor1_gems_target }} (للمجموعة)</span></div>
-                    <a href="/puzzles" class="btn-action" style="display: block; text-decoration: none; margin-top: 10px; background: #27ae60;">حل المهام لجمع الأحجار</a>
+                    <a href="/puzzles" class="btn-action" style="display: block; text-decoration: none; margin-top: 10px; background: #27ae60;">حل المهام</a>
                 </div>
                 {% if current_user.is_cursed %}
                 <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #e74c3c;">
-                    <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">🔪 قدرات اللعنة (تستخدم لمرة واحدة)</strong>
+                    <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">🔪 قدرات اللعنة (لمرة واحدة)</strong>
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         {% if not current_user.used_sabotage %}
                             <form action="/f1_sabotage" method="POST"><input type="hidden" name="sabotage_type" value="darkness"><button type="submit" class="btn-danger" style="width: 100%; background: #000; border: 1px solid #e74c3c;">🌑 إطفاء أنوار المتاهة</button></form>
@@ -147,17 +147,17 @@
                 {% endif %}
             </div>
             {% if not current_user.emergency_used %}
-                <form action="/f1_emergency" method="POST"><button type="submit" class="btn-emergency" onclick="return confirm('لك الحق في طلب اجتماع واحد فقط طوال اللعبة بدون العثور على جثة! هل أنت متأكد؟');">🚨 زر الطوارئ 🚨</button></form>
-            {% else %}<div style="text-align: center; color: #666; margin-top: 30px; font-style: italic;">لقد استهلكت حقك في استدعاء الطوارئ.</div>{% endif %}
+                <form action="/f1_emergency" method="POST"><button type="submit" class="btn-emergency" onclick="return confirm('لك طلب اجتماع واحد فقط بدون جثة! متأكد؟');">🚨 زر الطوارئ 🚨</button></form>
+            {% else %}<div style="text-align: center; color: #666; margin-top: 30px; font-style: italic;">استهلكت حقك في الطوارئ.</div>{% endif %}
         {% endif %}
     </div>
 {% endif %}
 
-{% if settings and settings.floor3_mode_active %}
+{% if settings and settings.floor3_mode_active and current_user and current_user.status == 'active' %}
 <div style="background: #050403; border: 2px solid #e74c3c; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(231,76,60,0.1);">
     <h2 style="color: #e74c3c; margin-top: 0;">⚖️ محكمة الطابق الثالث ⚖️</h2>
-    <p style="color: #ddd;">لديك 100 صوت نجاة، يجب توزيعها على 5 رحالة مختلفين لإنقاذهم.</p>
-    {% if current_user and not current_user.has_voted and current_user.hunter_id != 1000 %}
+    <p style="color: #ddd;">لديك 100 صوت نجاة، يجب توزيعها على 5 رحالة مختلفين.</p>
+    {% if not current_user.has_voted and current_user.hunter_id != 1000 %}
         <form action="/submit_floor3_votes" method="POST" style="max-width: 500px; margin: auto; text-align: right;">
             {% for i in range(1, 6) %}
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
@@ -170,13 +170,12 @@
             {% endfor %}
             <button type="submit" class="btn-gold" style="width: 100%; margin-top: 10px; background: linear-gradient(45deg, #c0392b, #e74c3c); color: #fff;">تأكيد وتوزيع الأصوات ➔</button>
         </form>
-    {% elif current_user and current_user.has_voted %}
+    {% elif current_user.has_voted %}
         <div style="color: #2ecc71; font-weight: bold; font-size: 18px; margin-top: 15px;">لقد أدليت بصوتك في المحكمة!</div>
     {% endif %}
 </div>
 {% endif %}
 
-{% if not settings or (not settings.floor1_mode_active and not settings.floor3_mode_active) %}
 <div class="dashboard-grid">
     <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">{{ settings.nav_news if settings else 'المراسيم' }}</h3></a>
     <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">{{ settings.nav_puzzles if settings else 'النقوش' }}</h3></a>
@@ -185,8 +184,8 @@
     <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">{{ settings.nav_altar if settings else 'مذبح الطلاسم' }}</h3></a>
     <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">{{ settings.nav_decs if settings else 'التصريحات' }}</h3></a>
 </div>
-{% endif %}
 
 <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111;"><span class="card-icon">💀</span><h3 class="card-title" style="color: #e74c3c;">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
 
 {% endblock %}
+
