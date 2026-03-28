@@ -4,7 +4,6 @@
     .form-control { width: 100%; padding: 12px; background: #050403; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: inherit;}
     .form-control:focus { border-color: var(--gold-main); box-shadow: 0 0 5px rgba(212,175,55,0.3); }
     
-    /* ألوان لوحة الإدارة المميزة */
     .mod-btn { background: linear-gradient(135deg, #110d09 0%, #000 100%); color: #ddd; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #222; text-align: right; outline: none; font-size: 16px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; transition: 0.3s; }
     
     .btn-set { border-right: 4px solid #7f8c8d; } .btn-set:hover { background: #1a140a; border-right-color: #bdc3c7; color:#fff; }
@@ -270,7 +269,8 @@
     <form action="/admin" method="POST" style="margin-bottom: 15px;">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="المدة بالساعات" class="form-control" {% if settings and settings.war_mode %}disabled{% else %}required{% endif %}>
-        {% if settings and settings.war_mode %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف الحرب</button>{% else %}<button type="submit" class="btn-gold">إشعال الحرب</button>{% endif %}
+        {% if settings and settings.war_mode %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف الحرب</button>
+        {% else %}<button type="submit" class="btn-gold">إشعال الحرب</button>{% endif %}
     </form>
     <form action="/admin" method="POST" style="border-top: 1px dashed #333; padding-top: 15px;">
         <input type="hidden" name="action" value="update_war_settings">
@@ -311,3 +311,4 @@
 
 <script> function toggleMod(id) { var el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; } </script>
 {% endblock %}
+
