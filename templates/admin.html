@@ -3,9 +3,7 @@
 <style>
     .form-control { width: 100%; padding: 12px; background: #050403; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; font-family: inherit;}
     .form-control:focus { border-color: var(--gold-main); box-shadow: 0 0 5px rgba(212,175,55,0.3); }
-    
     .mod-btn { background: linear-gradient(135deg, #110d09 0%, #000 100%); color: #ddd; cursor: pointer; padding: 15px; width: 100%; border: 1px solid #222; text-align: right; outline: none; font-size: 16px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; transition: 0.3s; }
-    
     .btn-set { border-right: 4px solid #7f8c8d; } .btn-set:hover { background: #1a140a; border-right-color: #bdc3c7; color:#fff; }
     .btn-names { border-right: 4px solid #34495e; } .btn-names:hover { background: #1a140a; border-right-color: #2c3e50; color:#fff; }
     .btn-users { border-right: 4px solid #2ecc71; } .btn-users:hover { background: #1a140a; border-right-color: #27ae60; color:#fff; }
@@ -13,20 +11,17 @@
     .btn-puz { border-right: 4px solid #1abc9c; } .btn-puz:hover { background: #1a140a; border-right-color: #16a085; color:#fff; }
     .btn-altar { border-right: 4px solid #8e44ad; } .btn-altar:hover { background: #1a140a; border-right-color: #9b59b6; color:#fff; }
     .btn-maint { border-right: 4px solid #f39c12; } .btn-maint:hover { background: #1a140a; border-right-color: #e67e22; color:#fff; }
-    
     .btn-gates { border-right: 4px solid #d35400; color: #d35400; } .btn-gates:hover { background: #1a140a; color: #e67e22; }
     .btn-f1 { border-right: 4px solid #3498db; color: #3498db; } .btn-f1:hover { background: #1a140a; color: #2980b9; }
     .btn-f2 { border-right: 4px solid #c0392b; color: #c0392b; } .btn-f2:hover { background: #1a140a; color: #e74c3c; }
     .btn-f3 { border-right: 4px solid #e67e22; color: #e67e22; } .btn-f3:hover { background: #1a140a; color: #f39c12; }
     .btn-f4 { border-right: 4px solid var(--gold-main); color: var(--gold-main); } .btn-f4:hover { background: #1a140a; color: var(--gold-light); }
-
     .mod-content { padding: 20px; display: none; background: #050403; border: 1px solid #222; border-radius: 0 0 8px 8px; margin-top: -15px; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
     .btn-gold:hover { transform: scale(1.02); }
     .btn-danger { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-danger:hover { background: #8a0303; color:#fff; border-color: #8a0303;}
     .section-head { border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 15px; display: block; font-size: 18px; color: var(--gold-main);}
-    
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
     th, td { padding: 12px; text-align: right; border-bottom: 1px solid #332815; }
     th { background-color: #110d09; color: var(--gold-main); }
@@ -103,7 +98,6 @@
 
 <button type="button" class="mod-btn btn-traps" onclick="toggleMod('m_traps')">إدارة الفخاخ والأشباح والروابط <span>▼</span></button>
 <div id="m_traps" class="mod-content">
-    <p style="color:#aaa; font-size:13px;">ازرع أشباحاً وروابط في المتاهة. الشبح العادي يمنح (ختم الأرواح)، الفخ يمنح (ختم الخديعة).</p>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="trap_category" id="trap_category" class="form-control" required onchange="updateTrapForm()">
@@ -114,7 +108,7 @@
             <option value="give_item">يمنح أداة 🎁</option><option value="steal_item">يسرق أداة عشوائية 🪝</option>
             <option value="give_seal">يمنح ختماً 🔮</option><option value="quicksand" id="opt_quicksand">فخ رمال (تجميد) ⏳</option>
         </select>
-        <input type="text" name="puzzle_answer" placeholder="إجابة الرابط السري، أو ID الشبح المزيف..." class="form-control" required>
+        <input type="text" name="puzzle_answer" placeholder="إجابة الرابط السري، أو ID الشبح..." class="form-control" required>
         <div id="fld_points" style="display:flex; gap:10px;"><input type="number" name="reward_points" placeholder="مقدار الدنانير المعطاة" class="form-control" value="0"></div>
         <div id="fld_penalty" style="display:none; gap:10px;"><input type="number" name="trap_penalty" placeholder="مقدار الدنانير المسروقة" class="form-control" value="0"></div>
         <div id="fld_item" style="display:none; gap:10px;"><input type="text" name="reward_item" placeholder="اسم الأداة أو الختم الممنوح..." class="form-control"></div>
@@ -150,10 +144,13 @@
         <input type="hidden" name="action" value="add_news">
         <input type="text" name="title" placeholder="العنوان..." class="form-control" required>
         <textarea name="content" placeholder="النص..." class="form-control" rows="4" required></textarea>
-        <select name="puzzle_type" class="form-control"><option value="none">مرسوم عادي</option></select>
+        <select name="puzzle_type" class="form-control">
+            <option value="none">مرسوم عادي</option>
+            <option value="standard_puzzle">لغز عادي (سؤال وإجابة)</option>
+        </select>
         <input type="text" name="puzzle_answer" placeholder="إجابة اللغز" class="form-control">
         <div style="display: flex; gap: 10px;"><input type="number" name="reward_points" placeholder="المكافأة" class="form-control"><input type="number" name="max_winners" placeholder="العدد" class="form-control" value="1"></div>
-        <button type="submit" class="btn-gold">إصدار النقش</button>
+        <button type="submit" class="btn-gold">إصدار النقش / اللغز</button>
     </form>
     
     <strong style="color:var(--gold-main); display:block;">إدارة المنشورات (حذف متعدد):</strong>
@@ -259,7 +256,7 @@
         {% else %}<button type="submit" class="btn-gold">بدء وتوزيع اللعنات</button>{% endif %}
     </form>
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;" onclick="return confirm('إنهاء الاجتماع وطرد من تلقى الأصوات؟');">إنهاء الاجتماع الحالي</button></form>
+        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;" onclick="return confirm('إنهاء الاجتماع وطرد من تلقى الأصوات؟');">إنهاء الاجتماع الحالي يدوياً</button></form>
         <form action="/admin" method="POST" style="flex: 1; display:flex; gap:5px;"><input type="hidden" name="action" value="eliminate_player"><input type="text" name="target_id" placeholder="ID المطرود..." class="form-control" style="margin:0;" required><button type="submit" class="btn-danger" style="margin:0; background:#e74c3c; color:#fff;">إعدام</button></form>
     </div>
 </div>
