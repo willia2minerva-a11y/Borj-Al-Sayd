@@ -191,3 +191,4 @@ class GroupMessage(db.Document):
     message = db.StringField(required=True)
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
+
