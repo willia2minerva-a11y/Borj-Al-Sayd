@@ -85,7 +85,7 @@ class News(db.Document):
     winners_list = db.ListField(db.StringField(), default=list)
     trap_duration_minutes = db.IntField(default=0)
     trap_penalty_points = db.IntField(default=0)
-    reward_item = db.StringField(default='') # حقل جديد للفخاخ التي تعطي أدوات وأختام
+    reward_item = db.StringField(default='')
     author = db.StringField(default='الإمبراطور')
     status = db.StringField(default='approved')
     image_data = db.StringField(default='')
@@ -135,6 +135,7 @@ class GlobalSettings(db.Document):
     bleed_rate_minutes = db.IntField(default=60)
     bleed_amount = db.IntField(default=1)
     attack_cooldown_minutes = db.IntField(default=5)
+    safe_time_minutes = db.IntField(default=120)
     
     final_battle_mode = db.BooleanField(default=False)
     gates_mode_active = db.BooleanField(default=False)
@@ -190,4 +191,3 @@ class GroupMessage(db.Document):
     message = db.StringField(required=True)
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
-
