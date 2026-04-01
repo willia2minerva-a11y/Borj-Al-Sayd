@@ -33,7 +33,6 @@ app.config['MONGODB_SETTINGS'] = {
     'maxPoolSize': 5
 }
 
-# 🚀 المفتاح السري الخالد لضمان عدم خروج اللاعبين عند تحديث السيرفر
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'SEPHAR_MAZE_IMMORTAL_SECRET_KEY_999_NEVER_CHANGE')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 db.init_app(app)
@@ -80,7 +79,7 @@ def process_f1_meeting_end(settings):
                 GroupMessage(group_id=gid, sender_name="النظام", message=f"✨ لقد طردتم الملعون! فازت المجموعة وفُتحت البوابة!", is_system_msg=True).save()
                 User.objects(group_id=gid, status='active').update(set__zone='الطابق 2')
         else:
-            GroupMessage(group_id=gid, sender_name="النظام", message="⚖️ انتهى التصويت بالتعادل أو لم يصوت أحد. لم يُطرد أحد!", is_system_msg=True).save()
+            GroupMessage(group_id=gid, sender_name="النظام", message="⚖️ انتهى التصويت بالتعادل أو تم التخطي. لم يُطرد أحد!", is_system_msg=True).save()
         members.update(set__f1_has_voted=False, set__f1_votes_received=0)
     User.objects(status='dead_body').update(set__status='eliminated')
     settings.update(set__floor1_meeting_active=False)
@@ -175,9 +174,12 @@ def pre_process():
             for u in User.objects(status='active', role='hunter').order_by('-survival_votes')[:settings.vote_top_n]: u.update(set__zone='المعركة الأخيرة')
             GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=False); _settings_cache['timestamp'] = 0
 
+        # 🚀 إنهاء الاجتماع آلياً عند انتهاء الوقت
         if getattr(settings, 'floor1_mode_active', False):
-            if getattr(settings, 'floor1_meeting_active', False) and getattr(settings, 'floor1_meeting_end_time', None) and now >= settings.floor1_meeting_end_time:
-                process_f1_meeting_end(settings); _settings_cache['timestamp'] = 0
+            if getattr(settings, 'floor1_meeting_active', False) and getattr(settings, 'floor1_meeting_end_time', None):
+                if now >= settings.floor1_meeting_end_time:
+                    process_f1_meeting_end(settings)
+                    _settings_cache['timestamp'] = 0
             if getattr(settings, 'floor1_darkness_until', None) and now >= settings.floor1_darkness_until:
                 GlobalSettings.objects(setting_name='main_config').update_one(unset__floor1_darkness_until=1); _settings_cache['timestamp'] = 0
             if getattr(settings, 'floor1_locked_until', None) and now >= settings.floor1_locked_until:
@@ -302,7 +304,7 @@ def login():
         if user and check_password_hash(getattr(user, 'password_hash', ''), request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); user.update(set__last_active=datetime.utcnow())
             if user.status == 'inactive': flash('حسابك قيد المراجعة، وضع التصفح فقط متاح لك.', 'info')
-            if user.status in ['eliminated', 'frozen', 'dead_body']: flash('حسابك موقوف عن اللعب. وضع التصفح متاح لك فقط.', 'error')
+            if user.status in ['eliminated', 'frozen', 'dead_body']: flash('حسابك موقوف عن اللعب. التصفح متاح لك فقط.', 'error')
             return redirect(url_for('home'))
         flash('البيانات خاطئة.', 'error')
     return render_template('login.html')
@@ -391,15 +393,23 @@ def f1_chat():
         if msg: GroupMessage(group_id=user.group_id, sender_id=user.hunter_id, sender_name=user.username, message=msg).save()
     return redirect(url_for('meeting_room'))
 
+# 🚀 التصويت المرئي لنمط (Among Us)
 @app.route('/f1_vote/<int:target_id>', methods=['POST'])
 @login_required
 def f1_vote(target_id):
     user = g.user; settings = g.settings
     if not settings or not getattr(settings, 'floor1_meeting_active', False) or user.status != 'active' or getattr(user, 'f1_has_voted', False): return redirect(url_for('meeting_room'))
-    target = User.objects(hunter_id=target_id, status='active', group_id=user.group_id).first()
-    if target:
-        target.update(inc__f1_votes_received=1); user.update(set__f1_has_voted=True)
-        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"✋ قام أحدهم بالإدلاء بصوته.", is_system_msg=True).save(); flash('تم تسجيل صوتك السري بنجاح!', 'success')
+    
+    if target_id == 0:
+        user.update(set__f1_has_voted=True)
+        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"👁️ قام {user.username} بتخطي التصويت.", is_system_msg=True).save()
+        flash('تم تخطي التصويت!', 'info')
+    else:
+        target = User.objects(hunter_id=target_id, status='active', group_id=user.group_id).first()
+        if target:
+            target.update(inc__f1_votes_received=1); user.update(set__f1_has_voted=True)
+            GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"👁️ قام {user.username} بالتصويت ضد {target.username}.", is_system_msg=True).save()
+            flash('تم تسجيل تصويتك العلني!', 'success')
     return redirect(url_for('meeting_room'))
 
 @app.route('/f1_move', methods=['POST'])
@@ -435,8 +445,10 @@ def f1_report(target_id):
     if not settings or not getattr(settings, 'floor1_mode_active', False) or getattr(settings, 'floor1_meeting_active', False) or user.status != 'active': return redirect(url_for('home'))
     body = User.objects(hunter_id=target_id, status='dead_body', current_room=user.current_room, group_id=user.group_id).first()
     if body:
-        GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_meeting_active=True, set__floor1_meeting_end_time=datetime.utcnow() + timedelta(minutes=10))
-        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"🚨 قام {user.username} بالتبليغ عن جثة {body.username}!", is_system_msg=True).save()
+        # هنا يتم تحديد مدة الاجتماع التلقائية (مثلاً 5 دقائق)
+        meeting_duration = 5 
+        GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_meeting_active=True, set__floor1_meeting_end_time=datetime.utcnow() + timedelta(minutes=meeting_duration))
+        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"🚨 قام {user.username} بالتبليغ عن جثة {body.username}! أمامكم {meeting_duration} دقائق للتصويت.", is_system_msg=True).save()
         Notification(group_id=user.group_id, target_hunter_id=0, message='🚨 تم اكتشاف جثة! توجه لغرفة الاجتماع.', notif_type='danger').save(); flash('تم إطلاق الإنذار!', 'success')
     return redirect(url_for('home'))
 
@@ -447,8 +459,9 @@ def f1_emergency():
     if user.status != 'active': return redirect(url_for('home'))
     if getattr(user, 'emergency_used', False): flash('استهلكت زر الطوارئ!', 'error')
     else:
-        user.update(set__emergency_used=True); GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_meeting_active=True, set__floor1_meeting_end_time=datetime.utcnow() + timedelta(minutes=10))
-        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"🚨 قام {user.username} بضغط زر الطوارئ!", is_system_msg=True).save(); Notification(group_id=user.group_id, target_hunter_id=0, message=f'🚨 اجتماع طارئ!', notif_type='danger').save(); flash('تم استدعاء الجميع!', 'success')
+        meeting_duration = 5
+        user.update(set__emergency_used=True); GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_meeting_active=True, set__floor1_meeting_end_time=datetime.utcnow() + timedelta(minutes=meeting_duration))
+        GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"🚨 قام {user.username} بضغط زر الطوارئ! أمامكم {meeting_duration} دقائق.", is_system_msg=True).save(); Notification(group_id=user.group_id, target_hunter_id=0, message=f'🚨 اجتماع طارئ!', notif_type='danger').save(); flash('تم استدعاء الجميع!', 'success')
     return redirect(url_for('home'))
 
 @app.route('/f1_sabotage', methods=['POST'])
@@ -595,8 +608,15 @@ def top_room():
 @login_required
 def friends():
     search_query = request.args.get('search'); search_result = None
-    if search_query: search_result = User.objects(hunter_id=int(search_query)).first() if search_query.isdigit() else User.objects(username__icontains=search_query).first()
-    return render_template('friends.html', user=g.user, search_result=search_result, friend_requests=User.objects(hunter_id__in=getattr(g.user, 'friend_requests', [])), friends=User.objects(hunter_id__in=getattr(g.user, 'friends', [])))
+    if search_query: 
+        if search_query.isdigit(): search_result = User.objects(hunter_id=int(search_query)).first()
+        else: search_result = User.objects(username__icontains=search_query).first()
+    
+    exclude_roles = ['ghost', 'cursed_ghost', 'admin']
+    exclude_ids = [g.user.hunter_id] + getattr(g.user, 'friends', []) + getattr(g.user, 'friend_requests', [])
+    suggested_hunters = User.objects(status='active', role__nin=exclude_roles, hunter_id__nin=exclude_ids).order_by('-last_active')[:30]
+
+    return render_template('friends.html', user=g.user, search_result=search_result, friend_requests=User.objects(hunter_id__in=getattr(g.user, 'friend_requests', [])), friends=User.objects(hunter_id__in=getattr(g.user, 'friends', [])), suggested_hunters=suggested_hunters)
 
 @app.route('/add_friend', methods=['POST'])
 @login_required
@@ -606,7 +626,7 @@ def add_friend():
     if not target or target.status not in ['active', 'inactive']: return redirect(request.referrer or url_for('home'))
     if target.id == user.id: flash('الجنون يتسرب إليك.. لا يمكنك التحالف مع نفسك!', 'error'); return redirect(request.referrer or url_for('home'))
     
-    if getattr(target, 'role', '') == 'ghost':
+    if getattr(target, 'role', '') in ['ghost', 'cursed_ghost']:
         trap = News.objects(puzzle_answer=str(target.hunter_id), category='hidden').first()
         if trap and str(user.id) not in getattr(trap, 'winners_list', []) and getattr(trap, 'current_winners', 0) < getattr(trap, 'max_winners', 1):
             if trap.puzzle_type.startswith('ghost_'):
@@ -624,6 +644,15 @@ def cancel_friend(target_id):
     if target:
         if user.hunter_id in getattr(target, 'friend_requests', []): target.update(pull__friend_requests=user.hunter_id)
         elif target.hunter_id in getattr(user, 'friends', []): user.update(pull__friends=target.hunter_id, dec__loyalty_points=20); target.update(pull__friends=user.hunter_id)
+    return redirect(request.referrer or url_for('home'))
+
+@app.route('/cancel_request', methods=['POST'])
+@login_required
+def cancel_request():
+    user = g.user; target = User.objects(hunter_id=int(request.form.get('target_id') or 0)).first()
+    if target and user.hunter_id in getattr(target, 'friend_requests', []):
+        target.update(pull__friend_requests=user.hunter_id)
+        flash('تم سحب طلب التحالف.', 'info')
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/accept_friend/<int:friend_id>')
@@ -799,7 +828,7 @@ def admin_panel():
                     group_id += 1
             GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_mode_active=True, set__floor1_move_cooldown=int(request.form.get('move_cooldown', 30)), set__floor1_meeting_active=False); flash('بدأ الطابق 1!', 'success')
         elif act == 'end_floor1_meeting':
-            process_f1_meeting_end(settings); flash('انتهى الاجتماع وتم الطرد!', 'success')
+            process_f1_meeting_end(settings); flash('انتهى الاجتماع وتم الحكم!', 'success')
         elif act == 'eliminate_player':
             u = User.objects(id=request.form.get('target_id')).first()
             if u:
