@@ -8,125 +8,152 @@
     .search-input { flex-grow: 1; background: #000; border: 1px solid #332815; color: #fff; padding: 12px; border-radius: 6px; outline: none; font-size: 16px;}
     .search-input:focus { border-color: var(--gold-main); }
     .btn-search { background: var(--gold-main); color: #000; border: none; padding: 0 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .btn-search:hover { background: var(--gold-light); transform: scale(1.05); }
 
-    .section-title { color: var(--gold-light); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 10px;}
+    /* تقسيم الشاشة لنصفين */
+    .split-layout { display: flex; gap: 30px; align-items: flex-start;}
+    .col-right { flex: 1; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; }
+    .col-left { flex: 1; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; }
+    
+    @media (max-width: 900px) { .split-layout { flex-direction: column; } .col-right, .col-left { width: 100%; box-sizing: border-box; } }
 
-    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px;}
-    .user-card { background: #0a0806; border: 1px solid #222; border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; position: relative; }
-    .user-card:hover { border-color: var(--gold-dark); background: #110d09; transform: translateY(-3px); }
-    
-    .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; }
-    .user-name { color: #fff; font-size: 18px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none;}
-    .user-id { color: var(--text-gray); font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
-    
-    .btn-add { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;}
-    .btn-add:hover { background: #2ecc71; color: #000; }
-    
-    .btn-remove { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;}
-    .btn-remove:hover { background: #e74c3c; color: #fff; }
+    .section-title { color: var(--gold-light); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; text-align: center;}
 
-    .btn-accept { background: #2ecc71; color: #000; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; flex: 1;}
-    .btn-accept:hover { transform: scale(1.05); }
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;}
+    .user-card { background: #0a0806; border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; }
     
-    .profile-link { text-decoration: none; color: inherit; display: block; }
+    .user-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; }
+    .user-name { color: #fff; font-size: 16px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none; display: block;}
+    .user-id { color: var(--text-gray); font-family: monospace; font-size: 12px; margin-bottom: 15px; display: block; }
+    
+    /* أزرار الإجراءات */
+    .btn-action { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 13px;}
+    .btn-action:hover { background: #2ecc71; color: #000; }
+    .btn-cancel-req { border-color: #e67e22; color: #e67e22; }
+    .btn-cancel-req:hover { background: #e67e22; color: #fff; }
+
+    /* قائمة الـ 3 نقاط للأصدقاء */
+    .dropdown { position: absolute; top: 10px; left: 10px; }
+    .dropbtn { background: transparent; color: #aaa; font-size: 20px; border: none; cursor: pointer; padding: 5px; font-weight: bold; }
+    .dropdown-content { display: none; position: absolute; right: 0; background-color: #110d09; min-width: 150px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.9); z-index: 10; border: 1px solid var(--gold-dark); border-radius: 6px; overflow: hidden; text-align: right;}
+    .dropdown-content form { margin: 0; }
+    .dropdown-content button { color: #ddd; padding: 12px 16px; text-decoration: none; display: block; background: none; border: none; width: 100%; text-align: right; cursor: pointer; border-bottom: 1px solid #222; font-family: inherit;}
+    .dropdown-content button:hover { background-color: #222; color: var(--gold-main); }
+    .dropdown:hover .dropdown-content { display: block; }
 </style>
 
 <div class="friends-header">
     <h2 class="friends-title">التحالفات الكبرى</h2>
-    <p style="color: var(--text-gray);">أرسل الغربان للبحث عن حلفاء يضمنون بقاءك</p>
 </div>
 
 <form action="/friends" method="GET" class="search-box">
-    <input type="text" name="search" placeholder="ابحث باسم الرحالة أو بالهوية الرقمية (ID)..." class="search-input" value="{{ request.args.get('search', '') }}">
-    <button type="submit" class="btn-search">إرسال غراب 🦅</button>
+    <input type="text" name="search" placeholder="ابحث بالهوية الرقمية (ID)..." class="search-input" value="{{ request.args.get('search', '') }}">
+    <button type="submit" class="btn-search">بحث 🦅</button>
 </form>
 
-{% if request.args.get('search') %}
-    <h3 class="section-title">🎯 نتيجة البحث</h3>
-    {% if search_result %}
-        <div class="users-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
-            <div class="user-card" style="border-color: var(--gold-main); background: #110d09;">
-                <a href="/hunter/{{ search_result.hunter_id }}" class="profile-link">
-                    <img src="/avatar/{{ search_result.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                    <h4 class="user-name" style="color: var(--gold-light);">{{ search_result.username }}</h4>
-                </a>
-                <span class="user-id">ID: {{ search_result.hunter_id }}</span>
-                
-                {% if search_result.hunter_id == current_user.hunter_id %}
-                    <span style="color: #888; font-size: 13px;">هذا أنت أيها الإمبراطور!</span>
-                {% elif search_result.hunter_id in current_user.friends %}
-                    <span style="color: #2ecc71; font-weight: bold; font-size: 14px;">✔ حليف حالي</span>
-                {% else %}
-                    <form action="/add_friend" method="POST">
-                        <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
-                        <button type="submit" class="btn-add">إرسال تحالف ➕</button>
-                    </form>
-                {% endif %}
-            </div>
-        </div>
+{% if request.args.get('search') and search_result %}
+<div style="background: #110d09; padding: 20px; border: 1px solid var(--gold-main); border-radius: 12px; margin-bottom: 30px; text-align: center;">
+    <h3 style="color: var(--gold-main); margin-top:0;">نتيجة البحث:</h3>
+    <img src="/avatar/{{ search_result.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+    <a href="/hunter/{{ search_result.hunter_id }}" class="user-name">{{ search_result.username }}</a>
+    <span class="user-id">ID: {{ search_result.hunter_id }}</span>
+    {% if search_result.hunter_id == current_user.hunter_id %}
+        <span style="color: #888;">هذا أنت!</span>
+    {% elif search_result.hunter_id in current_user.friends %}
+        <span style="color: #2ecc71;">✔ حليف حالي</span>
+    {% elif search_result.hunter_id in current_user.sent_requests %}
+        <form action="/cancel_request" method="POST">
+            <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
+            <button type="submit" class="btn-action btn-cancel-req" style="width:auto;">إلغاء الطلب ✖</button>
+        </form>
     {% else %}
-        <p style="color: #e74c3c; text-align: center; margin-bottom: 30px;">لم يعد الغراب بأي أخبار... هذا الرحالة غير موجود!</p>
+        <form action="/add_friend" method="POST">
+            <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
+            <button type="submit" class="btn-action" style="width:auto;">إرسال تحالف ➕</button>
+        </form>
     {% endif %}
-{% endif %}
-
-{% if friend_requests and friend_requests.count() > 0 %}
-    <h3 class="section-title" style="color: #3498db;">📬 طلبات التحالف ({{ friend_requests.count() }})</h3>
-    <div class="users-grid">
-        {% for req in friend_requests %}
-            <div class="user-card" style="border-color: #3498db;">
-                <a href="/hunter/{{ req.hunter_id }}" class="profile-link">
-                    <img src="/avatar/{{ req.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                    <h4 class="user-name">{{ req.username }}</h4>
-                </a>
-                <span class="user-id">ID: {{ req.hunter_id }}</span>
-                <div style="display: flex; gap: 5px;">
-                    <a href="/accept_friend/{{ req.hunter_id }}" class="btn-accept">قبول ✔</a>
-                    <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex: 1; margin:0;">
-                        <button type="submit" class="btn-remove" style="border-radius: 6px;">رفض ✖</button>
-                    </form>
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
-{% if friends and friends.count() > 0 %}
-    <h3 class="section-title" style="color: #2ecc71;">🤝 حلفائي ({{ friends.count() }})</h3>
-    <div class="users-grid">
-        {% for f in friends %}
-            <div class="user-card">
-                <a href="/hunter/{{ f.hunter_id }}" class="profile-link">
-                    <img src="/avatar/{{ f.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                    <h4 class="user-name">{{ f.username }}</h4>
-                </a>
-                <span class="user-id">ID: {{ f.hunter_id }} | 🪙 {{ f.points }}</span>
-                <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" onsubmit="return confirm('هل أنت متأكد من خيانة حليفك؟ ستخسر 20 نقطة ولاء!');">
-                    <button type="submit" class="btn-remove">خيانة الحليف 🔪</button>
-                </form>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
-<h3 class="section-title">🌍 رحالة آخرون في المتاهة</h3>
-<p style="color: #888; font-size: 13px; margin-top: -15px; margin-bottom: 20px;">استكشف رحالة جدد لتشكيل تحالفات كبرى...</p>
-<div class="users-grid">
-    {% for h in suggested_hunters %}
-        <div class="user-card">
-            <a href="/hunter/{{ h.hunter_id }}" class="profile-link">
-                <img src="/avatar/{{ h.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                <h4 class="user-name">{{ h.username }}</h4>
-            </a>
-            <span class="user-id">ID: {{ h.hunter_id }}</span>
-            <form action="/add_friend" method="POST">
-                <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
-                <button type="submit" class="btn-add">إرسال تحالف ➕</button>
-            </form>
-        </div>
-    {% else %}
-        <p style="color: #666; text-align: center; grid-column: 1 / -1; font-style: italic;">لا يوجد رحالة جدد في الجوار حالياً...</p>
-    {% endfor %}
 </div>
+{% endif %}
 
+<div class="split-layout">
+    <div class="col-right">
+        <h3 class="section-title">🤝 حلفائي ({{ friends.count() }})</h3>
+        <div class="users-grid">
+            {% for f in friends %}
+                <div class="user-card">
+                    <div class="dropdown">
+                        <button class="dropbtn">⋮</button>
+                        <div class="dropdown-content">
+                            {% if settings and (settings.war_mode or settings.final_battle_mode) %}
+                            <form action="/hunter/{{ f.hunter_id }}" method="GET">
+                                <button type="submit" style="color:#e74c3c;">⚔️ هجوم / علاج</button>
+                            </form>
+                            {% endif %}
+                            <form action="/hunter/{{ f.hunter_id }}" method="GET">
+                                <button type="submit" style="color:#f1c40f;">🎁 إرسال دنانير/أداة</button>
+                            </form>
+                            <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" onsubmit="return confirm('تأكيد خيانة الحليف؟');">
+                                <button type="submit" style="color:#e74c3c;">🔪 إلغاء التحالف</button>
+                            </form>
+                        </div>
+                    </div>
+                    <a href="/hunter/{{ f.hunter_id }}" style="text-decoration:none;">
+                        <img src="/avatar/{{ f.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                        <h4 class="user-name">{{ f.username }}</h4>
+                    </a>
+                    <span class="user-id">ID: {{ f.hunter_id }}</span>
+                </div>
+            {% else %}
+                <p style="color:#666; font-size:13px;">لا تملك حلفاء بعد...</p>
+            {% endfor %}
+        </div>
+        
+        {% if friend_requests and friend_requests.count() > 0 %}
+        <h3 class="section-title" style="margin-top:30px; color:#3498db;">📬 طلبات واردة ({{ friend_requests.count() }})</h3>
+        <div class="users-grid">
+            {% for req in friend_requests %}
+                <div class="user-card" style="border-color: #3498db;">
+                    <a href="/hunter/{{ req.hunter_id }}" style="text-decoration:none;">
+                        <img src="/avatar/{{ req.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                        <h4 class="user-name">{{ req.username }}</h4>
+                    </a>
+                    <div style="display: flex; gap: 5px; margin-top:10px;">
+                        <form action="/accept_friend/{{ req.hunter_id }}" style="flex:1;"><button type="submit" style="background:#2ecc71; border:none; border-radius:4px; width:100%; padding:5px; cursor:pointer;">قبول</button></form>
+                        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex:1;"><button type="submit" style="background:#e74c3c; border:none; border-radius:4px; width:100%; padding:5px; color:#fff; cursor:pointer;">رفض</button></form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-left">
+        <h3 class="section-title">🌍 رحالة مقترحون</h3>
+        <div class="users-grid">
+            {% for h in suggested_hunters %}
+                <div class="user-card">
+                    <a href="/hunter/{{ h.hunter_id }}" style="text-decoration:none;">
+                        <img src="/avatar/{{ h.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                        <h4 class="user-name">{{ h.username }}</h4>
+                    </a>
+                    <span class="user-id">ID: {{ h.hunter_id }}</span>
+                    
+                    {% if h.hunter_id in current_user.sent_requests %}
+                        <form action="/cancel_request" method="POST">
+                            <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
+                            <button type="submit" class="btn-action btn-cancel-req">إلغاء الطلب ✖</button>
+                        </form>
+                    {% else %}
+                        <form action="/add_friend" method="POST">
+                            <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
+                            <button type="submit" class="btn-action">إرسال تحالف ➕</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p style="color:#666; font-size:13px;">لا يوجد رحالة جدد...</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}
+
