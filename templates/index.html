@@ -57,6 +57,10 @@
         <div style="color: #aaa; font-size: 14px;">الرتبة: {{ display_rank }} | الطابق: {{ current_user.zone }} | الدنانير: <span style="color: var(--sand); font-weight: bold;">{{ current_user.points }}</span></div>
         {% if current_user.status == 'inactive' %}
             <div style="margin-top: 15px; color: #e67e22; background: rgba(230, 126, 34, 0.1); padding: 10px; border: 1px solid #e67e22; border-radius: 6px;">حسابك قيد المراجعة. التصفح متاح لك فقط.</div>
+        {% elif current_user.status == 'frozen' %}
+            <div style="margin-top: 15px; color: #3498db; background: rgba(52, 152, 219, 0.1); padding: 10px; border: 1px solid #3498db; border-radius: 6px;">روحك مجمدة 🧊. يمكنك التصفح فقط.</div>
+        {% elif current_user.status == 'eliminated' %}
+            <div style="margin-top: 15px; color: #e74c3c; background: rgba(231, 76, 60, 0.1); padding: 10px; border: 1px solid #e74c3c; border-radius: 6px;">أنت جثة هامدة 💀. استمتع بمشاهدة الأحياء.</div>
         {% endif %}
     {% else %}
         <h3 style="color: #fff; margin: 0 0 10px 0;">أنت غير معروف للمتاهة</h3>
@@ -188,4 +192,3 @@
 <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111;"><span class="card-icon">💀</span><h3 class="card-title" style="color: #e74c3c;">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
 
 {% endblock %}
-
