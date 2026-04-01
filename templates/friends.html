@@ -1,78 +1,132 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
-    .form-control-search { flex: 1; padding: 15px; background: #000; color: #fff; border: 2px solid var(--gold-dark); border-radius: 8px; outline: none; font-size: 16px; font-weight: bold; }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: 900; transition: 0.2s; }
-    .btn-gold:hover { transform: translateY(-2px); filter: brightness(1.05); }
-    .user-card { background: var(--bg-card); border: 1px solid #332815; border-radius: 10px; padding: 15px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; transition: 0.2s; }
-    .user-card:hover { border-color: var(--gold-main); }
-    .avatar-sm {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        border: 2px solid var(--gold-main);
-        object-fit: cover;
-        background: #000;
-        animation: floatSmall 6s ease-in-out infinite;
-    }
-    @keyframes floatSmall {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-4px); }
-        100% { transform: translateY(0px); }
-    }
-    .profile-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: 15px; flex: 1; }
+    .friends-header { text-align: center; margin-bottom: 30px; }
+    .friends-title { color: var(--gold-main); font-size: 32px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin: 0 0 10px 0;}
+    
+    .search-box { background: #0a0806; border: 1px solid var(--gold-dark); padding: 20px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
+    .search-input { flex-grow: 1; background: #000; border: 1px solid #332815; color: #fff; padding: 12px; border-radius: 6px; outline: none; font-size: 16px;}
+    .search-input:focus { border-color: var(--gold-main); }
+    .btn-search { background: var(--gold-main); color: #000; border: none; padding: 0 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .btn-search:hover { background: var(--gold-light); transform: scale(1.05); }
+
+    .section-title { color: var(--gold-light); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; display: flex; align-items: center; gap: 10px;}
+
+    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 40px;}
+    .user-card { background: #0a0806; border: 1px solid #222; border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; position: relative; }
+    .user-card:hover { border-color: var(--gold-dark); background: #110d09; transform: translateY(-3px); }
+    
+    .user-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; }
+    .user-name { color: #fff; font-size: 18px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none;}
+    .user-id { color: var(--text-gray); font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
+    
+    .btn-add { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;}
+    .btn-add:hover { background: #2ecc71; color: #000; }
+    
+    .btn-remove { background: transparent; border: 1px solid #e74c3c; color: #e74c3c; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%;}
+    .btn-remove:hover { background: #e74c3c; color: #fff; }
+
+    .btn-accept { background: #2ecc71; color: #000; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; flex: 1;}
+    .btn-accept:hover { transform: scale(1.05); }
+    
+    .profile-link { text-decoration: none; color: inherit; display: block; }
 </style>
 
-<div style="text-align: center; margin-bottom: 30px;">
-    <h2 style="color: var(--gold-main); margin: 0;">🤝 التحالفات</h2>
-    <p style="color: #aaa; font-size: 14px;">ابحث عن حلفاء.. أو ادخل لملفاتهم لتتفقدها.</p>
+<div class="friends-header">
+    <h2 class="friends-title">التحالفات الكبرى</h2>
+    <p style="color: var(--text-gray);">أرسل الغربان للبحث عن حلفاء يضمنون بقاءك</p>
 </div>
 
 <form action="/friends" method="GET" class="search-box">
-    <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID للزيارة..." class="form-control-search" required>
-    <button type="submit" class="btn-gold">بحث 🔍</button>
+    <input type="text" name="search" placeholder="ابحث باسم الرحالة أو بالهوية الرقمية (ID)..." class="search-input" value="{{ request.args.get('search', '') }}">
+    <button type="submit" class="btn-search">إرسال غراب 🦅</button>
 </form>
 
-{% if search_result %}
-<div class="user-card" style="border-color: var(--gold-main); box-shadow: 0 0 15px rgba(212,175,55,0.2);">
-    <a href="/hunter/{{ search_result.hunter_id }}" class="profile-link">
-        <img src="/avatar/{{ search_result.hunter_id }}" class="avatar-sm" 
-             onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
-        <div><strong style="color: #fff; font-size: 16px;">{{ search_result.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ search_result.hunter_id }}</div></div>
-    </a>
-    <form action="/add_friend" method="POST" style="margin: 0;"><input type="hidden" name="target_id" value="{{ search_result.hunter_id }}"><button type="submit" class="btn-gold" style="padding: 8px 15px; font-size: 13px;">طلب تحالف</button></form>
-</div>
-{% endif %}
-
-{% if friend_requests %}
-    <h3 style="color: #e67e22; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">⏳ طلبات معلقة</h3>
-    {% for req in friend_requests %}
-    <div class="user-card">
-        <a href="/hunter/{{ req.hunter_id }}" class="profile-link">
-            <img src="/avatar/{{ req.hunter_id }}" class="avatar-sm" 
-                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
-            <div><strong style="color: #fff;">{{ req.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ req.hunter_id }}</div></div>
-        </a>
-        <div style="display: flex; gap: 10px;">
-            <a href="/accept_friend/{{ req.hunter_id }}" class="btn-gold" style="text-decoration:none; padding:8px 15px; font-size:13px;">قبول</a>
-            <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin:0;"><button type="submit" style="background:#e74c3c; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">رفض</button></form>
+{% if request.args.get('search') %}
+    <h3 class="section-title">🎯 نتيجة البحث</h3>
+    {% if search_result %}
+        <div class="users-grid" style="grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));">
+            <div class="user-card" style="border-color: var(--gold-main); background: #110d09;">
+                <a href="/hunter/{{ search_result.hunter_id }}" class="profile-link">
+                    <img src="/avatar/{{ search_result.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                    <h4 class="user-name" style="color: var(--gold-light);">{{ search_result.username }}</h4>
+                </a>
+                <span class="user-id">ID: {{ search_result.hunter_id }}</span>
+                
+                {% if search_result.hunter_id == current_user.hunter_id %}
+                    <span style="color: #888; font-size: 13px;">هذا أنت أيها الإمبراطور!</span>
+                {% elif search_result.hunter_id in current_user.friends %}
+                    <span style="color: #2ecc71; font-weight: bold; font-size: 14px;">✔ حليف حالي</span>
+                {% else %}
+                    <form action="/add_friend" method="POST">
+                        <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
+                        <button type="submit" class="btn-add">إرسال تحالف ➕</button>
+                    </form>
+                {% endif %}
+            </div>
         </div>
-    </div>
-    {% endfor %}
+    {% else %}
+        <p style="color: #e74c3c; text-align: center; margin-bottom: 30px;">لم يعد الغراب بأي أخبار... هذا الرحالة غير موجود!</p>
+    {% endif %}
 {% endif %}
 
-{% if friends %}
-    <h3 style="color: #2ecc71; margin-top: 30px; border-bottom: 1px dashed #332815; padding-bottom: 10px;">✔️ الحلفاء</h3>
-    {% for f in friends %}
-    <div class="user-card">
-        <a href="/hunter/{{ f.hunter_id }}" class="profile-link">
-            <img src="/avatar/{{ f.hunter_id }}" class="avatar-sm" 
-                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%2314100c%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2270%22%20text-anchor%3D%22middle%22%20font-size%3D%2250%22%20fill%3D%22%23d4af37%22%3E%F0%9F%91%A4%3C%2Ftext%3E%3C%2Fsvg%3E'">
-            <div><strong style="color: #fff;">{{ f.username }}</strong><div style="color: #888; font-size: 12px;">ID: {{ f.hunter_id }}</div></div>
-        </a>
-        <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" style="margin:0;"><button type="submit" style="background:#e74c3c; color:#fff; border:none; padding:8px 15px; border-radius:6px; cursor:pointer;">خيانة</button></form>
+{% if friend_requests and friend_requests.count() > 0 %}
+    <h3 class="section-title" style="color: #3498db;">📬 طلبات التحالف ({{ friend_requests.count() }})</h3>
+    <div class="users-grid">
+        {% for req in friend_requests %}
+            <div class="user-card" style="border-color: #3498db;">
+                <a href="/hunter/{{ req.hunter_id }}" class="profile-link">
+                    <img src="/avatar/{{ req.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                    <h4 class="user-name">{{ req.username }}</h4>
+                </a>
+                <span class="user-id">ID: {{ req.hunter_id }}</span>
+                <div style="display: flex; gap: 5px;">
+                    <a href="/accept_friend/{{ req.hunter_id }}" class="btn-accept">قبول ✔</a>
+                    <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex: 1; margin:0;">
+                        <button type="submit" class="btn-remove" style="border-radius: 6px;">رفض ✖</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 {% endif %}
+
+{% if friends and friends.count() > 0 %}
+    <h3 class="section-title" style="color: #2ecc71;">🤝 حلفائي ({{ friends.count() }})</h3>
+    <div class="users-grid">
+        {% for f in friends %}
+            <div class="user-card">
+                <a href="/hunter/{{ f.hunter_id }}" class="profile-link">
+                    <img src="/avatar/{{ f.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                    <h4 class="user-name">{{ f.username }}</h4>
+                </a>
+                <span class="user-id">ID: {{ f.hunter_id }} | 🪙 {{ f.points }}</span>
+                <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" onsubmit="return confirm('هل أنت متأكد من خيانة حليفك؟ ستخسر 20 نقطة ولاء!');">
+                    <button type="submit" class="btn-remove">خيانة الحليف 🔪</button>
+                </form>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<h3 class="section-title">🌍 رحالة آخرون في المتاهة</h3>
+<p style="color: #888; font-size: 13px; margin-top: -15px; margin-bottom: 20px;">استكشف رحالة جدد لتشكيل تحالفات كبرى...</p>
+<div class="users-grid">
+    {% for h in suggested_hunters %}
+        <div class="user-card">
+            <a href="/hunter/{{ h.hunter_id }}" class="profile-link">
+                <img src="/avatar/{{ h.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                <h4 class="user-name">{{ h.username }}</h4>
+            </a>
+            <span class="user-id">ID: {{ h.hunter_id }}</span>
+            <form action="/add_friend" method="POST">
+                <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
+                <button type="submit" class="btn-add">إرسال تحالف ➕</button>
+            </form>
+        </div>
+    {% else %}
+        <p style="color: #666; text-align: center; grid-column: 1 / -1; font-style: italic;">لا يوجد رحالة جدد في الجوار حالياً...</p>
+    {% endfor %}
+</div>
+
 {% endblock %}
