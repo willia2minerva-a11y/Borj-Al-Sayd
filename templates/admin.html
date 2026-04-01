@@ -96,7 +96,7 @@
                 <option value="freeze">تجميد الحساب</option><option value="move_zone">نقل لطابق</option><option value="hard_delete">حذف نهائي (يمسح الأثر)</option>
             </select>
             <input type="text" name="bulk_zone" placeholder="اسم الطابق" class="form-control" style="flex: 1; margin: 0;">
-            <button type="submit" class="btn-danger" style="flex: 1; margin: 0; background:#e74c3c; color:#fff;">تنفيذ الأمر</button>
+            <button type="submit" class="btn-danger" style="flex: 1; margin: 0; background:#e74c3c; color:#fff;" onclick="return confirm('تأكيد التنفيذ الجماعي؟');">تنفيذ الأمر</button>
         </div>
     </form>
 </div>
@@ -171,7 +171,7 @@
                 {% endfor %}
             </table>
         </div>
-        <button type="submit" class="btn-danger" style="width:auto; margin-top:10px;">حذف المحدد ✖</button>
+        <button type="submit" class="btn-danger" style="width:auto; margin-top:10px;" onclick="return confirm('حذف المنشورات المحددة؟');">حذف المحدد ✖</button>
     </form>
 </div>
 
@@ -200,7 +200,7 @@
             <td>
                 <form action="/admin" method="POST" style="margin:0;">
                     <input type="hidden" name="action" value="delete_spell"><input type="hidden" name="spell_id" value="{{ s.id }}">
-                    <button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;">✖</button>
+                    <button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;" onclick="return confirm('إبطال التعويذة؟');">✖</button>
                 </form>
             </td>
         </tr>
@@ -241,7 +241,7 @@
             <div style="flex:1"><label style="color:#aaa;">مصير بوابة 2:</label><select name="fate_2" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
             <div style="flex:1"><label style="color:#aaa;">مصير بوابة 3:</label><select name="fate_3" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
         </div>
-        <button type="submit" class="btn-danger" style="background:#d35400; border:none; color:#fff;">إطلاق الحكم على الجميع</button>
+        <button type="submit" class="btn-danger" style="background:#d35400; border:none; color:#fff;" onclick="return confirm('تأكيد إطلاق الحكم على الرحالة؟');">إطلاق الحكم على الجميع</button>
     </form>
 </div>
 
@@ -259,7 +259,7 @@
         {% else %}<button type="submit" class="btn-gold">بدء وتوزيع اللعنات</button>{% endif %}
     </form>
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إنهاء الاجتماع الحالي</button></form>
+        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;" onclick="return confirm('إنهاء الاجتماع وطرد من تلقى الأصوات؟');">إنهاء الاجتماع الحالي</button></form>
         <form action="/admin" method="POST" style="flex: 1; display:flex; gap:5px;"><input type="hidden" name="action" value="eliminate_player"><input type="text" name="target_id" placeholder="ID المطرود..." class="form-control" style="margin:0;" required><button type="submit" class="btn-danger" style="margin:0; background:#e74c3c; color:#fff;">إعدام</button></form>
     </div>
 </div>
@@ -280,8 +280,8 @@
             <div style="flex:1"><label style="color:#aaa; font-size:12px;">ضحايا للانتهاء:</label><input type="number" name="war_kill_target" value="{{ settings.war_kill_target if settings else 15 }}" class="form-control" required></div>
         </div>
         <div style="display:flex; gap:10px;">
-            <div style="flex:1"><label style="color:#aaa; font-size:12px;">مهدئ الهجوم بين اللاعبين (دقائق):</label><input type="number" name="attack_cooldown_minutes" value="{{ settings.attack_cooldown_minutes if settings else 5 }}" class="form-control" required></div>
-            <div style="flex:1"><label style="color:#aaa; font-size:12px;">مؤقت الراحة (إيقاف النزيف بعد نشاط):</label><input type="number" name="safe_time_minutes" value="{{ settings.safe_time_minutes if settings else 120 }}" class="form-control" required></div>
+            <div style="flex:1"><label style="color:#aaa; font-size:12px;">مهدئ الهجوم (دقائق):</label><input type="number" name="attack_cooldown_minutes" value="{{ settings.attack_cooldown_minutes if settings else 5 }}" class="form-control" required></div>
+            <div style="flex:1"><label style="color:#aaa; font-size:12px;">مؤقت الراحة (لإيقاف النزيف):</label><input type="number" name="safe_time_minutes" value="{{ settings.safe_time_minutes if settings else 120 }}" class="form-control" required></div>
         </div>
         <button type="submit" class="btn-gold" style="background:transparent; color:var(--gold-main); border:1px solid var(--gold-main);">حفظ إعدادات الحرب المستمرة</button>
     </form>
