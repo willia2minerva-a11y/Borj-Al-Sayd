@@ -5,9 +5,10 @@
     .meeting-header { background: #e74c3c; color: #fff; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; box-shadow: 0 0 20px rgba(231,76,60,0.5); }
     .meeting-title { margin: 0; font-size: 28px; font-weight: 900; }
     
-    .chat-box { background: #050403; border: 1px solid #333; border-radius: 12px; padding: 20px; height: 300px; overflow-y: auto; margin-bottom: 20px; }
+    .chat-box { background: #050403; border: 1px solid #333; border-radius: 12px; padding: 20px; height: 300px; overflow-y: auto; margin-bottom: 20px; scroll-behavior: smooth;}
     .chat-msg { background: #111; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-size: 15px; }
     .sys-msg { background: rgba(231,76,60,0.1); border-right: 3px solid #e74c3c; color: #e74c3c; font-weight: bold; }
+    .sys-vote-msg { background: rgba(52,152,219,0.1); border-right: 3px solid #3498db; color: #3498db; font-style: italic; }
     
     .vote-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
     .vote-card { background: #110d09; border: 1px solid #332815; padding: 15px; border-radius: 8px; text-align: center; }
@@ -19,11 +20,12 @@
     <div class="meeting-header">
         <h2 class="meeting-title">🚨 اجتماع طارئ 🚨</h2>
         <p style="margin: 5px 0 0 0;">المناقشة والتصويت لتحديد الملعون!</p>
+        <div style="font-size: 13px; margin-top: 10px; background: rgba(0,0,0,0.3); display: inline-block; padding: 5px 15px; border-radius: 20px;">الاجتماع محكوم بوقت، صوّت أو سيتم تخطيك.</div>
     </div>
 
     <div class="chat-box" id="chatBox">
         {% for msg in messages %}
-            <div class="chat-msg {% if msg.is_system_msg %}sys-msg{% endif %}">
+            <div class="chat-msg {% if msg.is_system_msg and '👁️' in msg.message %}sys-vote-msg{% elif msg.is_system_msg %}sys-msg{% endif %}">
                 <strong>{{ msg.sender_name }}:</strong> {{ msg.message }}
             </div>
         {% endfor %}
@@ -35,10 +37,10 @@
     </form>
 
     {% if not current_user.f1_has_voted and current_user.status == 'active' %}
-        <h3 style="color: var(--gold-main); text-align: center; border-bottom: 1px dashed #333; padding-bottom: 10px;">صوّت لإقصاء شخص:</h3>
+        <h3 style="color: var(--gold-main); text-align: center; border-bottom: 1px dashed #333; padding-bottom: 10px;">صوّت لإقصاء شخص (تصويتك سيظهر للجميع!):</h3>
         
         <form action="/f1_vote/0" method="POST">
-            <button type="submit" class="btn-skip" onclick="return confirm('هل تريد تخطي التصويت؟');">⏭️ تخطي التصويت</button>
+            <button type="submit" class="btn-skip" onclick="return confirm('هل تريد تخطي التصويت؟');">⏭️ التخطي (Skip Vote)</button>
         </form>
 
         <div class="vote-grid">
@@ -47,22 +49,20 @@
                     <img src="/avatar/{{ m.hunter_id }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">
                     <h4 style="color: #fff; margin: 10px 0 5px 0;">{{ m.username }}</h4>
                     <form action="/f1_vote/{{ m.hunter_id }}" method="POST">
-                        <button type="submit" class="btn-vote" onclick="return confirm('تأكيد التصويت ضده؟');">صوّت ضده ✖</button>
+                        <button type="submit" class="btn-vote" onclick="return confirm('تأكيد التصويت العلني ضده؟');">صوّت ضده ✖</button>
                     </form>
                 </div>
             {% endfor %}
         </div>
     {% else %}
         <div style="background: #111; border: 1px solid #2ecc71; color: #2ecc71; padding: 20px; text-align: center; border-radius: 8px; font-weight: bold; font-size: 18px;">
-            لقد قمت بالتصويت... انتظر حكم الأغلبية.
+            لقد قمت بالتصويت... انتظر حكم الأغلبية أو انتهاء الوقت.
         </div>
     {% endif %}
 </div>
 
 <script>
-    // تمرير الدردشة للأسفل تلقائياً
     var chatBox = document.getElementById("chatBox");
     chatBox.scrollTop = chatBox.scrollHeight;
 </script>
 {% endblock %}
-
