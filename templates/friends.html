@@ -4,36 +4,37 @@
     .friends-header { text-align: center; margin-bottom: 30px; }
     .friends-title { color: var(--gold-main); font-size: 32px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin: 0 0 10px 0;}
     
-    .search-box { background: #0a0806; border: 1px solid var(--gold-dark); padding: 20px; border-radius: 12px; display: flex; gap: 10px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5);}
-    .search-input { flex-grow: 1; background: #000; border: 1px solid #332815; color: #fff; padding: 12px; border-radius: 6px; outline: none; font-size: 16px;}
+    /* إصلاح صندوق البحث للموبايل */
+    .search-box { background: #0a0806; border: 1px solid var(--gold-dark); padding: 15px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box;}
+    .search-input { flex-grow: 1; min-width: 200px; background: #000; border: 1px solid #332815; color: #fff; padding: 12px; border-radius: 6px; outline: none; font-size: 16px; box-sizing: border-box;}
     .search-input:focus { border-color: var(--gold-main); }
-    .btn-search { background: var(--gold-main); color: #000; border: none; padding: 0 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+    .btn-search { background: var(--gold-main); color: #000; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; white-space: nowrap; flex: 1; box-sizing: border-box; text-align: center;}
+    .btn-search:hover { background: var(--gold-light); transform: scale(1.02); }
 
-    /* تقسيم الشاشة لنصفين */
-    .split-layout { display: flex; gap: 30px; align-items: flex-start;}
-    .col-right { flex: 1; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; }
-    .col-left { flex: 1; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; }
+    /* إصلاح تقسيم الشاشة */
+    .split-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; width: 100%; box-sizing: border-box;}
+    .col-right, .col-left { flex: 1 1 100%; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; box-sizing: border-box; overflow: hidden; }
     
-    @media (max-width: 900px) { .split-layout { flex-direction: column; } .col-right, .col-left { width: 100%; box-sizing: border-box; } }
+    @media (min-width: 900px) { .col-right, .col-left { flex: 1; } }
 
     .section-title { color: var(--gold-light); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; text-align: center;}
 
     .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;}
-    .user-card { background: #0a0806; border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; }
+    .user-card { background: #0a0806; border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; box-sizing: border-box;}
     
     .user-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; }
-    .user-name { color: #fff; font-size: 16px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none; display: block;}
+    .user-name { color: #fff; font-size: 16px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none; display: block; word-break: break-word;}
     .user-id { color: var(--text-gray); font-family: monospace; font-size: 12px; margin-bottom: 15px; display: block; }
     
     /* أزرار الإجراءات */
-    .btn-action { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 13px;}
+    .btn-action { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 13px; box-sizing: border-box;}
     .btn-action:hover { background: #2ecc71; color: #000; }
     .btn-cancel-req { border-color: #e67e22; color: #e67e22; }
     .btn-cancel-req:hover { background: #e67e22; color: #fff; }
 
     /* قائمة الـ 3 نقاط للأصدقاء */
     .dropdown { position: absolute; top: 10px; left: 10px; }
-    .dropbtn { background: transparent; color: #aaa; font-size: 20px; border: none; cursor: pointer; padding: 5px; font-weight: bold; }
+    .dropbtn { background: transparent; color: #aaa; font-size: 20px; border: none; cursor: pointer; padding: 5px; font-weight: bold; outline: none;}
     .dropdown-content { display: none; position: absolute; right: 0; background-color: #110d09; min-width: 150px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.9); z-index: 10; border: 1px solid var(--gold-dark); border-radius: 6px; overflow: hidden; text-align: right;}
     .dropdown-content form { margin: 0; }
     .dropdown-content button { color: #ddd; padding: 12px 16px; text-decoration: none; display: block; background: none; border: none; width: 100%; text-align: right; cursor: pointer; border-bottom: 1px solid #222; font-family: inherit;}
@@ -51,7 +52,7 @@
 </form>
 
 {% if request.args.get('search') and search_result %}
-<div style="background: #110d09; padding: 20px; border: 1px solid var(--gold-main); border-radius: 12px; margin-bottom: 30px; text-align: center;">
+<div style="background: #110d09; padding: 20px; border: 1px solid var(--gold-main); border-radius: 12px; margin-bottom: 30px; text-align: center; box-sizing: border-box; width: 100%;">
     <h3 style="color: var(--gold-main); margin-top:0;">نتيجة البحث:</h3>
     <img src="/avatar/{{ search_result.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
     <a href="/hunter/{{ search_result.hunter_id }}" class="user-name">{{ search_result.username }}</a>
@@ -63,12 +64,12 @@
     {% elif search_result.hunter_id in current_user.sent_requests %}
         <form action="/cancel_request" method="POST">
             <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
-            <button type="submit" class="btn-action btn-cancel-req" style="width:auto;">إلغاء الطلب ✖</button>
+            <button type="submit" class="btn-action btn-cancel-req" style="width:auto; padding: 10px 20px;">إلغاء الطلب ✖</button>
         </form>
     {% else %}
         <form action="/add_friend" method="POST">
             <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
-            <button type="submit" class="btn-action" style="width:auto;">إرسال تحالف ➕</button>
+            <button type="submit" class="btn-action" style="width:auto; padding: 10px 20px;">إرسال تحالف ➕</button>
         </form>
     {% endif %}
 </div>
@@ -103,7 +104,7 @@
                     <span class="user-id">ID: {{ f.hunter_id }}</span>
                 </div>
             {% else %}
-                <p style="color:#666; font-size:13px;">لا تملك حلفاء بعد...</p>
+                <p style="color:#666; font-size:13px; text-align: center;">لا تملك حلفاء بعد...</p>
             {% endfor %}
         </div>
         
@@ -117,8 +118,8 @@
                         <h4 class="user-name">{{ req.username }}</h4>
                     </a>
                     <div style="display: flex; gap: 5px; margin-top:10px;">
-                        <form action="/accept_friend/{{ req.hunter_id }}" style="flex:1;"><button type="submit" style="background:#2ecc71; border:none; border-radius:4px; width:100%; padding:5px; cursor:pointer;">قبول</button></form>
-                        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex:1;"><button type="submit" style="background:#e74c3c; border:none; border-radius:4px; width:100%; padding:5px; color:#fff; cursor:pointer;">رفض</button></form>
+                        <form action="/accept_friend/{{ req.hunter_id }}" style="flex:1;"><button type="submit" style="background:#2ecc71; border:none; border-radius:4px; width:100%; padding:8px; cursor:pointer; font-weight:bold;">قبول</button></form>
+                        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex:1;"><button type="submit" style="background:#e74c3c; border:none; border-radius:4px; width:100%; padding:8px; color:#fff; cursor:pointer; font-weight:bold;">رفض</button></form>
                     </div>
                 </div>
             {% endfor %}
@@ -150,10 +151,9 @@
                     {% endif %}
                 </div>
             {% else %}
-                <p style="color:#666; font-size:13px;">لا يوجد رحالة جدد...</p>
+                <p style="color:#666; font-size:13px; text-align: center;">لا يوجد رحالة جدد...</p>
             {% endfor %}
         </div>
     </div>
 </div>
 {% endblock %}
-
