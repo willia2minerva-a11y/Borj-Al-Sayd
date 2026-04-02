@@ -33,13 +33,13 @@ app.config['MONGODB_SETTINGS'] = {
     'maxPoolSize': 5
 }
 
+# 🔒 حماية الجلسات الخالدة (لمنع الطرد من Render)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'SEPHAR_MAZE_IMMORTAL_SECRET_KEY_999_NEVER_CHANGE')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
-app.config['SESSION_COOKIE_SECURE'] = True     # 🔒 إجباري لمنصة Render لأنها تستخدم HTTPS
-app.config['SESSION_COOKIE_HTTPONLY'] = True   # 🔒 يمنع سرقة الجلسة
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 🔒 يمنع المتصفح من حذف الجلسة عند التحديث
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 db.init_app(app)
-
 
 _settings_cache = {'data': None, 'timestamp': 0}
 _SETTINGS_CACHE_TTL = 30  
@@ -449,7 +449,6 @@ def f1_report(target_id):
     if not settings or not getattr(settings, 'floor1_mode_active', False) or getattr(settings, 'floor1_meeting_active', False) or user.status != 'active': return redirect(url_for('home'))
     body = User.objects(hunter_id=target_id, status='dead_body', current_room=user.current_room, group_id=user.group_id).first()
     if body:
-        # هنا يتم تحديد مدة الاجتماع التلقائية (مثلاً 5 دقائق)
         meeting_duration = 5 
         GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_meeting_active=True, set__floor1_meeting_end_time=datetime.utcnow() + timedelta(minutes=meeting_duration))
         GroupMessage(group_id=user.group_id, sender_name="النظام", message=f"🚨 قام {user.username} بالتبليغ عن جثة {body.username}! أمامكم {meeting_duration} دقائق للتصويت.", is_system_msg=True).save()
