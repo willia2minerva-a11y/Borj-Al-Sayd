@@ -295,7 +295,7 @@
         <input type="hidden" name="action" value="toggle_floor3">
         <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control" {% if settings and settings.floor3_mode_active %}disabled{% endif %}>
         <input type="number" name="top_n" placeholder="عدد المتأهلين" class="form-control" value="{{ settings.vote_top_n if settings else 5 }}" {% if settings and settings.floor3_mode_active %}disabled{% endif %}>
-        {% if settings and settings.floor3_mode_active %button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف المحكمة</button>
+        {% if settings and settings.floor3_mode_active %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف المحكمة</button>
         {% else %}<button type="submit" class="btn-gold">بدء التصويت</button>{% endif %}
     </form>
 </div>
