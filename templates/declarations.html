@@ -5,7 +5,6 @@
     .dec-header { text-align: center; margin-bottom: 30px; }
     .dec-title { color: var(--gold-main); font-size: 32px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin: 0;}
     
-    /* نموذج كتابة تصريح جديد */
     .post-card { background: #110d09; border: 1px solid var(--gold-dark); border-radius: 12px; padding: 20px; margin-bottom: 40px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
     .post-input { width: 100%; background: #000; border: 1px solid #332815; color: #fff; padding: 15px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; resize: vertical; min-height: 80px; outline: none;}
     .post-input:focus { border-color: var(--gold-main); }
@@ -17,7 +16,6 @@
     .btn-submit-post { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;}
     .btn-submit-post:hover { transform: scale(1.05); }
 
-    /* عرض التصريحات */
     .feed-card { background: #0a0806; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; position: relative;}
     .feed-card:hover { border-color: #332815; }
     .feed-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px dashed #222; padding-bottom: 15px;}
@@ -47,7 +45,7 @@
             <textarea name="content" class="post-input" placeholder="ماذا تريد أن تقول للرحالة؟..." required></textarea>
             <div class="post-actions">
                 <div class="file-upload-wrapper">
-                    <span class="file-upload-btn">📷 إرفاق صورة للمرسوم</span>
+                    <span class="file-upload-btn">📷 إرفاق صورة</span>
                     <input type="file" name="image_file" accept="image/*">
                 </div>
                 <button type="submit" class="btn-submit-post">إطلاق التصريح 🚀</button>
