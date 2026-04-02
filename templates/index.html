@@ -6,68 +6,71 @@
 
 {% if winner_to_show %}
 <style>
-    /* قفل الشاشة المطلق */
+    /* قفل الشاشة المطلق ومنع التمرير */
     body, html { overflow: hidden !important; width: 100vw; height: 100vh; margin: 0; padding: 0; background: #000; }
     .mobile-header, .sidebar, .sidebar-overlay, .main-content-header { display: none !important; }
     .main-content { padding: 0 !important; margin: 0 !important; width: 100vw !important; height: 100vh !important; }
 
-    .victory-epic-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
+    /* الحاوية الرئيسية للمشهد */
+    .victory-epic-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #050403; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
 
-    /* أنميشن النار والشرر الخفيف (Background) */
-    .fire-particles { position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: radial-gradient(circle at center, rgba(212,175,55,0.15) 0%, rgba(231,76,60,0.08) 40%, transparent 70%); filter: blur(20px); animation: firePulse 4s infinite alternate; z-index: 1; opacity: 0.6; }
-    @keyframes firePulse { from { transform: translateX(-50%) scale(1); opacity: 0.5; } to { transform: translateX(-50%) scale(1.1); opacity: 0.8; } }
-    
-    .fire-embers { position: absolute; width: 100%; height: 100%; top: 0; left: 0; background-image: radial-gradient(#d4af37 1.5px, transparent 1.5px); background-size: 60px 60px; opacity: 0.15; animation: embersFloat 8s linear infinite; z-index: 1; }
-    @keyframes embersFloat { from { background-position: 0 0; } to { background-position: 0 -500px; } }
+    /* 🧱 خلفية جدران المتاهة الأثرية */
+    .ancient-wall { position: absolute; inset: 0; background-color: #0c0a08; background-image: linear-gradient(rgba(212, 175, 55, 0.05) 2px, transparent 2px), linear-gradient(90deg, rgba(212, 175, 55, 0.05) 2px, transparent 2px); background-size: 120px 120px; z-index: 1; opacity: 0.6; }
+    /* هالة الظلام حول الجدران */
+    .wall-vignette { position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 10%, #000 90%); z-index: 2; }
 
-    /* 1. أنميشن الرموز المتحطمة (Initial Scene) */
-    .ancient-symbols { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(212,175,55,0.6); font-size: 80px; font-family: monospace; display: flex; gap: 15px; z-index: 10; animation: symbolShatter 2.5s forwards; font-weight: bold;}
-    @keyframes symbolShatter { 0% { opacity: 0; letter-spacing: 30px; filter: blur(8px); } 30% { opacity: 1; letter-spacing: 5px; filter: blur(0); } 70% { opacity: 1; letter-spacing: 5px; transform: translate(-50%, -50%) scale(1); } 100% { opacity: 0; letter-spacing: 60px; transform: translate(-50%, -50%) scale(1.5); filter: blur(12px); display: none; } }
+    /* 🔥 أنميشن شرارات النار المتصاعدة */
+    .fire-sparks { position: absolute; inset: 0; z-index: 3; background-image: radial-gradient(2.5px 2.5px at 20px 30px, #d4af37, rgba(0,0,0,0)), radial-gradient(2px 2px at 80px 70px, #e74c3c, rgba(0,0,0,0)), radial-gradient(3px 3px at 150px 180px, #f1c40f, rgba(0,0,0,0)), radial-gradient(2px 2px at 250px 90px, #d4af37, rgba(0,0,0,0)), radial-gradient(2.5px 2.5px at 300px 250px, #e74c3c, rgba(0,0,0,0)); background-repeat: repeat; background-size: 400px 400px; animation: riseSparks 15s linear infinite; opacity: 0.7; }
+    @keyframes riseSparks { 0% { background-position: 0 0; } 100% { background-position: 0 -800px; } }
 
-    /* 2. أنميشن المونولوج الإمبراطوري (الآلة الكاتبة) */
-    .monologue-container { position: absolute; top: 50%; transform: translateY(-50%); text-align: center; max-width: 90%; width: 90%; z-index: 20; color: #fff; font-size: 28px; line-height: 1.8; text-shadow: 0 0 15px #000; display: none; flex-direction: column; align-items: center; justify-content: center; font-weight: bold;}
-    .typing-text { border-left: 3px solid var(--gold-main); white-space: nowrap; overflow: hidden; width: 0; display: inline-block; direction: rtl; text-align: right; margin-bottom: 20px;}
-    
-    @keyframes typing { from { width: 0; } to { width: 100%; } }
-    @keyframes blink-caret { from, to { border-color: transparent; } 50% { border-color: var(--gold-main); } }
+    /* 1. المشهد الأول: الرموز تتحطم */
+    .scene-symbols { position: relative; z-index: 10; color: rgba(212,175,55,0.8); font-size: 70px; font-family: monospace; font-weight: bold; text-shadow: 0 0 20px rgba(212,175,55,0.5); letter-spacing: 15px; animation: shatterEffect 3.5s forwards; }
+    @keyframes shatterEffect { 0% { opacity: 0; transform: scale(0.8); filter: blur(10px); } 30% { opacity: 1; transform: scale(1); filter: blur(0); } 70% { opacity: 1; transform: scale(1) rotate(0deg); filter: blur(0); } 90% { opacity: 0.8; transform: scale(1.2) rotate(2deg); filter: blur(2px); letter-spacing: 30px; } 100% { opacity: 0; transform: scale(2) rotate(-5deg); filter: blur(15px); letter-spacing: 60px; display: none; } }
 
-    /* 3. أنميشن ظهور اللاعب والإحصائيات (Final Scene) */
-    .winner-reveal-box { position: relative; z-index: 30; display: none; flex-direction: column; align-items: center; animation: playerFadeIn 1s forwards; width: 100%;}
+    /* 2. المشهد الثاني: المونولوج (الآلة الكاتبة) */
+    .scene-monologue { position: relative; z-index: 10; text-align: center; max-width: 90%; color: #fff; font-size: 30px; line-height: 1.8; text-shadow: 0 0 15px #000, 0 0 5px var(--gold-main); font-weight: bold; display: none; flex-direction: column; align-items: center; justify-content: center; }
+    /* مؤشر الآلة الكاتبة الذي يومض */
+    .blinking-caret { border-right: 4px solid var(--gold-main); padding-right: 5px; animation: blinkCaret 0.8s step-end infinite; }
+    @keyframes blinkCaret { from, to { border-color: transparent; } 50% { border-color: var(--gold-main); } }
+
+    /* 3. المشهد الثالث: ظهور اللاعب والإحصائيات */
+    .scene-winner { position: relative; z-index: 10; display: none; flex-direction: column; align-items: center; width: 100%; animation: playerFadeIn 1.5s forwards; }
     @keyframes playerFadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    /* أنميشن الصعود والتقلص للصورة */
-    .winner-avatar-epic { width: 180px; height: 180px; border-radius: 50%; border: 6px solid var(--gold-main); box-shadow: 0 0 60px rgba(212,175,55,0.7); object-fit: cover; animation: playerArrive 1s cubic-bezier(0.17, 0.67, 0.2, 1.01) forwards, playerShrink 0.5s 1s forwards; transform: translateY(100vh); opacity: 0; margin-bottom: 10px;}
-    @keyframes playerArrive { from { transform: translateY(100vh); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    @keyframes playerShrink { from { transform: scale(1); } to { transform: scale(0.9); } }
+    .winner-avatar-epic { width: 200px; height: 200px; border-radius: 50%; border: 6px solid var(--gold-main); box-shadow: 0 0 80px rgba(212,175,55,0.5); object-fit: cover; animation: playerArrive 1.5s cubic-bezier(0.17, 0.88, 0.32, 1.1) forwards; transform: translateY(100vh); opacity: 0; margin-bottom: 20px;}
+    @keyframes playerArrive { 0% { transform: translateY(100vh) scale(1.2); opacity: 0; } 70% { transform: translateY(-20px) scale(1.05); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 
-    .winner-name-epic { color: var(--gold-main); font-size: 38px; font-weight: 900; margin: 0 0 20px 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); animation: fadeInScale 0.5s 1.5s forwards; opacity: 0; }
-    @keyframes fadeInScale { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
-
-    /* الإحصائيات المنظمة */
-    .stats-container-epic { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 90%; max-width: 400px; animation: fadeInDelayed 0.5s 1.8s forwards; opacity: 0; box-sizing: border-box;}
-    @keyframes fadeInDelayed { from { opacity: 0; } to { opacity: 1; } }
+    .winner-name-epic { color: #fff; font-size: 42px; font-weight: 900; margin: 0 0 30px 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); animation: fadeInText 1s 1.5s forwards; opacity: 0; }
     
-    .stat-card-epic { background: rgba(17,13,9,0.8); border: 1px solid var(--gold-dark); border-radius: 8px; padding: 15px 10px; text-align: center; backdrop-filter: blur(5px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);}
-    .stat-icon { font-size: 26px; }
-    .stat-value { color: #fff; font-size: 26px; font-weight: 900; margin: 0; font-family: monospace; text-shadow: 0 0 5px rgba(255,255,255,0.3);}
-    .stat-label { color: var(--gold-light); font-size: 13px; margin: 0; font-weight: bold;}
+    .stats-container-epic { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 90%; max-width: 450px; animation: fadeInText 1s 2s forwards; opacity: 0; box-sizing: border-box;}
+    @keyframes fadeInText { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .stat-card-epic { background: rgba(17,13,9,0.85); border: 1px solid var(--gold-dark); border-radius: 12px; padding: 20px 10px; text-align: center; backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; box-shadow: inset 0 0 15px rgba(0,0,0,0.9);}
+    .stat-icon { font-size: 30px; }
+    .stat-value { color: #fff; font-size: 32px; font-weight: 900; margin: 0; font-family: monospace; text-shadow: 0 0 10px rgba(255,255,255,0.4);}
+    .stat-label { color: var(--gold-light); font-size: 15px; margin: 0; font-weight: bold;}
 
-    /* زر الخروج (للإمبراطور فقط) */
-    .btn-exit-test { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #110d09; border: 2px solid #e74c3c; color: #e74c3c; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; transition: 0.3s; z-index: 40; box-shadow: 0 0 15px rgba(231,76,60,0.2); animation: fadeInDelayed 0.5s 2.5s forwards; opacity: 0;}
+    /* زر الخروج (للإمبراطور فقط في وضع التجربة) */
+    .btn-exit-test { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #110d09; border: 2px solid #e74c3c; color: #e74c3c; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; transition: 0.3s; z-index: 40; box-shadow: 0 0 15px rgba(231,76,60,0.2); animation: fadeInText 1s 3s forwards; opacity: 0;}
     .btn-exit-test:hover { background: #e74c3c; color: #fff; box-shadow: 0 0 20px #e74c3c; }
 </style>
 
 <div class="victory-epic-container">
-    <div class="fire-particles"></div>
-    <div class="fire-embers"></div>
+    <div class="ancient-wall"></div>
+    <div class="wall-vignette"></div>
+    <div class="fire-sparks"></div>
 
-    <div class="ancient-symbols" id="ancientSymbols">Ψ Ω Δ Σ Φ Ξ Π</div>
-
-    <div class="monologue-container" id="monologueContainer">
-        <div class="typing-text" id="typewriterText"></div>
+    <div class="scene-symbols" id="sceneSymbols">
+        Ψ Ω Δ Σ Φ Ξ Π
     </div>
 
-    <div class="winner-reveal-box" id="winnerRevealBox">
+    <div class="scene-monologue" id="sceneMonologue">
+        <div>
+            <span id="typewriterText"></span><span class="blinking-caret"></span>
+        </div>
+    </div>
+
+    <div class="scene-winner" id="sceneWinner">
         <img src="/avatar/{{ winner_to_show.hunter_id }}" class="winner-avatar-epic" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
         <h1 class="winner-name-epic">{{ winner_to_show.username }}</h1>
         
@@ -106,55 +109,53 @@
             "من الذي كسر قيود المتاهة ؟",
             "من الذي تخطى جميع العراقيل والفخاخ ؟",
             "من تفوق على الجميع واعتلى قمة البرج ؟",
-            "ماهو الا سيد المتاهة الجديد :"
+            "ما هو إلا سيد المتاهة الجديد :"
         ];
 
-        const ancientSymbols = document.getElementById('ancientSymbols');
-        const monologueContainer = document.getElementById('monologueContainer');
+        const sceneSymbols = document.getElementById('sceneSymbols');
+        const sceneMonologue = document.getElementById('sceneMonologue');
         const typewriterText = document.getElementById('typewriterText');
-        const winnerRevealBox = document.getElementById('winnerRevealBox');
+        const sceneWinner = document.getElementById('sceneWinner');
 
-        // إدارة التوقيت السينمائي
-        setTimeout(() => { ancientSymbols.style.display = 'none'; }, 2500); 
-        setTimeout(() => { monologueContainer.style.display = 'flex'; startTyping(); }, 2600); 
+        // انتظار تحطم الرموز (3.5 ثواني)
+        setTimeout(() => { 
+            sceneSymbols.style.display = 'none'; 
+            sceneMonologue.style.display = 'flex'; 
+            startTyping(); 
+        }, 3600); 
 
         let sentenceIndex = 0;
 
         function startTyping() {
             if (sentenceIndex < sentences.length) {
-                typewriterText.innerHTML = "";
-                typewriterText.style.width = "0";
+                let currentSentence = sentences[sentenceIndex];
+                let charIndex = 0;
+                typewriterText.innerHTML = ""; // تفريغ النص للجملة الجديدة
                 
-                const currentSentence = sentences[sentenceIndex];
-                const words = currentSentence.split(' ');
-                let wordIndex = 0;
-                
-                function typeWord() {
-                    if (wordIndex < words.length) {
-                        typewriterText.innerHTML += words[wordIndex] + " ";
-                        typewriterText.style.width = ((typewriterText.scrollWidth / monologueContainer.offsetWidth) * 100) + "%";
-                        wordIndex++;
-                        typewriterText.style.animation = `typing 0.3s steps(${words[wordIndex-1].length}) forwards, blink-caret 0.75s step-end infinite`;
-                        
-                        setTimeout(typeWord, 350); // سرعة الكلمات
+                // دالة كتابة حرف بحرف
+                function typeChar() {
+                    if (charIndex < currentSentence.length) {
+                        typewriterText.innerHTML += currentSentence.charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeChar, 100); // سرعة بطيئة ومهيبة (100 جزء من الثانية لكل حرف)
                     } else {
+                        // الانتظار بعد اكتمال الجملة قبل مسحها
                         setTimeout(() => {
                             sentenceIndex++;
                             if (sentenceIndex === sentences.length) {
-                                typeWord(); // انتقال فوراً لكشف اللاعب بعد الجملة الأخيرة
+                                // انتهاء المونولوج
+                                setTimeout(() => {
+                                    sceneMonologue.style.display = 'none';
+                                    sceneWinner.style.display = 'flex';
+                                }, 800);
                             } else {
-                                startTyping();
+                                startTyping(); // الجملة التالية
                             }
-                        }, 1500); // بقاء الجملة قبل مسحها
+                        }, 2000); // بقاء الجملة مقروءة لمدة ثانيتين
                     }
                 }
-                typeWord();
+                typeChar();
 
-            } else {
-                setTimeout(() => {
-                    monologueContainer.style.display = 'none';
-                    winnerRevealBox.style.display = 'flex';
-                }, 800);
             }
         }
     });
@@ -326,3 +327,4 @@
 
 {% endif %}
 {% endblock %}
+
