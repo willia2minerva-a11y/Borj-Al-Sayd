@@ -22,7 +22,7 @@
     .btn-danger { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-danger:hover { background: #8a0303; color:#fff; border-color: #8a0303;}
     .section-head { border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 15px; display: block; font-size: 18px; color: var(--gold-main);}
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; min-width: 600px; }
     th, td { padding: 12px; text-align: right; border-bottom: 1px solid #332815; }
     th { background-color: #110d09; color: var(--gold-main); }
     tr:hover { background-color: #1a140a; }
@@ -98,6 +98,7 @@
 
 <button type="button" class="mod-btn btn-traps" onclick="toggleMod('m_traps')">إدارة الفخاخ والأشباح والروابط <span>▼</span></button>
 <div id="m_traps" class="mod-content">
+    <p style="color:#aaa; font-size:13px;">ازرع أشباحاً وروابط في المتاهة. الشبح العادي يمنح (ختم الأرواح)، الفخ يمنح (ختم الخديعة).</p>
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="add_standalone_puzzle">
         <select name="trap_category" id="trap_category" class="form-control" required onchange="updateTrapForm()">
@@ -127,15 +128,17 @@
         }
     </script>
     <strong style="color:var(--gold-main); display:block; margin-top:30px;">الكيانات المزروعة حالياً:</strong>
-    <table style="font-size:12px;">
-        <tr><th>النوع</th><th>الإجابة/ID</th><th>التأثير</th><th>الضحايا</th><th>حذف</th></tr>
-        {% for t in hidden_traps %}
-        <tr>
-            <td>{{ 'شبح' if t.puzzle_type in ['ghost', 'cursed_ghost'] else 'رابط' }}</td><td style="color:#f1c40f;">{{ t.puzzle_answer }}</td><td>{{ t.puzzle_type }}</td><td>{{ t.current_winners }}/{{ t.max_winners }}</td>
-            <td><form action="/admin" method="POST" style="margin:0;"><input type="hidden" name="action" value="delete_trap"><input type="hidden" name="trap_id" value="{{ t.id }}"><button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;">✖</button></form></td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div style="overflow-x: auto;">
+        <table style="font-size:12px;">
+            <tr><th>النوع</th><th>الإجابة/ID</th><th>التأثير</th><th>الضحايا</th><th>حذف</th></tr>
+            {% for t in hidden_traps %}
+            <tr>
+                <td>{{ 'شبح' if t.puzzle_type in ['ghost', 'cursed_ghost'] else 'رابط' }}</td><td style="color:#f1c40f;">{{ t.puzzle_answer }}</td><td>{{ t.puzzle_type }}</td><td>{{ t.current_winners }}/{{ t.max_winners }}</td>
+                <td><form action="/admin" method="POST" style="margin:0;"><input type="hidden" name="action" value="delete_trap"><input type="hidden" name="trap_id" value="{{ t.id }}"><button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;">✖</button></form></td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
 
 <button type="button" class="mod-btn btn-puz" onclick="toggleMod('m_news')">النقوش والمراسيم <span>▼</span></button>
@@ -189,20 +192,22 @@
     </form>
 
     <strong style="color:var(--gold-main); display:block;">التعاويذ الحالية:</strong>
-    <table>
-        <tr><th>التعويذة</th><th>التأثير</th><th>الاستخدامات</th><th>حذف</th></tr>
-        {% for s in spells %}
-        <tr>
-            <td style="color:#f1c40f;">{{ s.spell_word }}</td><td>{{ s.spell_type }}</td><td>{{ s.used_by|length }}/{{ s.max_uses }}</td>
-            <td>
-                <form action="/admin" method="POST" style="margin:0;">
-                    <input type="hidden" name="action" value="delete_spell"><input type="hidden" name="spell_id" value="{{ s.id }}">
-                    <button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;" onclick="return confirm('إبطال التعويذة؟');">✖</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+    <div style="overflow-x: auto;">
+        <table>
+            <tr><th>التعويذة</th><th>التأثير</th><th>الاستخدامات</th><th>حذف</th></tr>
+            {% for s in spells %}
+            <tr>
+                <td style="color:#f1c40f;">{{ s.spell_word }}</td><td>{{ s.spell_type }}</td><td>{{ s.used_by|length }}/{{ s.max_uses }}</td>
+                <td>
+                    <form action="/admin" method="POST" style="margin:0;">
+                        <input type="hidden" name="action" value="delete_spell"><input type="hidden" name="spell_id" value="{{ s.id }}">
+                        <button type="submit" style="background:transparent; color:#e74c3c; border:none; cursor:pointer;" onclick="return confirm('إبطال التعويذة؟');">✖</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
 </div>
 
 <button type="button" class="mod-btn btn-maint" onclick="toggleMod('m_maintenance')">إدارة الصيانة <span>▼</span></button>
@@ -233,10 +238,10 @@
     <strong style="color:#d35400; display:block; margin-top:20px;">الحكم على البوابات (بعد انتهاء الوقت):</strong>
     <form action="/admin" method="POST" style="background:#110d09; padding:15px; border:1px dashed #d35400; border-radius:6px;">
         <input type="hidden" name="action" value="judge_gates">
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <div style="flex:1"><label style="color:#aaa;">مصير بوابة 1:</label><select name="fate_1" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
-            <div style="flex:1"><label style="color:#aaa;">مصير بوابة 2:</label><select name="fate_2" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
-            <div style="flex:1"><label style="color:#aaa;">مصير بوابة 3:</label><select name="fate_3" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
+        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:100px;"><label style="color:#aaa;">مصير بوابة 1:</label><select name="fate_1" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
+            <div style="flex:1; min-width:100px;"><label style="color:#aaa;">مصير بوابة 2:</label><select name="fate_2" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
+            <div style="flex:1; min-width:100px;"><label style="color:#aaa;">مصير بوابة 3:</label><select name="fate_3" class="form-control"><option value="pass">نجاح (عبور)</option><option value="kill">إقصاء (موت)</option><option value="test">اختبار</option></select></div>
         </div>
         <button type="submit" class="btn-danger" style="background:#d35400; border:none; color:#fff;" onclick="return confirm('تأكيد إطلاق الحكم على الرحالة؟');">إطلاق الحكم على الجميع</button>
     </form>
@@ -308,3 +313,4 @@
 
 <script> function toggleMod(id) { var el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; } </script>
 {% endblock %}
+
