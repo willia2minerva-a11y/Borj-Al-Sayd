@@ -5,10 +5,8 @@
     @keyframes pulseBg { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
 
     .profile-container { max-width: 800px; margin: 0 auto; }
-    
     .profile-header-box { text-align: center; margin-bottom: 30px; }
     .profile-avatar-box { width: 140px; height: 140px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
-    
     .profile-name-box { color: var(--gold-main); font-size: 32px; margin: 0 0 5px 0; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); display: flex; justify-content: center; align-items: center; gap: 10px;}
     .profile-id-box { color: var(--text-gray); font-family: monospace; font-size: 16px; margin-bottom: 15px; display: block;}
     
@@ -18,30 +16,27 @@
     .badge-status-inactive { background: rgba(241,196,15,0.1); color: #f1c40f; border-color: #f1c40f; }
     .badge-zone { background: rgba(212,175,55,0.1); color: var(--gold-main); border-color: var(--gold-main); }
 
-    /* 🔲 شبكة المربعات 2x2 */
-    .stats-grid-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
-    .stat-card-box { background: #0a0806; border: 1px solid #332815; padding: 25px 20px; border-radius: 12px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;}
+    /* 🔲 شبكة المربعات 2x2 الإجبارية */
+    .stats-grid-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
+    .stat-card-box { background: #0a0806; border: 1px solid #332815; padding: 25px 10px; border-radius: 12px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1 / 1; }
     .stat-card-box:hover { border-color: var(--gold-dark); background: #110d09; transform: translateY(-3px); }
     
-    .stat-val-box { font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px;}
-    .stat-label-box { color: var(--text-gray); font-size: 14px; display: flex; align-items: center; gap: 5px; }
+    .stat-val-box { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; word-break: break-all;}
+    .stat-label-box { color: var(--text-gray); font-size: 13px; display: flex; align-items: center; gap: 5px; }
 
-    /* ✏️ الأقلام السحرية */
     .edit-icon { cursor: pointer; font-size: 16px; opacity: 0.5; transition: 0.3s; filter: grayscale(100%); margin: 0 5px; }
     .edit-icon:hover { opacity: 1; filter: grayscale(0%); transform: scale(1.2); }
-    .inline-edit-form { display: none; align-items: center; gap: 5px; justify-content: center;}
-    .inline-input { background: #000; color: #fff; border: 1px solid var(--gold-main); padding: 5px; border-radius: 4px; outline: none; text-align: center; font-weight: bold; font-size: 16px; width: 80px;}
-    .btn-inline-save { background: #2ecc71; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .btn-inline-cancel { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .inline-edit-form { display: none; align-items: center; gap: 5px; justify-content: center; flex-direction: column;}
+    .inline-input { background: #000; color: #fff; border: 1px solid var(--gold-main); padding: 5px; border-radius: 4px; outline: none; text-align: center; font-weight: bold; font-size: 16px; width: 60px;}
+    .btn-inline-save { background: #2ecc71; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;}
+    .btn-inline-cancel { background: #e74c3c; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%;}
 
     .inventory-section { background: #0a0806; border: 1px solid #332815; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center; }
     .item-chip { display: inline-block; background: #1a140a; border: 1px solid #44351c; padding: 8px 15px; border-radius: 20px; margin: 5px; color: var(--gold-light); font-size: 13px; font-weight: bold; }
 
     .settings-section { background: #050403; border: 1px solid #222; padding: 25px; border-radius: 12px; }
-    .form-control-new { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; outline: none; }
-    .form-control-new:focus { border-color: var(--gold-main); }
+    .form-control-new { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; outline: none; box-sizing: border-box;}
     .btn-gold-new { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 15px;}
-    .btn-gold-new:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(212,175,55,0.3); }
 </style>
 
 <div class="ambient-bg"></div>
@@ -49,22 +44,19 @@
 <div class="profile-container">
     <div class="profile-header-box">
         <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar-box" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-        
         <h2 class="profile-name-box">
             <span id="txt_name">{{ user.username }}</span>
             {% if user.role == 'admin' %}
                 <span class="edit-icon" id="icon_name" onclick="toggleEdit('name')">✏️</span>
-                <form id="form_name" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
+                <form id="form_name" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST" style="flex-direction:row;">
                     <input type="hidden" name="action" value="edit_name">
-                    <input type="text" name="new_val" value="{{ user.username }}" class="inline-input" style="width:150px;">
+                    <input type="text" name="new_val" value="{{ user.username }}" class="inline-input" style="width:120px;">
                     <button type="submit" class="btn-inline-save">✔️</button>
                     <button type="button" class="btn-inline-cancel" onclick="toggleEdit('name')">❌</button>
                 </form>
             {% endif %}
         </h2>
-        
         <span class="profile-id-box">ID: {{ user.hunter_id }}</span>
-        
         <div class="badges-row">
             <span class="badge {% if user.status == 'active' %}badge-status{% else %}badge-status-inactive{% endif %}">
                 {{ 'حي يُرزق' if user.status == 'active' else 'قيد المراجعة' }}
@@ -73,10 +65,10 @@
                 الطابق: <span id="txt_zone">{{ user.zone }}</span>
                 {% if user.role == 'admin' %}
                     <span class="edit-icon" id="icon_zone" onclick="toggleEdit('zone')">✏️</span>
-                    <form id="form_zone" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST" style="margin-right: 5px;">
+                    <form id="form_zone" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST" style="flex-direction:row;">
                         <input type="hidden" name="action" value="edit_zone">
-                        <input type="text" name="new_val" value="{{ user.zone }}" class="inline-input" style="width:90px;">
-                        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('zone')">❌</button>
+                        <input type="text" name="new_val" value="{{ user.zone }}" class="inline-input" style="width:80px;">
+                        <button type="submit" class="btn-inline-save" style="width:auto;">✔️</button><button type="button" class="btn-inline-cancel" style="width:auto;" onclick="toggleEdit('zone')">❌</button>
                     </form>
                 {% endif %}
             </span>
@@ -90,9 +82,8 @@
                 {% if user.role == 'admin' %}
                     <span class="edit-icon" id="icon_points" onclick="toggleEdit('points')">✏️</span>
                     <form id="form_points" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
-                        <input type="hidden" name="action" value="edit_points">
-                        <input type="number" name="new_val" value="{{ user.points }}" class="inline-input">
-                        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('points')">❌</button>
+                        <input type="hidden" name="action" value="edit_points"><input type="number" name="new_val" value="{{ user.points }}" class="inline-input">
+                        <div style="display:flex; gap:5px;"><button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('points')">❌</button></div>
                     </form>
                 {% endif %}
             </div>
@@ -105,9 +96,8 @@
                 {% if user.role == 'admin' %}
                     <span class="edit-icon" id="icon_loyal" onclick="toggleEdit('loyal')">✏️</span>
                     <form id="form_loyal" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
-                        <input type="hidden" name="action" value="edit_loyalty">
-                        <input type="number" name="new_val" value="{{ user.loyalty_points }}" class="inline-input">
-                        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('loyal')">❌</button>
+                        <input type="hidden" name="action" value="edit_loyalty"><input type="number" name="new_val" value="{{ user.loyalty_points }}" class="inline-input">
+                        <div style="display:flex; gap:5px;"><button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('loyal')">❌</button></div>
                     </form>
                 {% endif %}
             </div>
@@ -121,9 +111,8 @@
                 {% if user.role == 'admin' %}
                     <span class="edit-icon" id="icon_hp" onclick="toggleEdit('hp')">✏️</span>
                     <form id="form_hp" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
-                        <input type="hidden" name="action" value="edit_hp">
-                        <input type="number" name="new_val" value="{{ user.health }}" class="inline-input" max="100">
-                        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('hp')">❌</button>
+                        <input type="hidden" name="action" value="edit_hp"><input type="number" name="new_val" value="{{ user.health }}" class="inline-input" max="100">
+                        <div style="display:flex; gap:5px;"><button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('hp')">❌</button></div>
                     </form>
                 {% endif %}
             </div>
@@ -137,9 +126,8 @@
                 {% if user.role == 'admin' %}
                     <span class="edit-icon" id="icon_iq" onclick="toggleEdit('iq')">✏️</span>
                     <form id="form_iq" class="inline-edit-form" action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
-                        <input type="hidden" name="action" value="edit_iq">
-                        <input type="number" name="new_val" value="{{ user.intelligence_points }}" class="inline-input">
-                        <button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('iq')">❌</button>
+                        <input type="hidden" name="action" value="edit_iq"><input type="number" name="new_val" value="{{ user.intelligence_points }}" class="inline-input">
+                        <div style="display:flex; gap:5px;"><button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('iq')">❌</button></div>
                     </form>
                 {% endif %}
             </div>
@@ -160,16 +148,14 @@
 
     <div class="settings-section">
         <h3 style="color: var(--gold-main); border-bottom: 1px dashed #222; padding-bottom: 10px; margin-top: 0;">⚙️ إعدادات الهوية الأساسية</h3>
-        
         <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 20px;">
             <input type="hidden" name="action" value="change_avatar">
             <label style="color:var(--text-gray); font-size:13px; display:block; margin-bottom:5px;">تحديث النقش (الصورة):</label>
             <div style="display: flex; gap: 10px;">
-                <input type="file" name="avatar_file" class="form-control-new" accept="image/*" required style="margin:0; flex-grow:1;">
+                <input type="file" name="avatar_file" class="form-control-new" accept="image/*" required style="margin:0; flex-grow:1; padding:8px;">
                 <button type="submit" class="btn-gold-new" style="width: auto;">رفع</button>
             </div>
         </form>
-
         <form action="/settings" method="POST" style="margin-bottom: 20px;">
             <input type="hidden" name="action" value="change_name">
             <label style="color:var(--text-gray); font-size:13px; display:block; margin-bottom:5px;">تغيير اسم الرحالة (مرة كل 15 يوماً):</label>
@@ -178,14 +164,13 @@
                 <button type="submit" class="btn-gold-new" style="width: auto;">تغيير</button>
             </div>
         </form>
-
         <form action="/settings" method="POST">
             <input type="hidden" name="action" value="change_password">
             <label style="color:var(--text-gray); font-size:13px; display:block; margin-bottom:5px;">تغيير الختم السري (كلمة المرور):</label>
             <input type="password" name="old_password" placeholder="الختم الحالي" class="form-control-new" required>
-            <div style="display: flex; gap: 10px;">
-                <input type="password" name="new_password" placeholder="الختم الجديد" class="form-control-new" required style="flex:1;">
-                <input type="password" name="confirm_password" placeholder="تأكيد الجديد" class="form-control-new" required style="flex:1;">
+            <div style="display: flex; gap: 10px; flex-wrap:wrap;">
+                <input type="password" name="new_password" placeholder="الختم الجديد" class="form-control-new" required style="flex:1; min-width:120px;">
+                <input type="password" name="confirm_password" placeholder="تأكيد الجديد" class="form-control-new" required style="flex:1; min-width:120px;">
             </div>
             <button type="submit" class="btn-gold-new">تحديث الختم</button>
         </form>
