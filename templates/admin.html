@@ -26,6 +26,8 @@
     th, td { padding: 12px; text-align: right; border-bottom: 1px solid #332815; }
     th { background-color: #110d09; color: var(--gold-main); }
     tr:hover { background-color: #1a140a; }
+    .btn-win-test { background: #2ecc71; color: #000; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block; transition: 0.3s;}
+    .btn-win-test:hover { background: #27ae60; color: #fff; transform: scale(1.05);}
 </style>
 
 <h2 style="color: var(--gold-main); text-align: center; margin-bottom: 30px; text-shadow: 0 0 15px rgba(212,175,55,0.5);">👑 عرش الإمبراطور 👑</h2>
@@ -81,7 +83,7 @@
                     </td>
                     <td>{{ u.points }}</td><td>{{ u.health }}</td><td>{{ u.zone }}</td>
                     <td><a href="/hunter/{{ u.hunter_id }}" target="_blank" style="color:var(--gold-main); text-decoration:none; font-weight:bold;">ملفه</a></td>
-                    <td><a href="/?test_victory={{ u.hunter_id }}" target="_blank" style="color:#2ecc71; text-decoration:none; font-weight:bold;">فوز 🏆</a></td>
+                    <td><a href="/?test_victory={{ u.hunter_id }}" target="_blank" class="btn-win-test">فوز 🏆</a></td>
                 </tr>
                 {% endfor %}
             </table>
@@ -313,3 +315,4 @@
 
 <script> function toggleMod(id) { var el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; } </script>
 {% endblock %}
+
