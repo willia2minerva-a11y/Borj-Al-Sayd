@@ -1,6 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
 
+{% set is_actual_winner = current_user and current_user.collected_seals|length >= 4 %}
+{% set winner_to_show = test_winner if test_winner else (current_user if is_actual_winner else None) %}
+
+{% if winner_to_show %}
+<style>
+    .victory-fullscreen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1a140a 0%, #000 100%); z-index: 99999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: fadeIn 1.5s forwards;}
+    .victory-title { color: var(--gold-main); font-size: 45px; text-shadow: 0 0 30px var(--gold-main); margin-bottom: 20px; animation: scalePulse 2s infinite alternate; font-weight: 900;}
+    .victory-avatar { width: 180px; height: 180px; border-radius: 50%; border: 5px solid var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.6); margin-bottom: 20px; }
+    .victory-name { color: #fff; font-size: 40px; margin: 0 0 15px 0; text-shadow: 0 0 10px #fff; font-weight: bold;}
+    .victory-text { color: var(--gold-light); font-size: 22px; max-width: 600px; line-height: 1.6; padding: 0 20px; margin-bottom: 40px;}
+    .btn-close-victory { background: transparent; border: 2px solid var(--gold-main); color: var(--gold-main); padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 20px; transition: 0.3s; }
+    .btn-close-victory:hover { background: var(--gold-main); color: #000; box-shadow: 0 0 20px var(--gold-main); transform: scale(1.05);}
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes scalePulse { from { transform: scale(1); } to { transform: scale(1.05); } }
+</style>
+<div class="victory-fullscreen">
+    <h1 class="victory-title">👑 الناجي الأعظم 👑</h1>
+    <img src="/avatar/{{ winner_to_show.hunter_id }}" class="victory-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+    <h2 class="victory-name">{{ winner_to_show.username }}</h2>
+    <p class="victory-text">لقد استطاع هذا الرحالة الشجاع قهر الظلام، وجمع الأختام الأربعة، ليعلن نفسه المنتصر الوحيد والأعظم في تاريخ متاهة سيفار!</p>
+    <a href="/" class="btn-close-victory">إغلاق المشهد والعودة</a>
+</div>
+
+{% else %}
 {% set display_rank = current_user.special_rank if current_user else '' %}
 {% if current_user and current_user.zone %}
     {% if current_user.zone == 'البوابات' %}{% set display_rank = 'مستكشف' %}
@@ -17,7 +41,6 @@
     .epic-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #0a0806 0%, transparent 100%); }
     .epic-title { position: relative; z-index: 2; color: var(--gold-main); font-size: 32px; margin: 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); font-weight: 900; letter-spacing: 1px; text-align: center;}
     
-    /* 🔲 شبكة المربعات للرئيسية على الموبايل */
     .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
     .gold-card { background: linear-gradient(145deg, #1a140a 0%, #050403 100%); border: 1px solid #44351c; border-radius: 12px; padding: 20px 10px; text-align: center; text-decoration: none; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1 / 1;}
     .gold-card:hover { transform: translateY(-5px); border-color: var(--gold-main); box-shadow: 0 5px 20px rgba(212,175,55,0.2); }
@@ -131,6 +154,29 @@
     </div>
 {% endif %}
 
+{% if settings and settings.floor3_mode_active and current_user and current_user.status == 'active' %}
+<div style="background: #050403; border: 2px solid #e74c3c; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center; box-shadow: 0 0 30px rgba(231,76,60,0.1);">
+    <h2 style="color: #e74c3c; margin-top: 0;">⚖️ محكمة الطابق الثالث ⚖️</h2>
+    <p style="color: #ddd;">لديك 100 صوت نجاة، يجب توزيعها على 5 رحالة مختلفين.</p>
+    {% if not current_user.has_voted and current_user.hunter_id != 1000 %}
+        <form action="/submit_floor3_votes" method="POST" style="max-width: 500px; margin: auto; text-align: right;">
+            {% for i in range(1, 6) %}
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <select name="target_{{ i }}" class="form-control-smart" required style="flex: 2;">
+                    <option value="" disabled selected>اختر الرحالة رقم {{ i }}...</option>
+                    {% for h in active_hunters %}<option value="{{ h.hunter_id }}">{{ h.username }}</option>{% endfor %}
+                </select>
+                <input type="number" name="amount_{{ i }}" class="form-control-smart" placeholder="الأصوات" required min="1" max="96" style="flex: 1;">
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn-gold" style="width: 100%; margin-top: 10px; background: linear-gradient(45deg, #c0392b, #e74c3c); color: #fff; border:none; padding:12px; border-radius:6px; font-weight:bold;">تأكيد وتوزيع الأصوات ➔</button>
+        </form>
+    {% elif current_user.has_voted %}
+        <div style="color: #2ecc71; font-weight: bold; font-size: 18px; margin-top: 15px;">لقد أدليت بصوتك في المحكمة!</div>
+    {% endif %}
+</div>
+{% endif %}
+
 <div class="dashboard-grid">
     <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">{{ settings.nav_news if settings else 'المراسيم' }}</h3></a>
     <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">{{ settings.nav_puzzles if settings else 'النقوش' }}</h3></a>
@@ -142,4 +188,5 @@
 
 <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111; aspect-ratio: auto; padding:15px;"><span class="card-icon" style="font-size:25px; margin-bottom:5px;">💀</span><h3 class="card-title" style="color: #e74c3c;">{{ settings.nav_grave if settings and settings.nav_grave else 'المقبرة' }}</h3></a>
 
+{% endif %}
 {% endblock %}
