@@ -35,7 +35,11 @@ app.config['MONGODB_SETTINGS'] = {
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'SEPHAR_MAZE_IMMORTAL_SECRET_KEY_999_NEVER_CHANGE')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.config['SESSION_COOKIE_SECURE'] = True     # 🔒 إجباري لمنصة Render لأنها تستخدم HTTPS
+app.config['SESSION_COOKIE_HTTPONLY'] = True   # 🔒 يمنع سرقة الجلسة
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # 🔒 يمنع المتصفح من حذف الجلسة عند التحديث
 db.init_app(app)
+
 
 _settings_cache = {'data': None, 'timestamp': 0}
 _SETTINGS_CACHE_TTL = 30  
