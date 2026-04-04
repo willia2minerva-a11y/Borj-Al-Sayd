@@ -16,12 +16,14 @@
     .btn-f2 { border-right: 4px solid #c0392b; color: #c0392b; } .btn-f2:hover { background: #1a140a; color: #e74c3c; }
     .btn-f3 { border-right: 4px solid #e67e22; color: #e67e22; } .btn-f3:hover { background: #1a140a; color: #f39c12; }
     .btn-f4 { border-right: 4px solid var(--gold-main); color: var(--gold-main); } .btn-f4:hover { background: #1a140a; color: var(--gold-light); }
+    
     .mod-content { padding: 20px; display: none; background: #050403; border: 1px solid #222; border-radius: 0 0 8px 8px; margin-top: -15px; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); }
     .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
     .btn-gold:hover { transform: scale(1.02); }
     .btn-danger { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 10px; transition: 0.3s; }
     .btn-danger:hover { background: #8a0303; color:#fff; border-color: #8a0303;}
     .section-head { border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 15px; display: block; font-size: 18px; color: var(--gold-main);}
+    
     table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; min-width: 600px; }
     th, td { padding: 12px; text-align: right; border-bottom: 1px solid #332815; vertical-align: middle;}
     th { background-color: #110d09; color: var(--gold-main); }
@@ -232,11 +234,15 @@
 <button type="button" class="mod-btn btn-gates" onclick="toggleMod('m_gates')">البوابات <span>▼</span></button>
 <div id="m_gates" class="mod-content">
     <form action="/admin" method="POST">
-        <input type="hidden" name="action" value="setup_gates">
+        <input type="hidden" name="action" value="toggle_gates">
         <input type="number" name="gates_hours" placeholder="المدة (ساعات)" class="form-control">
         <textarea name="desc" placeholder="الوصف..." class="form-control" rows="2"></textarea>
         <div style="display:flex; gap:10px;"><input type="text" name="g1" placeholder="بوابة 1" class="form-control"><input type="text" name="g2" placeholder="بوابة 2" class="form-control"><input type="text" name="g3" placeholder="بوابة 3" class="form-control"></div>
-        <button type="submit" class="btn-gold">فتح التسجيل في البوابات</button>
+        {% if settings and settings.gates_mode_active %}
+            <button type="submit" class="btn-danger">إيقاف البوابات 🛑</button>
+        {% else %}
+            <button type="submit" class="btn-gold">فتح البوابات ▶️</button>
+        {% endif %}
     </form>
     
     <strong style="color:#d35400; display:block; margin-top:20px;">الحكم على البوابات (بعد انتهاء الوقت):</strong>
@@ -254,15 +260,18 @@
 <button type="button" class="mod-btn btn-f1" onclick="toggleMod('m_floor1')">الطابق الأول (الاستنتاج) <span>▼</span></button>
 <div id="m_floor1" class="mod-content">
     <form action="/admin" method="POST" style="margin-bottom: 20px;">
-        <input type="hidden" name="action" value="start_floor1">
-        <label style="color:#aaa;">حجم كل مجموعة:</label><input type="number" name="group_size" value="5" class="form-control" required {% if settings and settings.floor1_mode_active %}disabled{% endif %}>
+        <input type="hidden" name="action" value="toggle_floor1">
+        <label style="color:#aaa;">حجم كل مجموعة:</label><input type="number" name="group_size" value="5" class="form-control" {% if settings and settings.floor1_mode_active %}disabled{% else %}required{% endif %}>
         <div style="display: flex; gap: 10px;">
-            <input type="number" name="move_cooldown" value="30" class="form-control" placeholder="تبريد التنقل" required>
-            <input type="number" name="kill_cooldown" value="60" class="form-control" placeholder="تبريد القتل" required>
-            <input type="number" name="gems_target" value="10" class="form-control" placeholder="الهدف" required>
+            <input type="number" name="move_cooldown" value="30" class="form-control" placeholder="تبريد التنقل" {% if not settings.floor1_mode_active %}required{% endif %}>
+            <input type="number" name="kill_cooldown" value="60" class="form-control" placeholder="تبريد القتل" {% if not settings.floor1_mode_active %}required{% endif %}>
+            <input type="number" name="gems_target" value="10" class="form-control" placeholder="الهدف" {% if not settings.floor1_mode_active %}required{% endif %}>
         </div>
-        {% if settings and settings.floor1_mode_active %}<div style="color: #e74c3c; font-weight: bold; text-align: center;">مشتعلة الآن!</div>
-        {% else %}<button type="submit" class="btn-gold">بدء وتوزيع اللعنات</button>{% endif %}
+        {% if settings and settings.floor1_mode_active %}
+            <button type="submit" class="btn-danger">إيقاف الطابق الأول 🛑</button>
+        {% else %}
+            <button type="submit" class="btn-gold">بدء وتوزيع اللعنات ▶️</button>
+        {% endif %}
     </form>
     <div style="display: flex; gap: 15px; flex-wrap: wrap;">
         <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;" onclick="return confirm('إنهاء الاجتماع وطرد من تلقى الأصوات؟');">إنهاء الاجتماع الحالي يدوياً</button></form>
@@ -275,8 +284,11 @@
     <form action="/admin" method="POST" style="margin-bottom: 15px;">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="المدة بالساعات" class="form-control" {% if settings and settings.war_mode %}disabled{% else %}required{% endif %}>
-        {% if settings and settings.war_mode %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف الحرب</button>
-        {% else %}<button type="submit" class="btn-gold">إشعال الحرب</button>{% endif %}
+        {% if settings and settings.war_mode %}
+            <button type="submit" class="btn-danger">إيقاف الحرب الشاملة 🛑</button>
+        {% else %}
+            <button type="submit" class="btn-gold">إشعال الحرب ▶️</button>
+        {% endif %}
     </form>
     <form action="/admin" method="POST" style="border-top: 1px dashed #333; padding-top: 15px;">
         <input type="hidden" name="action" value="update_war_settings">
@@ -297,10 +309,13 @@
 <div id="m9_floor3" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor3">
-        <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control" {% if settings and settings.floor3_mode_active %}disabled{% endif %}>
+        <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control" {% if settings and settings.floor3_mode_active %}disabled{% else %}required{% endif %}>
         <input type="number" name="top_n" placeholder="عدد المتأهلين" class="form-control" value="{{ settings.vote_top_n if settings else 5 }}" {% if settings and settings.floor3_mode_active %}disabled{% endif %}>
-        {% if settings and settings.floor3_mode_active %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إيقاف المحكمة</button>
-        {% else %}<button type="submit" class="btn-gold">بدء التصويت</button>{% endif %}
+        {% if settings and settings.floor3_mode_active %}
+            <button type="submit" class="btn-danger">إيقاف المحكمة الكبرى 🛑</button>
+        {% else %}
+            <button type="submit" class="btn-gold">بدء التصويت ▶️</button>
+        {% endif %}
     </form>
 </div>
 
@@ -310,8 +325,11 @@
         <input type="hidden" name="action" value="toggle_final_battle">
         <label style="color:#aaa;">تحديد قوة الإمبراطور (HP):</label>
         <input type="number" name="emperor_hp" placeholder="مثال: 100000" value="100000" class="form-control" {% if settings and settings.final_battle_mode %}disabled{% endif %}>
-        {% if settings and settings.final_battle_mode %}<button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;">إنهاء المعركة</button>
-        {% else %}<button type="submit" class="btn-gold">بدء المعركة الأخيرة</button>{% endif %}
+        {% if settings and settings.final_battle_mode %}
+            <button type="submit" class="btn-danger">إيقاف المعركة الأخيرة 🛑</button>
+        {% else %}
+            <button type="submit" class="btn-gold">بدء القتال النهائي ▶️</button>
+        {% endif %}
     </form>
 </div>
 
