@@ -33,7 +33,7 @@ app.config['MONGODB_SETTINGS'] = {
     'maxPoolSize': 5
 }
 
-# 🔒 حماية الجلسات الخالدة (لمنع الطرد من Render)
+# 🔒 حماية الجلسات الخالدة
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'SEPHAR_MAZE_IMMORTAL_SECRET_KEY_999_NEVER_CHANGE')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -178,12 +178,9 @@ def pre_process():
             for u in User.objects(status='active', role='hunter').order_by('-survival_votes')[:settings.vote_top_n]: u.update(set__zone='المعركة الأخيرة')
             GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=False); _settings_cache['timestamp'] = 0
 
-        # 🚀 إنهاء الاجتماع آلياً عند انتهاء الوقت
         if getattr(settings, 'floor1_mode_active', False):
-            if getattr(settings, 'floor1_meeting_active', False) and getattr(settings, 'floor1_meeting_end_time', None):
-                if now >= settings.floor1_meeting_end_time:
-                    process_f1_meeting_end(settings)
-                    _settings_cache['timestamp'] = 0
+            if getattr(settings, 'floor1_meeting_active', False) and getattr(settings, 'floor1_meeting_end_time', None) and now >= settings.floor1_meeting_end_time:
+                process_f1_meeting_end(settings); _settings_cache['timestamp'] = 0
             if getattr(settings, 'floor1_darkness_until', None) and now >= settings.floor1_darkness_until:
                 GlobalSettings.objects(setting_name='main_config').update_one(unset__floor1_darkness_until=1); _settings_cache['timestamp'] = 0
             if getattr(settings, 'floor1_locked_until', None) and now >= settings.floor1_locked_until:
@@ -308,7 +305,7 @@ def login():
         if user and check_password_hash(getattr(user, 'password_hash', ''), request.form['password']):
             session.permanent = True; session['user_id'] = str(user.id); user.update(set__last_active=datetime.utcnow())
             if user.status == 'inactive': flash('حسابك قيد المراجعة، وضع التصفح فقط متاح لك.', 'info')
-            if user.status in ['eliminated', 'frozen', 'dead_body']: flash('حسابك موقوف عن اللعب. التصفح متاح لك فقط.', 'error')
+            if user.status in ['eliminated', 'frozen', 'dead_body']: flash('حسابك موقوف عن اللعب. وضع التصفح متاح لك فقط.', 'error')
             return redirect(url_for('home'))
         flash('البيانات خاطئة.', 'error')
     return render_template('login.html')
@@ -397,7 +394,6 @@ def f1_chat():
         if msg: GroupMessage(group_id=user.group_id, sender_id=user.hunter_id, sender_name=user.username, message=msg).save()
     return redirect(url_for('meeting_room'))
 
-# 🚀 التصويت المرئي لنمط (Among Us)
 @app.route('/f1_vote/<int:target_id>', methods=['POST'])
 @login_required
 def f1_vote(target_id):
@@ -820,70 +816,100 @@ def admin_panel():
     settings = GlobalSettings.objects(setting_name='main_config').first()
     if request.method == 'POST':
         act = request.form.get('action')
-        if act == 'start_floor1':
-            active_users = list(User.objects(status='active', hunter_id__ne=1000)); random.shuffle(active_users)
-            group_size = int(request.form.get('group_size', 5)); group_id = 1
-            for i in range(0, len(active_users), group_size):
-                members = active_users[i:i + group_size]
-                if members:
-                    cursed_idx = random.randint(0, len(members) - 1)
-                    for j, m in enumerate(members): m.update(set__group_id=group_id, set__is_cursed=(j==cursed_idx), set__current_room='الساحة', set__f1_has_voted=False, set__f1_votes_received=0)
-                    group_id += 1
-            GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_mode_active=True, set__floor1_move_cooldown=int(request.form.get('move_cooldown', 30)), set__floor1_meeting_active=False); flash('بدأ الطابق 1!', 'success')
-        elif act == 'end_floor1_meeting':
-            process_f1_meeting_end(settings); flash('انتهى الاجتماع وتم الحكم!', 'success')
-        elif act == 'eliminate_player':
-            u = User.objects(id=request.form.get('target_id')).first()
-            if u:
-                u.update(set__status='eliminated', set__freeze_reason='طُرد بتصويت الإدارة'); flash(f'تم طرد {u.username}!', 'success')
-                if getattr(u, 'is_cursed', False): GroupMessage(group_id=u.group_id, sender_name="النظام", message="طُرد الملعون من الإدارة!", is_system_msg=True).save(); User.objects(group_id=u.group_id, status='active').update(set__zone='الطابق 2')
-        elif act == 'setup_maintenance':
-            dur = int(request.form.get('m_duration') or 0)
-            if dur > 0: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=True, set__maintenance_until=datetime.utcnow() + timedelta(minutes=dur), set__maintenance_pages=request.form.getlist('m_pages'))
-            else: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=False, set__maintenance_pages=[])
-            flash('تم تفعيل إعدادات الصيانة!', 'success')
-        elif act == 'update_home_settings':
-            GlobalSettings.objects(setting_name='main_config').update_one(set__home_title=request.form.get('home_title', 'البوابة'), set__global_news_active=bool(request.form.get('global_news_active')), set__global_news_text=request.form.get('global_news_text', ''))
-            file = request.files.get('banner_file')
-            if file and file.filename != '': GlobalSettings.objects(setting_name='main_config').update_one(set__banner_url=f"data:{file.content_type};base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}")
-            flash('تم تحديث الواجهة والبانر!', 'success')
-        elif act == 'update_nav_names':
-            GlobalSettings.objects(setting_name='main_config').update_one(set__nav_home=request.form.get('nav_home', 'الرئيسية'), set__nav_profile=request.form.get('nav_profile', 'هويتي'), set__nav_friends=request.form.get('nav_friends', 'التحالفات'), set__nav_news=request.form.get('nav_news', 'المراسيم'), set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش'), set__nav_store=request.form.get('nav_store', 'السوق المظلم'), set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم'), set__nav_decs=request.form.get('nav_decs', 'التصريحات'), set__nav_grave=request.form.get('nav_grave', 'المقبرة'))
-            flash('تم تحديث أسماء القائمة!', 'success')
+        
+        if act == 'toggle_gates':
+            if getattr(settings, 'gates_mode_active', False):
+                GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=False); flash('تم إيقاف البوابات.', 'success')
+            else:
+                gates_hours = int(request.form.get('gates_hours') or 0); g_end = datetime.utcnow() + timedelta(hours=gates_hours) if gates_hours > 0 else None
+                GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=True, set__gates_end_time=g_end, set__gates_description=request.form.get('desc', ''), set__gate_1_name=request.form.get('g1', ''), set__gate_2_name=request.form.get('g2', ''), set__gate_3_name=request.form.get('g3', ''))
+                flash('تم فتح البوابات!', 'success')
+        
+        elif act == 'toggle_floor1':
+            if getattr(settings, 'floor1_mode_active', False):
+                GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_mode_active=False); flash('تم إيقاف الطابق الأول.', 'success')
+            else:
+                active_users = list(User.objects(status='active', hunter_id__ne=1000)); random.shuffle(active_users)
+                group_size = int(request.form.get('group_size', 5)); group_id = 1
+                for i in range(0, len(active_users), group_size):
+                    members = active_users[i:i + group_size]
+                    if members:
+                        cursed_idx = random.randint(0, len(members) - 1)
+                        for j, m in enumerate(members): m.update(set__group_id=group_id, set__is_cursed=(j==cursed_idx), set__current_room='الساحة', set__f1_has_voted=False, set__f1_votes_received=0)
+                        group_id += 1
+                GlobalSettings.objects(setting_name='main_config').update_one(set__floor1_mode_active=True, set__floor1_move_cooldown=int(request.form.get('move_cooldown', 30)), set__floor1_meeting_active=False); flash('بدأ الطابق الأول ووزعت اللعنات!', 'success')
+        
         elif act == 'toggle_war':
             new_state = not getattr(settings, 'war_mode', False); war_hours = int(request.form.get('war_hours') or 0)
             end_time = datetime.utcnow() + timedelta(hours=war_hours) if war_hours > 0 and new_state else None
             GlobalSettings.objects(setting_name='main_config').update_one(set__war_mode=new_state, set__war_end_time=end_time)
             if not new_state: User.objects(status='active').update(set__health=100)
-            flash('تغيرت حالة الطابق الثاني!', 'success')
+            flash('تغيرت حالة الحرب الشاملة!', 'success')
+            
+        elif act == 'toggle_floor3': 
+            new_state = not getattr(settings, 'floor3_mode_active', False); vote_hours = int(request.form.get('vote_hours') or 0)
+            GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=new_state, set__vote_end_time=datetime.utcnow() + timedelta(hours=vote_hours) if vote_hours > 0 and new_state else None, set__vote_top_n=int(request.form.get('top_n', 5)))
+            flash('تغيرت حالة المحكمة!', 'success')
+            
         elif act == 'toggle_final_battle': 
             new_state = not getattr(settings, 'final_battle_mode', False)
             if new_state:
                 emp_hp = int(request.form.get('emperor_hp') or 100000)
                 User.objects(hunter_id=1000).update(set__health=emp_hp)
             GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=new_state)
-            flash('تغيرت حالة المعركة الأخيرة وتم ضبط الـ HP!', 'success')
-        elif act == 'add_news': 
-            News(title=request.form.get('title'), content=request.form.get('content'), category='puzzle' if request.form.get('puzzle_type') != 'none' else 'news', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points') or 0), max_winners=int(request.form.get('max_winners') or 1)).save()
-            flash('تم الإصدار!', 'success')
-        elif act == 'bulk_delete_news':
-            for nid in request.form.getlist('selected_news'):
-                try: News.objects(id=nid).delete()
-                except: pass
-            flash('تم حذف المنشورات المحددة!', 'success')
+            flash('تغيرت حالة المعركة الأخيرة!', 'success')
+
         elif act == 'add_standalone_puzzle':
             cat = request.form.get('trap_category'); eff = request.form.get('trap_effect'); ans = request.form.get('puzzle_answer')
             News(title="كيان مخفي", content="خفي", category='hidden', puzzle_type=f"{cat}_{eff}", puzzle_answer=ans, reward_points=int(request.form.get('reward_points') or 0), trap_penalty_points=int(request.form.get('trap_penalty') or 0), reward_item=request.form.get('reward_item', ''), trap_duration_minutes=int(request.form.get('trap_duration') or 0), max_winners=int(request.form.get('max_winners') or 1)).save()
             if cat == 'ghost': User(hunter_id=int(ans), username=f"شبح_{ans}", password_hash="dummy", role='ghost', status='active').save()
             flash('تم زرع الفخ/الشبح بذكاء!', 'success')
+            
+        elif act == 'end_floor1_meeting':
+            process_f1_meeting_end(settings); flash('انتهى الاجتماع وتم الحكم!', 'success')
+            
+        elif act == 'eliminate_player':
+            u = User.objects(id=request.form.get('target_id')).first()
+            if u:
+                u.update(set__status='eliminated', set__freeze_reason='طُرد بتصويت الإدارة'); flash(f'تم طرد {u.username}!', 'success')
+                if getattr(u, 'is_cursed', False): GroupMessage(group_id=u.group_id, sender_name="النظام", message="طُرد الملعون من الإدارة!", is_system_msg=True).save(); User.objects(group_id=u.group_id, status='active').update(set__zone='الطابق 2')
+                
+        elif act == 'setup_maintenance':
+            dur = int(request.form.get('m_duration') or 0)
+            if dur > 0: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=True, set__maintenance_until=datetime.utcnow() + timedelta(minutes=dur), set__maintenance_pages=request.form.getlist('m_pages'))
+            else: GlobalSettings.objects(setting_name='main_config').update_one(set__maintenance_mode=False, set__maintenance_pages=[])
+            flash('تم تفعيل إعدادات الصيانة!', 'success')
+            
+        elif act == 'update_home_settings':
+            GlobalSettings.objects(setting_name='main_config').update_one(set__home_title=request.form.get('home_title', 'البوابة'), set__global_news_active=bool(request.form.get('global_news_active')), set__global_news_text=request.form.get('global_news_text', ''))
+            file = request.files.get('banner_file')
+            if file and file.filename != '': GlobalSettings.objects(setting_name='main_config').update_one(set__banner_url=f"data:{file.content_type};base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}")
+            flash('تم تحديث الواجهة والبانر!', 'success')
+            
+        elif act == 'update_nav_names':
+            GlobalSettings.objects(setting_name='main_config').update_one(set__nav_home=request.form.get('nav_home', 'الرئيسية'), set__nav_profile=request.form.get('nav_profile', 'هويتي'), set__nav_friends=request.form.get('nav_friends', 'التحالفات'), set__nav_news=request.form.get('nav_news', 'المراسيم'), set__nav_puzzles=request.form.get('nav_puzzles', 'النقوش'), set__nav_store=request.form.get('nav_store', 'السوق المظلم'), set__nav_altar=request.form.get('nav_altar', 'مذبح الطلاسم'), set__nav_decs=request.form.get('nav_decs', 'التصريحات'), set__nav_grave=request.form.get('nav_grave', 'المقبرة'))
+            flash('تم تحديث أسماء القائمة!', 'success')
+            
+        elif act == 'add_news': 
+            News(title=request.form.get('title'), content=request.form.get('content'), category='puzzle' if request.form.get('puzzle_type') != 'none' else 'news', puzzle_type=request.form.get('puzzle_type'), puzzle_answer=request.form.get('puzzle_answer'), reward_points=int(request.form.get('reward_points') or 0), max_winners=int(request.form.get('max_winners') or 1)).save()
+            flash('تم الإصدار!', 'success')
+            
+        elif act == 'bulk_delete_news':
+            for nid in request.form.getlist('selected_news'):
+                try: News.objects(id=nid).delete()
+                except: pass
+            flash('تم حذف المنشورات المحددة!', 'success')
+            
         elif act == 'delete_trap':
             try: News.objects(id=request.form.get('trap_id')).delete(); flash('تم حذف الكيان من المتاهة.', 'success')
             except: pass
+            
         elif act == 'add_store_item':
             im = ''; file = request.files.get('item_image')
             if file: im = f"data:{file.content_type};base64,{base64.b64encode(compress_image(file.read())).decode('utf-8')}"
             StoreItem(name=request.form.get('item_name'), description=request.form.get('item_desc'), price=int(request.form.get('item_price') or 0), item_type=request.form.get('item_type'), effect_amount=int(request.form.get('effect_amount') or 0), is_mirage=bool(request.form.get('is_mirage')), mirage_message=request.form.get('mirage_message', ''), is_luck=bool(request.form.get('is_luck')), luck_min=int(request.form.get('luck_min') or 0), luck_max=int(request.form.get('luck_max') or 0), image=im).save()
             flash('تمت إضافة الأداة للسوق!', 'success')
+            
         elif act == 'add_spell': 
             spell_word = request.form.get('spell_word')
             if SpellConfig.objects(spell_word=spell_word).first():
@@ -892,28 +918,25 @@ def admin_panel():
                 spell_hours = int(request.form.get('spell_hours') or 0); exp_time = datetime.utcnow() + timedelta(hours=spell_hours) if spell_hours > 0 else None
                 SpellConfig(spell_word=spell_word, spell_type=request.form.get('spell_type'), effect_value=int(request.form.get('effect_value') or 0), is_percentage=bool(request.form.get('is_percentage')), item_name=request.form.get('item_name', ''), max_uses=int(request.form.get('max_uses') or 0), expires_at=exp_time).save()
                 flash('تم زرع التعويذة السحرية بنجاح!', 'success')
+                
         elif act == 'delete_spell':
             try: SpellConfig.objects(id=request.form.get('spell_id')).delete(); flash('تم إبطال التعويذة!', 'success')
             except: pass
+            
         elif act == 'bulk_action':
             bt = request.form.get('bulk_type')
             for uid in request.form.getlist('selected_users'):
                 u = User.objects(id=uid).first()
                 if u and getattr(u, 'hunter_id', 0) != 1000:
                     if bt == 'hard_delete':
-                        News.objects(author=u.username).delete() # مسح الأثر نهائياً
+                        News.objects(author=u.username).delete() 
                         u.delete()
                     elif bt == 'activate': u.update(set__status='active', set__health=100)
                     elif bt == 'eliminate': u.update(set__status='eliminated', set__freeze_reason='بأمر الإمبراطور')
                     elif bt == 'freeze': u.update(set__status='frozen')
                     elif bt == 'move_zone': u.update(set__zone=request.form.get('bulk_zone', 'الطابق 1'))
             flash('تم تنفيذ الأمر الجماعي!', 'success')
-        elif act == 'setup_gates': 
-            gates_hours = int(request.form.get('gates_hours') or 0); g_end = datetime.utcnow() + timedelta(hours=gates_hours) if gates_hours > 0 else None
-            GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=True, set__gates_end_time=g_end, set__gates_description=request.form.get('desc', ''), set__gate_1_name=request.form.get('g1', ''), set__gate_2_name=request.form.get('g2', ''), set__gate_3_name=request.form.get('g3', ''))
-            flash('تم تفعيل البوابات!', 'success')
-        elif act == 'close_gates_mode': 
-            GlobalSettings.objects(setting_name='main_config').update_one(set__gates_mode_active=False); flash('تم إغلاق البوابات!', 'success')
+            
         elif act == 'judge_gates':
             fates = {1: request.form.get('fate_1'), 2: request.form.get('fate_2'), 3: request.form.get('fate_3')}
             for u in User.objects(gate_status='waiting', status__in=['active', 'inactive']):
@@ -922,21 +945,21 @@ def admin_panel():
                 elif fate == 'kill': u.update(set__status='eliminated', set__freeze_reason='البوابة التهمته')
                 elif fate == 'test': u.update(set__gate_status='testing')
             flash('تم إطلاق الحكم على البوابات!', 'success')
+            
         elif act == 'judge_test_user':
             u = User.objects(id=request.form.get('user_id')).first()
             if u: 
                 if request.form.get('decision') == 'pass': u.update(set__gate_status='passed', set__zone='الطابق 1')
                 else: u.update(set__status='eliminated', set__freeze_reason='فشل في الاختبار')
             flash('تم حكم الاختبار!', 'success')
-        elif act == 'toggle_floor3': 
-            new_state = not getattr(settings, 'floor3_mode_active', False); vote_hours = int(request.form.get('vote_hours') or 0)
-            GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_mode_active=new_state, set__vote_end_time=datetime.utcnow() + timedelta(hours=vote_hours) if vote_hours > 0 and new_state else None, set__vote_top_n=int(request.form.get('top_n', 5)))
-            flash('تغيرت حالة المحكمة!', 'success')
+            
         elif act == 'update_war_settings': 
             GlobalSettings.objects(setting_name='main_config').update_one(set__bleed_rate_minutes=int(request.form.get('bleed_rate_minutes') or 60), set__bleed_amount=int(request.form.get('bleed_amount') or 1), set__war_kill_target=int(request.form.get('war_kill_target') or 15), set__attack_cooldown_minutes=int(request.form.get('attack_cooldown_minutes') or 5), set__safe_time_minutes=int(request.form.get('safe_time_minutes') or 120))
             flash('تم حفظ إعدادات الحرب!', 'success')
+            
         elif act == 'update_poneglyph': 
             GlobalSettings.objects(setting_name='main_config').update_one(set__poneglyph_text=request.form.get('poneglyph_text', '')); flash('تم تعديل البونغليف بنجاح!', 'success')
+            
         return redirect(url_for('admin_panel'))
     
     users_query = User.objects(hunter_id__ne=1000)
