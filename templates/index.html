@@ -448,8 +448,7 @@
     <div class="arena-container" style="border-color: #d35400;">
         <h2 class="arena-title" style="color: #e67e22;">🚪 اختيار البوابات 🚪</h2>
         <div id="gates_timer" class="timer-box">يتم حساب الوقت...</div>
-        <script>startTimer("{{ settings.gates_end_time.isoformat() }}Z", "gates_timer");</script>
-
+        <script>startTimer("{{ meeting_info.end_time.isoformat() if meeting_info and meeting_info.end_time else '' }}", "f1_timer");</script>
         <p style="color: #ddd; font-size: 16px; margin-bottom: 30px;">{{ settings.gates_description }}</p>
 
         {% if current_user and current_user.status == 'active' and current_user.chosen_gate == 0 %}
