@@ -257,11 +257,11 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn btn-f1" onclick="toggleMod('m_floor1')">الطابق الأول (الاستنتاج) <span>▼</span></button>
-<div id="m_floor1" class="mod-content">
-    <form action="/admin" method="POST" style="margin-bottom: 20px;">
+<button type="button" class="mod-btn btn-f1" onclick="toggleMod('m_f1')">الطابق الأول (الاستنتاج) <span>▼</span></button>
+<div id="m_f1" class="mod-content">
+    <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor1">
-        <label style="color:#aaa;">حجم كل مجموعة:</label><input type="number" name="group_size" value="5" class="form-control" {% if settings and settings.floor1_mode_active %}disabled{% else %}required{% endif %}>
+        <input type="number" name="group_size" value="5" class="form-control" placeholder="حجم المجموعة" {% if settings and settings.floor1_mode_active %}disabled{% else %}required{% endif %}>
         <div style="display: flex; gap: 10px;">
             <input type="number" name="move_cooldown" value="30" class="form-control" placeholder="تبريد التنقل" {% if not settings.floor1_mode_active %}required{% endif %}>
             <input type="number" name="kill_cooldown" value="60" class="form-control" placeholder="تبريد القتل" {% if not settings.floor1_mode_active %}required{% endif %}>
@@ -273,15 +273,18 @@
             <button type="submit" class="btn-gold">بدء وتوزيع اللعنات ▶️</button>
         {% endif %}
     </form>
-    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-        <form action="/admin" method="POST" style="flex: 1;"><input type="hidden" name="action" value="end_floor1_meeting"><button type="submit" class="btn-danger" style="background:#e74c3c; color:#fff;" onclick="return confirm('إنهاء الاجتماع وطرد من تلقى الأصوات؟');">إنهاء الاجتماع الحالي يدوياً</button></form>
-        <form action="/admin" method="POST" style="flex: 1; display:flex; gap:5px;"><input type="hidden" name="action" value="eliminate_player"><input type="text" name="target_id" placeholder="ID المطرود..." class="form-control" style="margin:0;" required><button type="submit" class="btn-danger" style="margin:0; background:#e74c3c; color:#fff;">إعدام</button></form>
-    </div>
+    <hr style="border-color:#333; margin:20px 0;">
+    <strong style="color:var(--gold-main);">إلغاء اجتماع فرعي:</strong>
+    <form action="/admin" method="POST" style="display:flex; gap:5px; margin-top: 10px;">
+        <input type="hidden" name="action" value="cancel_f1_meeting">
+        <input type="number" name="group_id" placeholder="ID المجموعة" class="form-control" style="margin:0;" required>
+        <button type="submit" class="btn-danger" style="margin:0; width:auto; white-space:nowrap;">إلغاء الاجتماع</button>
+    </form>
 </div>
 
 <button type="button" class="mod-btn btn-f2" onclick="toggleMod('m8_war')">الطابق الثاني (الحرب) <span>▼</span></button>
 <div id="m8_war" class="mod-content">
-    <form action="/admin" method="POST" style="margin-bottom: 15px;">
+    <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="المدة بالساعات" class="form-control" {% if settings and settings.war_mode %}disabled{% else %}required{% endif %}>
         {% if settings and settings.war_mode %}
@@ -290,7 +293,7 @@
             <button type="submit" class="btn-gold">إشعال الحرب ▶️</button>
         {% endif %}
     </form>
-    <form action="/admin" method="POST" style="border-top: 1px dashed #333; padding-top: 15px;">
+    <form action="/admin" method="POST" style="border-top: 1px dashed #333; padding-top: 15px; margin-top: 15px;">
         <input type="hidden" name="action" value="update_war_settings">
         <div style="display:flex; gap:10px;">
             <div style="flex:1"><label style="color:#aaa; font-size:12px;">تكرار النزيف (دقائق):</label><input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes if settings else 60 }}" class="form-control" required></div>
@@ -305,17 +308,24 @@
     </form>
 </div>
 
-<button type="button" class="mod-btn btn-f3" onclick="toggleMod('m9_floor3')">الطابق الثالث (المحكمة) <span>▼</span></button>
-<div id="m9_floor3" class="mod-content">
+<button type="button" class="mod-btn btn-f3" onclick="toggleMod('m_f3')">الطابق الثالث (المحكمة) <span>▼</span></button>
+<div id="m_f3" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_floor3">
-        <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control" {% if settings and settings.floor3_mode_active %}disabled{% else %}required{% endif %}>
-        <input type="number" name="top_n" placeholder="عدد المتأهلين" class="form-control" value="{{ settings.vote_top_n if settings else 5 }}" {% if settings and settings.floor3_mode_active %}disabled{% endif %}>
+        <input type="number" name="vote_hours" placeholder="المدة (ساعات)" class="form-control" {% if settings and (settings.floor3_mode_active or settings.floor3_paused) %}disabled{% endif %}>
+        <input type="number" name="top_n" placeholder="عدد المتأهلين" class="form-control" value="{{ settings.vote_top_n if settings else 5 }}" {% if settings and (settings.floor3_mode_active or settings.floor3_paused) %}disabled{% endif %}>
+        
         {% if settings and settings.floor3_mode_active %}
-            <button type="submit" class="btn-danger">إيقاف المحكمة الكبرى 🛑</button>
+            <button type="submit" class="btn-danger" style="background:#e67e22; border-color:#e67e22;">إيقاف مؤقت (تجميد الوقت) ⏸️</button>
+        {% elif settings and settings.floor3_paused %}
+            <button type="submit" class="btn-gold" style="background:#2ecc71; border-color:#2ecc71; color:#000;">استئناف المحكمة ▶️</button>
         {% else %}
             <button type="submit" class="btn-gold">بدء التصويت ▶️</button>
         {% endif %}
+    </form>
+    <form action="/admin" method="POST" style="margin-top:10px;">
+        <input type="hidden" name="action" value="reset_floor3">
+        <button type="submit" class="btn-danger" onclick="return confirm('هذا سيحذف جميع أصوات الرحالة ويبدأ من الصفر! متأكد؟');">تصفير الأصوات وإلغاء المحكمة 🛑</button>
     </form>
 </div>
 
@@ -323,8 +333,7 @@
 <div id="m10_final" class="mod-content">
     <form action="/admin" method="POST">
         <input type="hidden" name="action" value="toggle_final_battle">
-        <label style="color:#aaa;">تحديد قوة الإمبراطور (HP):</label>
-        <input type="number" name="emperor_hp" placeholder="مثال: 100000" value="100000" class="form-control" {% if settings and settings.final_battle_mode %}disabled{% endif %}>
+        <input type="number" name="emperor_hp" placeholder="قوة الإمبراطور (HP)" value="100000" class="form-control" {% if settings and settings.final_battle_mode %}disabled{% endif %}>
         {% if settings and settings.final_battle_mode %}
             <button type="submit" class="btn-danger">إيقاف المعركة الأخيرة 🛑</button>
         {% else %}
@@ -335,3 +344,4 @@
 
 <script> function toggleMod(id) { var el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; } </script>
 {% endblock %}
+
