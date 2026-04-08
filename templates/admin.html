@@ -73,7 +73,7 @@
         <input type="hidden" name="action" value="bulk_action">
         <div style="overflow-x: auto;">
             <table>
-                <tr><th>تحديد</th><th>ID</th><th>الاسم</th><th>الحالة</th><th>دنانير</th><th>HP</th><th>الطابق</th><th>خيارات</th></tr>
+                <tr><th>تحديد</th><th>ID</th><th>الاسم</th><th>الحالة</th><th>دنانير</th><th>HP</th><th>الطابق</th><th>خيارات الإدارة</th></tr>
                 {% for u in users %}
                 <tr>
                     <td><input type="checkbox" name="selected_users" value="{{ u.id }}"></td>
@@ -284,7 +284,7 @@
 
 <button type="button" class="mod-btn btn-f2" onclick="toggleMod('m8_war')">الطابق الثاني (الحرب) <span>▼</span></button>
 <div id="m8_war" class="mod-content">
-    <form action="/admin" method="POST">
+    <form action="/admin" method="POST" style="margin-bottom: 15px;">
         <input type="hidden" name="action" value="toggle_war">
         <input type="number" name="war_hours" placeholder="المدة بالساعات" class="form-control" {% if settings and settings.war_mode %}disabled{% else %}required{% endif %}>
         {% if settings and settings.war_mode %}
@@ -344,4 +344,3 @@
 
 <script> function toggleMod(id) { var el = document.getElementById(id); el.style.display = (el.style.display === "block") ? "none" : "block"; } </script>
 {% endblock %}
-
