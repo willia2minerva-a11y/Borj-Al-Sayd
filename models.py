@@ -4,16 +4,7 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    meta = {
-        'strict': False,
-        'indexes': [
-            'hunter_id', 'username', 'status', 'chosen_gate',
-            ('status', 'role'), 'last_active', 'gate_status',
-            'friends', 'friend_requests', 'created_at',
-            'group_id', 'current_room'
-        ]
-    }
-    
+    meta = {'strict': False, 'indexes': ['hunter_id', 'username', 'status', 'chosen_gate', ('status', 'role'), 'last_active', 'gate_status', 'friends', 'friend_requests', 'created_at', 'group_id', 'current_room']}
     hunter_id = db.IntField(unique=True)
     username = db.StringField(unique=True, required=True)
     password_hash = db.StringField(required=True)
@@ -37,8 +28,11 @@ class User(db.Document):
     freeze_reason = db.StringField(default='')
     chosen_gate = db.IntField(default=0)
     gate_status = db.StringField(default='')
-    survival_votes = db.IntField(default=0)
+    
+    survival_votes = db.FloatField(default=0.0) 
     has_voted = db.BooleanField(default=False)
+    f3_votes_cast = db.DictField(default=dict) 
+    
     quicksand_lock_until = db.DateTimeField()
     tajis_eye_until = db.DateTimeField()
     unlocked_lore_room = db.BooleanField(default=False)
@@ -71,6 +65,7 @@ class User(db.Document):
     used_vent = db.BooleanField(default=False)
     f1_has_voted = db.BooleanField(default=False)
     f1_votes_received = db.IntField(default=0)
+    f1_tasks = db.ListField(db.DictField(), default=list)
 
 class News(db.Document):
     meta = {'strict': False}
@@ -146,15 +141,18 @@ class GlobalSettings(db.Document):
     gate_3_name = db.StringField(default='بوابة 3')
     gates_selection_locked = db.BooleanField(default=False)
     gates_test_message = db.StringField(default='الاختبار')
+    
     floor3_mode_active = db.BooleanField(default=False)
+    floor3_paused = db.BooleanField(default=False) 
+    floor3_time_left = db.IntField(default=0) 
+    floor3_results_active = db.BooleanField(default=False) 
     vote_end_time = db.DateTimeField()
     vote_top_n = db.IntField(default=5)
     poneglyph_text = db.StringField(default='')
     dead_count = db.IntField(default=0)
 
     floor1_mode_active = db.BooleanField(default=False)
-    floor1_meeting_active = db.BooleanField(default=False)
-    floor1_meeting_end_time = db.DateTimeField()
+    f1_active_meetings = db.DictField(default=dict) 
     floor1_move_cooldown = db.IntField(default=30)
     floor1_kill_cooldown = db.IntField(default=60)
     floor1_gems_target = db.IntField(default=10)
@@ -191,4 +189,3 @@ class GroupMessage(db.Document):
     message = db.StringField(required=True)
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
-
