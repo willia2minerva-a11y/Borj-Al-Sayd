@@ -7,24 +7,115 @@
 {% if winner_to_show %}
 <style>
     body, html { overflow: hidden !important; width: 100vw; height: 100vh; margin: 0; padding: 0; background: #000; }
-    .mobile-header, .sidebar, .sidebar-overlay { display: none !important; }
+    .mobile-header, .sidebar, .sidebar-overlay, .main-content-header { display: none !important; }
     .main-content { padding: 0 !important; margin: 0 !important; width: 100vw !important; height: 100vh !important; }
-    .victory-epic-container { position: fixed; inset: 0; background: #050403; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
-    .fire-sparks { position: absolute; inset: 0; background-image: radial-gradient(2.5px 2.5px at 20px 30px, #d4af37, transparent), radial-gradient(2px 2px at 80px 70px, #e74c3c, transparent); background-size: 400px 400px; animation: riseSparks 15s linear infinite; opacity: 0.7; }
+
+    .victory-epic-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #050403; z-index: 9999999; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; direction: rtl; }
+
+    .ancient-wall { position: absolute; inset: 0; background-color: #0c0a08; background-image: linear-gradient(rgba(212, 175, 55, 0.05) 2px, transparent 2px), linear-gradient(90deg, rgba(212, 175, 55, 0.05) 2px, transparent 2px); background-size: 120px 120px; z-index: 1; opacity: 0.6; }
+    .wall-vignette { position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 10%, #000 90%); z-index: 2; }
+    .fire-sparks { position: absolute; inset: 0; z-index: 3; background-image: radial-gradient(2.5px 2.5px at 20px 30px, #d4af37, transparent), radial-gradient(2px 2px at 80px 70px, #e74c3c, transparent), radial-gradient(3px 3px at 150px 180px, #f1c40f, transparent); background-size: 400px 400px; animation: riseSparks 15s linear infinite; opacity: 0.7; }
     @keyframes riseSparks { 0% { background-position: 0 0; } 100% { background-position: 0 -800px; } }
-    .winner-name-epic { color: #fff; font-size: 42px; font-weight: 900; margin: 0 0 30px 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); }
+
+    .scene-symbols { position: relative; z-index: 10; color: rgba(212,175,55,0.8); font-size: 70px; font-family: monospace; font-weight: bold; text-shadow: 0 0 20px rgba(212,175,55,0.5); letter-spacing: 15px; animation: shatterEffect 3.5s forwards; }
+    @keyframes shatterEffect { 0% { opacity: 0; filter: blur(10px); } 30% { opacity: 1; filter: blur(0); } 70% { opacity: 1; transform: scale(1); filter: blur(0); } 100% { opacity: 0; transform: scale(2); filter: blur(15px); letter-spacing: 60px; display: none; } }
+
+    .scene-monologue { position: relative; z-index: 10; text-align: center; max-width: 90%; color: #fff; font-size: 28px; line-height: 1.8; text-shadow: 0 0 15px #000, 0 0 5px var(--gold-main); font-weight: bold; display: none; padding: 20px; }
+    .blinking-caret { display: inline-block; width: 4px; height: 1em; background-color: var(--gold-main); margin-right: 5px; vertical-align: text-bottom; animation: blinkCaret 0.8s step-end infinite; }
+    @keyframes blinkCaret { from, to { opacity: 1; } 50% { opacity: 0; } }
+
+    .scene-winner { position: relative; z-index: 10; display: none; flex-direction: column; align-items: center; width: 100%; animation: playerFadeIn 1.5s forwards; }
+    @keyframes playerFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .winner-avatar-epic { width: 180px; height: 180px; border-radius: 50%; border: 6px solid var(--gold-main); box-shadow: 0 0 60px rgba(212,175,55,0.5); object-fit: cover; animation: playerArrive 1.5s cubic-bezier(0.17, 0.88, 0.32, 1.1) forwards; transform: translateY(100vh); opacity: 0; margin-bottom: 20px;}
+    @keyframes playerArrive { 0% { transform: translateY(100vh); opacity: 0; } 70% { transform: translateY(-20px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+    .winner-name-epic { color: #fff; font-size: 38px; font-weight: 900; margin: 0 0 20px 0; text-shadow: 0 0 20px rgba(212,175,55,0.8); animation: fadeInText 1s 1.5s forwards; opacity: 0; }
+    
+    .stats-container-epic { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; width: 90%; max-width: 400px; animation: fadeInText 1s 2s forwards; opacity: 0;}
+    @keyframes fadeInText { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .stat-card-epic { background: rgba(17,13,9,0.85); border: 1px solid var(--gold-dark); border-radius: 12px; padding: 15px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; box-shadow: inset 0 0 15px rgba(0,0,0,0.9);}
+    .stat-icon { font-size: 26px; }
+    .stat-value { color: #fff; font-size: 26px; font-weight: 900; margin: 0; font-family: monospace; }
+    .stat-label { color: var(--gold-light); font-size: 13px; margin: 0; font-weight: bold;}
+
+    .btn-exit-test { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: #110d09; border: 2px solid #e74c3c; color: #e74c3c; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; z-index: 40; animation: fadeInText 1s 3s forwards; opacity: 0;}
 </style>
+
 <div class="victory-epic-container">
+    <div class="ancient-wall"></div>
+    <div class="wall-vignette"></div>
     <div class="fire-sparks"></div>
-    <h1 style="color:var(--gold-main); font-size:50px; z-index:10; margin-bottom:10px;">👑 الناجي الأعظم 👑</h1>
-    <img src="/avatar/{{ winner_to_show.hunter_id }}" style="width:200px; height:200px; border-radius:50%; border:5px solid var(--gold-main); z-index:10;" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-    <h2 class="winner-name-epic" style="z-index:10;">{{ winner_to_show.username }}</h2>
-    {% if test_winner %}<a href="/admin" style="z-index:20; color:#e74c3c; border:1px solid #e74c3c; padding:10px 20px; text-decoration:none; border-radius:8px; margin-top:20px;">إنهاء التجربة</a>{% endif %}
+    <div class="scene-symbols" id="sceneSymbols">Ψ Ω Δ Σ Φ Ξ Π</div>
+
+    <div class="scene-monologue" id="sceneMonologue">
+        <div><span id="typewriterText"></span><span class="blinking-caret"></span></div>
+    </div>
+
+    <div class="scene-winner" id="sceneWinner">
+        <img src="/avatar/{{ winner_to_show.hunter_id }}" class="winner-avatar-epic" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+        <h1 class="winner-name-epic">{{ winner_to_show.username }}</h1>
+        <div class="stats-container-epic">
+            <div class="stat-card-epic"><span class="stat-icon">💀</span><p class="stat-value">{{ winner_to_show.stats_ghosts_caught or 0 }}</p><p class="stat-label">أرواح أزهقها</p></div>
+            <div class="stat-card-epic"><span class="stat-icon">🪙</span><p class="stat-value" style="color:#f1c40f;">{{ winner_to_show.points }}</p><p class="stat-label">ثروة جمعها</p></div>
+            <div class="stat-card-epic"><span class="stat-icon">🧠</span><p class="stat-value" style="color:#1abc9c;">{{ winner_to_show.intelligence_points }}</p><p class="stat-label">دهاء وحكمة</p></div>
+            <div class="stat-card-epic"><span class="stat-icon">🤝</span><p class="stat-value" style="color:#3498db;">{{ winner_to_show.loyalty_points }}</p><p class="stat-label">شرف ووفاء</p></div>
+        </div>
+    </div>
+    {% if test_winner %}<a href="/admin" class="btn-exit-test">إنهاء وضع التجربة</a>{% endif %}
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const sentences = [
+            "من الذي كسر قيود المتاهة ؟",
+            "من الذي تخطى جميع العراقيل والفخاخ ؟",
+            "من تفوق على الجميع واعتلى قمة البرج ؟",
+            "ما هو إلا سيد المتاهة الجديد :"
+        ];
+        const sceneSymbols = document.getElementById('sceneSymbols');
+        const sceneMonologue = document.getElementById('sceneMonologue');
+        const typewriterText = document.getElementById('typewriterText');
+        const sceneWinner = document.getElementById('sceneWinner');
+
+        setTimeout(() => { 
+            sceneSymbols.style.display = 'none'; 
+            sceneMonologue.style.display = 'flex'; 
+            startTyping(); 
+        }, 3600); 
+
+        let sentenceIndex = 0;
+        function startTyping() {
+            if (sentenceIndex < sentences.length) {
+                let currentSentence = sentences[sentenceIndex];
+                let charIndex = 0;
+                typewriterText.innerHTML = ""; 
+                
+                function typeChar() {
+                    if (charIndex < currentSentence.length) {
+                        typewriterText.innerHTML += currentSentence.charAt(charIndex);
+                        charIndex++;
+                        setTimeout(typeChar, 100); 
+                    } else {
+                        setTimeout(() => {
+                            sentenceIndex++;
+                            if (sentenceIndex === sentences.length) {
+                                setTimeout(() => {
+                                    sceneMonologue.style.display = 'none';
+                                    sceneWinner.style.display = 'flex';
+                                }, 800);
+                            } else {
+                                startTyping();
+                            }
+                        }, 2000); 
+                    }
+                }
+                typeChar();
+            }
+        }
+    });
+</script>
 
 {% else %}
 <style>
-    /* تنسيقات عامة للساحات */
     .arena-container { background: #050403; border: 2px solid var(--gold-dark); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(0,0,0,0.8); text-align: center; }
     .arena-title { color: var(--gold-main); margin-top: 0; font-size: 28px; text-shadow: 0 0 10px rgba(212,175,55,0.5); border-bottom: 1px dashed #333; padding-bottom: 15px;}
     .timer-box { font-family: monospace; font-size: 24px; color: #e74c3c; font-weight: bold; background: #111; display: inline-block; padding: 10px 20px; border-radius: 8px; border: 1px solid #e74c3c; margin-bottom: 20px; box-shadow: 0 0 15px rgba(231,76,60,0.3);}
@@ -59,48 +150,84 @@
         <h2 class="arena-title" style="color: #e74c3c;">⚔️ المعركة الأخيرة ⚔️</h2>
         <p style="color: #aaa;">الإمبراطور أمامك.. إما أن تسقطه أو تسقط المتاهة فوق رأسك!</p>
         
-        <div style="background: #110d09; padding: 20px; border-radius: 12px; border: 1px solid #332815; margin-bottom: 20px;">
-            <h3 style="color: var(--gold-main); margin: 0 0 10px 0;">👑 الإمبراطور سيفار</h3>
+        <a href="/hunter/1000" style="display: block; background: #110d09; padding: 20px; border-radius: 12px; border: 1px solid #332815; margin-bottom: 20px; text-decoration: none; transition: 0.3s;" onmouseover="this.style.borderColor='#e74c3c';" onmouseout="this.style.borderColor='#332815';">
+            <img src="/avatar/1000" style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid #e74c3c; object-fit: cover; margin-bottom: 10px;" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+            <h3 style="color: var(--gold-main); margin: 0 0 10px 0;">👑 الإمبراطور سيفار 👑</h3>
             {% set emp = emperor if emperor else None %}
             {% if emp %}
                 <div class="health-bar-bg"><div class="health-bar-fill" style="width: {{ (emp.health / 100000) * 100 }}%;">{{ emp.health }} HP</div></div>
             {% endif %}
-        </div>
+            <span style="color: #666; font-size: 12px; display: block; margin-top: 10px;">اضغط هنا لكشف أسرار الإمبراطور</span>
+        </a>
 
         {% if current_user and current_user.status == 'active' %}
         <div style="background: #110d09; padding: 20px; border-radius: 12px; border: 1px solid #332815; margin-bottom: 20px;">
             <h3 style="color: #3498db; margin: 0 0 10px 0;">🛡️ أنت ({{ current_user.username }})</h3>
             <div class="health-bar-bg"><div class="health-bar-fill" style="background: linear-gradient(90deg, #2980b9, #3498db); width: {{ current_user.health }}%;">{{ current_user.health }}%</div></div>
         </div>
-        
         <a href="/store" class="btn-epic" style="display: block; text-decoration: none;">🛒 تجهيز الأسلحة للهجوم!</a>
         {% else %}
             <h3 style="color: #e74c3c;">أنت غير مؤهل للقتال. راقب بصمت.</h3>
         {% endif %}
     </div>
 
-{% elif settings and settings.floor3_mode_active %}
+{% elif settings and settings.floor3_results_active %}
+    <div class="arena-container">
+        <h2 class="arena-title" style="color: #2ecc71;">📜 نتائج المحكمة الكبرى 📜</h2>
+        <p style="color: #ddd; margin-bottom: 20px;">الرحالة الذين تفوقوا في التصويت وحصلوا على حق العبور:</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for u in f3_users %}
+                <a href="/hunter/{{ u.hunter_id }}" style="display: flex; align-items: center; justify-content: space-between; background: #111; border: 1px solid #333; padding: 10px 20px; border-radius: 8px; text-decoration: none; transition: 0.3s;" onmouseover="this.style.borderColor='var(--gold-main)';" onmouseout="this.style.borderColor='#333';">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="color: #888; font-weight: bold; font-size: 18px;">#{{ loop.index }}</span>
+                        <img src="/avatar/{{ u.hunter_id }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                        <strong style="color: #fff; font-size: 16px;">{{ u.username }}</strong>
+                    </div>
+                    <div style="color: #2ecc71; font-weight: bold;">
+                        {{ u.survival_votes|round(1) }} صوت
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+
+{% elif settings and (settings.floor3_mode_active or settings.floor3_paused) %}
     <div class="arena-container">
         <h2 class="arena-title">⚖️ المحكمة الكبرى (الطابق 3)</h2>
-        <div id="f3_timer" class="timer-box">يتم حساب الوقت...</div>
-        <script>startTimer("{{ settings.vote_end_time.isoformat() }}Z", "f3_timer");</script>
+        {% if settings.floor3_paused %}
+            <div class="timer-box" style="color: #f1c40f; border-color: #f1c40f;">المحكمة متوقفة مؤقتاً ⏸️</div>
+        {% else %}
+            <div id="f3_timer" class="timer-box">يتم حساب الوقت...</div>
+            <script>startTimer("{{ settings.vote_end_time.isoformat() }}Z", "f3_timer");</script>
+        {% endif %}
 
-        {% if current_user and current_user.status == 'active' and not current_user.has_voted and current_user.hunter_id != 1000 %}
-            <p style="color: #ddd; margin-bottom:20px;">وزّع 100 صوت نجاة بدقة لإنقاذ 5 رحالة.</p>
-            <form action="/submit_floor3_votes" method="POST" style="max-width: 500px; margin: auto; text-align: right;">
-                {% for i in range(1, 6) %}
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <select name="target_{{ i }}" style="flex: 2; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;" required>
-                        <option value="" disabled selected>اختر الرحالة رقم {{ i }}...</option>
-                        {% for h in active_hunters %}<option value="{{ h.hunter_id }}">{{ h.username }}</option>{% endfor %}
-                    </select>
-                    <input type="number" name="amount_{{ i }}" placeholder="الأصوات" required min="1" max="96" style="flex: 1; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;">
+        {% if current_user and current_user.status == 'active' and current_user.hunter_id != 1000 %}
+            {% if not current_user.has_voted %}
+                <p style="color: #ddd; margin-bottom:20px;">وزّع 100 صوت نجاة بدقة لإنقاذ 5 رحالة.</p>
+                <form action="/submit_floor3_votes" method="POST" style="max-width: 500px; margin: auto; text-align: right;">
+                    {% for i in range(1, 6) %}
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <select name="target_{{ i }}" style="flex: 2; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;" required>
+                            <option value="" disabled selected>اختر الرحالة رقم {{ i }}...</option>
+                            {% for h in active_hunters %}<option value="{{ h.hunter_id }}">{{ h.username }}</option>{% endfor %}
+                        </select>
+                        <input type="number" name="amount_{{ i }}" placeholder="الأصوات" required min="1" max="96" style="flex: 1; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;">
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn-epic" onclick="return confirm('لا تراجع في الحكم. تأكيد التصويت؟');">تثبيت الحكم ⚖️</button>
+                </form>
+            {% else %}
+                <h3 style="color: #2ecc71; margin-bottom: 15px;">لقد أصدرت حكمك. تصويتاتك:</h3>
+                <div style="max-width: 500px; margin: auto; text-align: right; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+                    {% for tid, vdata in current_user.f3_votes_cast.items() %}
+                        <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #444; padding: 8px 0;">
+                            <span style="color: #fff;">{{ vdata.name }}</span>
+                            <span style="color: #f1c40f; font-weight: bold;">{{ vdata.amount }} صوت</span>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-                <button type="submit" class="btn-epic" onclick="return confirm('لا يمكن التراجع عن الحكم. متأكد؟');">تثبيت الحكم ⚖️</button>
-            </form>
-        {% elif current_user and current_user.has_voted %}
-            <h3 style="color: #2ecc71;">لقد أصدرت حكمك. انتظر النتيجة.</h3>
+            {% endif %}
         {% else %}
             <h3 style="color: #e74c3c;">أنت خارج نطاق المحكمة.</h3>
         {% endif %}
@@ -126,7 +253,7 @@
             </div>
             
             <div style="display: flex; gap: 10px;">
-                <a href="/friends" class="btn-epic" style="flex: 1; text-align: center; text-decoration: none; font-size: 15px; background: #2980b9; border-color: #3498db;">🎯 استهداف/تحالف</a>
+                <a href="/friends" class="btn-epic" style="flex: 1; text-align: center; text-decoration: none; font-size: 15px; background: #2980b9; border-color: #3498db;">🎯 استهداف</a>
                 <a href="/store" class="btn-epic" style="flex: 1; text-align: center; text-decoration: none; font-size: 15px; background: var(--gold-dark); border-color: var(--gold-main);">🛒 متجر الأسلحة</a>
             </div>
         {% else %}
@@ -139,23 +266,25 @@
         <h2 class="arena-title" style="color: #3498db;">🕵️ ساحة الاستنتاج (الطابق 1)</h2>
         
         {% if current_user and current_user.status == 'active' and current_user.group_id > 0 %}
-            <p style="color: var(--gold-main); font-weight: bold; font-size: 18px;">مجموعتك: {{ current_user.group_id }} | موقعك: {{ current_user.current_room }}</p>
+            <p style="color: var(--gold-main); font-weight: bold; font-size: 18px;">المجموعة: {{ current_user.group_id }} | موقعك: {{ current_user.current_room }}</p>
             
-            {% if settings.floor1_meeting_active %}
+            {% if has_meeting %}
                 <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="color: #e74c3c; font-size: 24px; margin-top: 0;">🚨 اجتماع طارئ يجرى الآن! 🚨</h3>
+                    <h3 style="color: #e74c3c; font-size: 24px; margin-top: 0;">🚨 اجتماع طارئ لمجموعة {{ current_user.group_id }} 🚨</h3>
                     <div id="f1_timer" class="timer-box" style="font-size: 18px;">يتم حساب الوقت...</div>
-                    <script>startTimer("{{ settings.floor1_meeting_end_time.isoformat() }}Z", "f1_timer");</script>
-                    <a href="/meeting" class="btn-epic" style="display: inline-block; text-decoration: none; width: auto;">➔ دخول غرفة الاجتماع للتصويت</a>
+                    <script>startTimer("{{ meeting_end_time }}", "f1_timer");</script>
+                    <a href="/meeting" class="btn-epic" style="display: inline-block; text-decoration: none; width: auto;">➔ دخول غرفة الاجتماع</a>
                 </div>
             {% else %}
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px;">
                     <div style="background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333;">
                         <strong style="color: #fff; display: block; margin-bottom: 10px;">🗺️ خريطة التنقل</strong>
                         <form action="/f1_move" method="POST">
-                            <select name="room" style="width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 6px; margin-bottom: 10px;">
-                                <option value="الساحة">الساحة</option><option value="المكتبة">المكتبة</option>
-                                <option value="المستودع">المستودع</option><option value="غرفة الكاميرات">غرفة الكاميرات</option>
+                            <select name="room" style="width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 6px; margin-bottom: 10px;" required>
+                                <option value="" disabled selected>اختر وجهتك...</option>
+                                {% for r in adjacent_rooms %}
+                                    <option value="{{ r }}">{{ r }}</option>
+                                {% endfor %}
                             </select>
                             <button type="submit" style="background: #3498db; color: #fff; border: none; padding: 10px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer;">انتقال 🏃</button>
                         </form>
@@ -168,7 +297,7 @@
 
                     {% if current_user.is_cursed %}
                     <div style="background: rgba(231,76,60,0.1); padding: 15px; border-radius: 8px; border: 1px solid #e74c3c; grid-column: span 2;">
-                        <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">🔪 قائمة الاغتيال (في غرفتك)</strong>
+                        <strong style="color: #e74c3c; display: block; margin-bottom: 10px;">🔪 قائمة الاغتيال (معك في نفس الغرفة)</strong>
                         {% if room_players %}
                             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                                 {% for p in room_players %}
@@ -178,7 +307,7 @@
                                 {% endfor %}
                             </div>
                         {% else %}
-                            <span style="color: #666; font-size: 12px;">لا يوجد أحد معك في الغرفة الآن...</span>
+                            <span style="color: #666; font-size: 12px;">أنت وحدك في هذه الغرفة...</span>
                         {% endif %}
                     </div>
                     {% endif %}
@@ -262,6 +391,13 @@
                 <h3 style="color: #fff; margin: 0 0 10px 0; font-size:18px;">مرحباً بك، <span style="color: var(--gold-main);">{{ current_user.username }}</span></h3>
             </a>
             <div style="color: #aaa; font-size: 13px;">الرتبة: {{ display_rank }} | الطابق: {{ current_user.zone }} | الدنانير: <span style="color: var(--sand); font-weight: bold;">{{ current_user.points }}</span></div>
+            {% if current_user.status == 'inactive' %}
+                <div style="margin-top: 15px; color: #e67e22; background: rgba(230, 126, 34, 0.1); padding: 10px; border: 1px solid #e67e22; border-radius: 6px; font-size:13px;">حسابك قيد المراجعة. التصفح متاح لك فقط.</div>
+            {% elif current_user.status == 'frozen' %}
+                <div style="margin-top: 15px; color: #3498db; background: rgba(52, 152, 219, 0.1); padding: 10px; border: 1px solid #3498db; border-radius: 6px; font-size:13px;">روحك مجمدة 🧊. يمكنك التصفح فقط.</div>
+            {% elif current_user.status == 'eliminated' %}
+                <div style="margin-top: 15px; color: #e74c3c; background: rgba(231, 76, 60, 0.1); padding: 10px; border: 1px solid #e74c3c; border-radius: 6px; font-size:13px;">أنت جثة هامدة 💀. استمتع بمشاهدة الأحياء.</div>
+            {% endif %}
         {% else %}
             <h3 style="color: #fff; margin: 0 0 10px 0;">أنت غير معروف للمتاهة</h3>
             <a href="/login" style="color: var(--gold-main); font-weight: bold; text-decoration: none;">سجل دخولك من هنا ➔</a>
@@ -281,4 +417,3 @@
 {% endif %}
 {% endif %}
 {% endblock %}
-
