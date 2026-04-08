@@ -538,17 +538,6 @@ def f1_vote(target_id):
     return redirect(url_for('meeting_room'))
 
 @app.route('/avatar/<int:hunter_id>')
-def get_avatar(hunter_id):
-    try:
-        user = User.objects(hunter_id=hunter_id).only('avatar', 'status').first()
-        if user:
-            if user.status in ['eliminated', 'dead_body']: return Response('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#110d09"/><text x="50" y="55" font-size="60" text-anchor="middle" dominant-baseline="middle">💀</text></svg>''', mimetype="image/svg+xml")
-            if user.status == 'frozen': return Response('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#110d09"/><text x="50" y="55" font-size="60" text-anchor="middle" dominant-baseline="middle">🧊</text></svg>''', mimetype="image/svg+xml")
-            if user.avatar and user.avatar.startswith('data:image'):
-                header, encoded = user.avatar.split(",", 1); mime = header.split(":")[1].split(";")[0]
-                return Response(base64.b64decode(encoded), mimetype=mime)
-    except: pass
-    return Response('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#110d09"/><circle cx="50" cy="35" r="20" fill="#d4af37"/><path d="M20 90c0-20 15-35 30-35s30 15 30 35" fill="#d4af37"/></svg>''', mimetype="image/svg+xml")
 
 @app.context_processor
 def inject_globals():
