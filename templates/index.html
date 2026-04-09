@@ -94,7 +94,7 @@
                     if (charIndex < currentSentence.length) {
                         typewriterText.innerHTML += currentSentence.charAt(charIndex);
                         charIndex++;
-                        setTimeout(typeChar, 100); // 100ms للسرعة البطيئة والمهيبة
+                        setTimeout(typeChar, 100);
                     } else {
                         setTimeout(() => {
                             sentenceIndex++;
@@ -124,10 +124,317 @@
     .btn-epic:hover { transform: scale(1.02); box-shadow: 0 0 15px #e74c3c; }
     .health-bar-bg { width: 100%; background: #222; border-radius: 10px; border: 1px solid #444; height: 25px; overflow: hidden; margin-bottom: 10px;}
     .health-bar-fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 12px;}
+    
+    /* خريطة الطابق الأول - تصميم Among Us */
+    .amongus-container {
+        background: linear-gradient(135deg, #0a0806 0%, #050403 100%);
+        border: 2px solid #d4af37;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 40px rgba(0,0,0,0.8);
+    }
+    
+    .map-title {
+        text-align: center;
+        color: #d4af37;
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-shadow: 0 0 10px rgba(212,175,55,0.5);
+    }
+    
+    .map-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        background: rgba(0,0,0,0.5);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        position: relative;
+    }
+    
+    .map-room {
+        background: linear-gradient(145deg, #1a140a 0%, #0a0806 100%);
+        border: 1px solid #44351c;
+        border-radius: 12px;
+        padding: 15px 10px;
+        text-align: center;
+        position: relative;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .map-room:hover {
+        transform: translateY(-3px);
+        border-color: #d4af37;
+        box-shadow: 0 5px 20px rgba(212,175,55,0.2);
+    }
+    
+    .map-room.current {
+        border: 2px solid #2ecc71;
+        box-shadow: 0 0 20px rgba(46,204,113,0.3);
+        background: linear-gradient(145deg, #1a2015 0%, #0a1008 100%);
+    }
+    
+    .room-name {
+        color: #d4af37;
+        font-weight: bold;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+    
+    .room-players {
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+        flex-wrap: wrap;
+        margin-top: 5px;
+    }
+    
+    .player-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #2ecc71;
+        display: inline-block;
+    }
+    
+    .player-dot.dead {
+        background-color: #e74c3c;
+    }
+    
+    .current-indicator {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 20px;
+        height: 20px;
+        background-color: #2ecc71;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.7; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .task-marker {
+        position: absolute;
+        bottom: -8px;
+        left: -8px;
+        font-size: 16px;
+        filter: drop-shadow(0 0 5px #f1c40f);
+    }
+    
+    .players-list {
+        background: #110d09;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #44351c;
+    }
+    
+    .players-title {
+        color: #d4af37;
+        font-size: 16px;
+        margin-bottom: 10px;
+        border-bottom: 1px dashed #44351c;
+        padding-bottom: 8px;
+    }
+    
+    .players-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .player-card {
+        background: #1a140a;
+        border-radius: 8px;
+        padding: 8px 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #44351c;
+    }
+    
+    .player-status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+    
+    .player-status.alive { background-color: #2ecc71; }
+    .player-status.dead { background-color: #e74c3c; }
+    
+    .action-buttons {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #1a140a 0%, #0a0806 100%);
+        border: 1px solid #44351c;
+        border-radius: 10px;
+        padding: 12px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        color: #fff;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .action-btn:hover {
+        border-color: #d4af37;
+        transform: translateY(-2px);
+    }
+    
+    .action-btn.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .action-btn.danger {
+        border-color: #e74c3c;
+    }
+    
+    .action-btn.danger:hover {
+        background: rgba(231,76,60,0.2);
+    }
+    
+    .meeting-alert {
+        background: rgba(231,76,60,0.15);
+        border: 2px solid #e74c3c;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+        text-align: center;
+        animation: pulse-border 1s infinite;
+    }
+    
+    @keyframes pulse-border {
+        0% { border-color: #e74c3c; box-shadow: 0 0 0 0 rgba(231,76,60,0.4); }
+        70% { border-color: #ff6b6b; box-shadow: 0 0 0 10px rgba(231,76,60,0); }
+        100% { border-color: #e74c3c; box-shadow: 0 0 0 0 rgba(231,76,60,0); }
+    }
+    
+    .meeting-timer {
+        font-family: monospace;
+        font-size: 24px;
+        color: #e74c3c;
+        font-weight: bold;
+        margin: 10px 0;
+    }
+    
+    .vote-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+    
+    .vote-btn {
+        background: #1a140a;
+        border: 1px solid #44351c;
+        border-radius: 8px;
+        padding: 8px 20px;
+        color: #fff;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .vote-btn:hover {
+        border-color: #d4af37;
+        background: #2a2415;
+    }
+    
+    .task-list {
+        background: #110d09;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    .task-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-bottom: 1px solid #332815;
+    }
+    
+    .task-item.completed {
+        opacity: 0.6;
+        text-decoration: line-through;
+    }
+    
+    .task-name {
+        color: #fff;
+        font-size: 14px;
+    }
+    
+    .task-location {
+        color: #d4af37;
+        font-size: 12px;
+    }
+    
+    .complete-task-btn {
+        background: #2ecc71;
+        border: none;
+        border-radius: 6px;
+        padding: 5px 15px;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    
+    .complete-task-btn:hover {
+        background: #27ae60;
+    }
+    
+    .radar-info {
+        background: rgba(52,152,219,0.1);
+        border: 1px solid #3498db;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .camera-info {
+        background: rgba(46,204,113,0.1);
+        border: 1px solid #2ecc71;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        background: #0a0806;
+        border: 1px solid #44351c;
+        border-radius: 8px;
+        color: #fff;
+        outline: none;
+    }
+    
+    .form-control:focus {
+        border-color: #d4af37;
+    }
 </style>
 
 <script>
     function startTimer(endTimeStr, elementId) {
+        if (!endTimeStr) return;
         var countDownDate = new Date(endTimeStr).getTime();
         var x = setInterval(function() {
             var now = new Date().getTime();
@@ -147,6 +454,7 @@
 </script>
 
 {% if settings and settings.final_battle_mode %}
+    <!-- المعركة الأخيرة -->
     <div class="arena-container" style="border-color: #8a0303;">
         <h2 class="arena-title" style="color: #e74c3c;">⚔️ المعركة الأخيرة ⚔️</h2>
         <p style="color: #aaa;">الإمبراطور أمامك.. إما أن تسقطه أو تسقط المتاهة فوق رأسك!</p>
@@ -173,6 +481,7 @@
     </div>
 
 {% elif settings and settings.floor3_results_active %}
+    <!-- نتائج المحكمة -->
     <div class="arena-container">
         <h2 class="arena-title" style="color: #2ecc71;">📜 نتائج المحكمة الكبرى 📜</h2>
         <p style="color: #ddd; margin-bottom: 20px;">الرحالة الذين تفوقوا في التصويت وحصلوا على حق العبور:</p>
@@ -194,13 +503,14 @@
     </div>
 
 {% elif settings and (settings.floor3_mode_active or settings.floor3_paused) %}
+    <!-- المحكمة الكبرى الطابق الثالث -->
     <div class="arena-container">
         <h2 class="arena-title">⚖️ المحكمة الكبرى (الطابق 3)</h2>
         {% if settings.floor3_paused %}
             <div class="timer-box" style="color: #f1c40f; border-color: #f1c40f;">المحكمة متوقفة مؤقتاً ⏸️</div>
         {% else %}
             <div id="f3_timer" class="timer-box">يتم حساب الوقت...</div>
-            <script>startTimer("{{ settings.vote_end_time.isoformat() }}Z", "f3_timer");</script>
+            <script>startTimer("{{ settings.vote_end_time.isoformat() if settings.vote_end_time else '' }}Z", "f3_timer");</script>
         {% endif %}
 
         {% if current_user and current_user.status == 'active' and current_user.hunter_id != 1000 %}
@@ -251,10 +561,11 @@
     </div>
 
 {% elif settings and settings.war_mode %}
+    <!-- الحرب الشاملة الطابق الثاني -->
     <div class="arena-container" style="border-color: #c0392b;">
         <h2 class="arena-title" style="color: #e74c3c;">🔥 الحرب الشاملة (الطابق 2) 🔥</h2>
         <div id="war_timer" class="timer-box">يتم حساب الوقت...</div>
-        <script>startTimer("{{ settings.war_end_time.isoformat() }}Z", "war_timer");</script>
+        <script>startTimer("{{ settings.war_end_time.isoformat() if settings.war_end_time else '' }}Z", "war_timer");</script>
 
         <div style="background: #000; border: 1px solid #e74c3c; border-radius: 8px; padding: 10px; margin-bottom: 20px; overflow: hidden; white-space: nowrap; position: relative;">
             <marquee style="color: #e74c3c; font-weight: bold; font-size: 16px;">
@@ -279,176 +590,326 @@
     </div>
 
 {% elif settings and settings.floor1_mode_active %}
-    <style>
-        .au-main-box { background: #050403; border: 2px solid #3498db; border-radius: 12px; padding: 20px; text-align: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .au-title { color: #3498db; font-size: 26px; margin: 0 0 5px 0; text-shadow: 0 0 10px rgba(52,152,219,0.5); }
-        .au-subtitle { color: #fff; font-size: 18px; font-weight: bold; margin: 15px 0; border-bottom: 1px dashed #333; padding-bottom: 15px; }
-        .au-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px; }
-        .au-box { background: #111; border: 1px solid #333; border-radius: 8px; padding: 20px 10px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .au-box-title { color: #fff; font-weight: bold; margin-bottom: 15px; font-size: 16px; }
+    <!-- الطابق الأول - الاستنتاج (Among Us Style) -->
+    <div class="amongus-container">
+        <h2 class="map-title">🗺️ متاهة الاستنتاج - خريطة الغرف 🗺️</h2>
         
-        .au-btn-green { background: #2ecc71; color: #000; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; width: 90%; transition: 0.3s; }
-        .au-btn-green:hover { background: #27ae60; }
-        
-        .au-btn-blue { background: #3498db; color: #fff; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; width: 90%; transition: 0.3s; }
-        .au-btn-blue:hover { background: #2980b9; }
-        
-        .au-select { width: 90%; padding: 10px; background: #000; color: #fff; border: 1px solid #444; border-radius: 6px; margin-bottom: 15px; outline: none; }
-        
-        .au-red-box { background: rgba(231,76,60,0.05); border: 1px solid #e74c3c; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center; }
-        .au-btn-kill { background: #c0392b; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; margin: 5px; }
-        .au-btn-kill:hover { background: #e74c3c; }
-
-        .au-btn-emergency { background: linear-gradient(180deg, #c0392b, #8a0303); color: #fff; border: 1px solid #ff0000; padding: 15px; border-radius: 8px; font-weight: 900; font-size: 18px; cursor: pointer; width: 100%; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
-        .au-btn-emergency:hover { background: linear-gradient(180deg, #e74c3c, #c0392b); }
-        
-        .au-radar-text { color: #f1c40f; font-size: 14px; margin-top: 10px; text-align: right; line-height: 1.6; }
-    </style>
-
-    <div class="au-main-box">
-        <h2 class="au-title">🕵️ ساحة الاستنتاج</h2>
-        <h3 style="color: #666; margin:0; font-size:16px;">(الطابق 1)</h3>
-        
-        {% if current_user and current_user.status == 'active' and current_user.group_id > 0 %}
-            <div class="au-subtitle">
-                <span style="color: var(--gold-main);">مجموعتك: {{ current_user.group_id }}</span> | موقعك: {{ current_user.current_room }}
+        <!-- الخريطة -->
+        <div class="map-grid">
+            <!-- الصف الأول -->
+            <div class="map-room {% if current_user.current_room == 'مرصد الأبراج' %}current{% endif %}" onclick="moveToRoom('مرصد الأبراج')">
+                <div class="room-name">🔭 مرصد الأبراج</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='مرصد الأبراج', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'مرصد الأبراج' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'مرصد الأبراج' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
             </div>
             
-            {% if has_meeting %}
-                <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                    <h3 style="color: #e74c3c; font-size: 20px; margin-top: 0;">🚨 اجتماع طارئ للمجموعة {{ current_user.group_id }} 🚨</h3>
-                    <p style="color: #fff; font-size:14px; margin-bottom:10px;">
-                        {% if meeting_info.type == 'report' %}
-                            قام <strong>{{ meeting_info.caller }}</strong> بالتبليغ عن جثة <strong>{{ meeting_info.body }}</strong>!
-                        {% else %}
-                            قام <strong>{{ meeting_info.caller }}</strong> بضغط زر الطوارئ!
-                        {% endif %}
-                    </p>
-                    <div id="f1_timer" class="timer-box" style="font-size: 18px; padding: 5px 10px;">يتم حساب الوقت...</div>
-                    <script>startTimer("{{ meeting_info.end_time }}", "f1_timer");</script>
-                    <a href="/meeting" class="au-btn-blue" style="display: inline-block; text-decoration: none; width: auto; margin-top:10px;">➔ دخول الغرفة للتصويت</a>
+            <div class="map-room {% if current_user.current_room == 'دهليز الأجداد' %}current{% endif %}" onclick="moveToRoom('دهليز الأجداد')">
+                <div class="room-name">🚪 دهليز الأجداد</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='دهليز الأجداد', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
                 </div>
+                {% if current_user.current_room == 'دهليز الأجداد' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'دهليز الأجداد' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            
+            <div class="map-room {% if current_user.current_room == 'مكتبة الأسرار' %}current{% endif %}" onclick="moveToRoom('مكتبة الأسرار')">
+                <div class="room-name">📚 مكتبة الأسرار</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='مكتبة الأسرار', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'مكتبة الأسرار' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'مكتبة الأسرار' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            
+            <!-- الصف الثاني -->
+            <div class="map-room {% if current_user.current_room == 'مخزن الآثار' %}current{% endif %}" onclick="moveToRoom('مخزن الآثار')">
+                <div class="room-name">🏺 مخزن الآثار</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='مخزن الآثار', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'مخزن الآثار' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'مخزن الآثار' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            
+            <div class="map-room {% if current_user.current_room == 'قاعة العروش' %}current{% endif %}" onclick="moveToRoom('قاعة العروش')">
+                <div class="room-name">👑 قاعة العروش</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='قاعة العروش', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'قاعة العروش' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'قاعة العروش' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            
+            <div class="map-room {% if current_user.current_room == 'معبد الطلاسم' %}current{% endif %}" onclick="moveToRoom('معبد الطلاسم')">
+                <div class="room-name">🔮 معبد الطلاسم</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='معبد الطلاسم', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'معبد الطلاسم' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'معبد الطلاسم' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            
+            <!-- الصف الثالث -->
+            <div></div>
+            <div class="map-room {% if current_user.current_room == 'غرفة البصيرة' %}current{% endif %}" onclick="moveToRoom('غرفة البصيرة')">
+                <div class="room-name">👁️ غرفة البصيرة</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='غرفة البصيرة', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'غرفة البصيرة' %}<div class="current-indicator"></div>{% endif %}
+                {% for task in player_tasks if task.room == 'غرفة البصيرة' and not task.completed %}
+                    <div class="task-marker">❓</div>
+                {% endfor %}
+            </div>
+            <div></div>
+            
+            <!-- الصف الرابع -->
+            <div></div>
+            <div class="map-room {% if current_user.current_room == 'بوابة النور' %}current{% endif %}" onclick="moveToRoom('بوابة النور')">
+                <div class="room-name">✨ بوابة النور</div>
+                <div class="room-players">
+                    {% for p in User.objects(group_id=current_user.group_id, current_room='بوابة النور', status='active') %}
+                        <span class="player-dot" title="{{ p.username }}"></span>
+                    {% endfor %}
+                </div>
+                {% if current_user.current_room == 'بوابة النور' %}<div class="current-indicator"></div>{% endif %}
+            </div>
+            <div></div>
+        </div>
+        
+        <!-- معلومات الاجتماع -->
+        {% if has_meeting and meeting_info %}
+        <div class="meeting-alert">
+            <strong style="color: #e74c3c; font-size: 18px;">🚨 اجتماع طارئ 🚨</strong>
+            {% if meeting_info.type == 'emergency' %}
+                <p>قام <strong style="color: #f1c40f;">{{ meeting_info.called_by }}</strong> باستدعاء اجتماع طارئ!</p>
             {% else %}
-                
-                {% if current_user.current_room == 'غرفة البصيرة' %}
-                    <div class="au-red-box" style="border-color:#f1c40f; background:rgba(241,196,15,0.05); text-align:right;">
-                        <strong style="color:#f1c40f; font-size:16px;">📡 رادار البصيرة (أعداد فقط):</strong>
-                        <div class="au-radar-text">
-                            {% for room, count in admin_dots.items() %}
-                                <div>📍 {{ room }}: <span style="color:#fff; font-weight:bold;">{{ count }} رحالة</span></div>
-                            {% else %}
-                                <div>لا يوجد رصد حالياً...</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% elif current_user.current_room == 'مرصد النجوم' %}
-                    <div class="au-red-box" style="border-color:#3498db; background:rgba(52,152,219,0.05); text-align:right;">
-                        <strong style="color:#3498db; font-size:16px;">📷 كاميرات المراقبة (الممرات الحيوية):</strong>
-                        <div class="au-radar-text" style="color:#ddd;">
-                            {% for room, names in camera_feeds.items() %}
-                                <div>👁️ {{ room }}: <span style="color:#3498db; font-weight:bold;">{{ names | join(', ') }}</span></div>
-                            {% else %}
-                                <div>الممرات فارغة تماماً...</div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endif %}
-
-                <div class="au-grid">
-                    <div class="au-box">
-                        <div class="au-box-title" style="color:#2ecc71;">💎 المهام<br>({{ current_user.gems_collected }}/{{ settings.floor1_gems_target }})</div>
-                        
-                        {% set active_task = None %}
-                        {% for t in current_user.f1_tasks %}
-                            {% if t.room == current_user.current_room %}
-                                {% set active_task = t %}
-                            {% endif %}
-                        {% endfor %}
-
-                        {% if active_task %}
-                            <p style="color:#aaa; font-size:12px; margin:0 0 10px 0;">مهمة هنا: {{ active_task.name }}</p>
-                            <form action="/f1_do_task" method="POST" style="width:100%;">
-                                <input type="hidden" name="task_name" value="{{ active_task.name }}">
-                                <button type="submit" class="au-btn-green">إنجاز مهمة ⚙️</button>
-                            </form>
-                        {% else %}
-                            <button type="button" class="au-btn-green" style="background:#333; color:#666; cursor:not-allowed;" disabled>لا مهام هنا</button>
-                            <p style="color:#666; font-size:11px; margin-top:10px;">ابحث في الغرف الأخرى</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="au-box">
-                        <div class="au-box-title">🗺️ خريطة<br>التنقل</div>
-                        <form action="/f1_move" method="POST" style="width:100%;">
-                            <select name="room" class="au-select" required>
-                                <option value="" disabled selected>الغرف المجاورة...</option>
-                                {% for r in adjacent_rooms %}
-                                    <option value="{{ r }}">{{ r }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="au-btn-blue">انتقال 🏃</button>
-                        </form>
-                        {% if current_user.is_cursed and not current_user.used_vent %}
-                            <form action="/f1_vent" method="POST" style="width:100%; margin-top:5px;">
-                                <select name="target_room" class="au-select" style="padding:5px; margin-bottom:5px; border-color:#e74c3c;" required>
-                                    <option value="" disabled selected>نفق مخفي إلى...</option>
-                                    <option value="الساحة">الساحة</option><option value="الممر العظيم">الممر العظيم</option><option value="قبو التخزين">قبو التخزين</option><option value="قاعة المخطوطات">قاعة المخطوطات</option><option value="غرفة البصيرة">غرفة البصيرة</option>
-                                </select>
-                                <button type="submit" class="au-btn-kill" style="width:90%; padding:8px; font-size:13px;" onclick="return confirm('النفق يُستخدم مرة واحدة فقط! متأكد؟');">زحف في النفق 🕳️</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
-
-                {% if current_user.is_cursed or dead_bodies_in_room %}
-                <div class="au-red-box">
-                    {% if current_user.is_cursed %}
-                        <div class="au-box-title" style="color:#e74c3c;">🔪 قائمة الاغتيال (في غرفتك)</div>
-                        {% if room_players %}
-                            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap:10px;">
-                                {% for p in room_players %}
-                                    <form action="/f1_kill/{{ p.hunter_id }}" method="POST">
-                                        <button type="submit" class="au-btn-kill" onclick="return confirm('تأكيد طعن {{ p.username }}؟');">طعن {{ p.username }}</button>
-                                    </form>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            <span style="color: #666; font-size: 13px;">أنت وحدك في هذه الغرفة...</span>
-                        {% endif %}
-                    {% endif %}
-
-                    {% if dead_bodies_in_room %}
-                        <div style="margin-top: 15px; border-top: 1px dashed #e74c3c; padding-top: 15px;">
-                            <strong style="color: #f1c40f; display:block; margin-bottom:10px;">⚠️ تم العثور على جثة!</strong>
-                            {% for b in dead_bodies_in_room %}
-                                <form action="/f1_report/{{ b.hunter_id }}" method="POST" style="display:inline-block;">
-                                    <button type="submit" class="au-btn-blue" style="background:#8e44ad; width:auto; padding:10px 20px;">📢 إبلاغ عن {{ b.username }}</button>
-                                </form>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                {% if not current_user.emergency_used %}
-                    <form action="/f1_emergency" method="POST">
-                        <button type="submit" class="au-btn-emergency" onclick="return confirm('استدعاء طارئ؟ (يُستخدم مرة واحدة)');">🚨 زر الطوارئ 🚨</button>
-                    </form>
-                {% else %}
-                    <button type="button" class="au-btn-emergency" style="background:#333; border-color:#222; color:#666; cursor:not-allowed;" disabled>🚨 زر الطوارئ (مُستهلك) 🚨</button>
-                {% endif %}
-
+                <p>عثر <strong style="color: #f1c40f;">{{ meeting_info.called_by }}</strong> على جثة <strong style="color: #e74c3c;">{{ meeting_info.body }}</strong> واستدعى اجتماعاً!</p>
             {% endif %}
-        {% else %}
-            <h3 style="color: #e74c3c;">أنت لست ضمن المجموعات النشطة.</h3>
+            <div id="f1_timer" class="meeting-timer">جاري التحميل...</div>
+            <script>
+                var endTimeStr = "{{ meeting_info.end_time.isoformat() if meeting_info and meeting_info.end_time else '' }}";
+                if (endTimeStr) {
+                    var countDownDate = new Date(endTimeStr).getTime();
+                    var x = setInterval(function() {
+                        var now = new Date().getTime();
+                        var distance = countDownDate - now;
+                        if (distance < 0) {
+                            clearInterval(x);
+                            document.getElementById("f1_timer").innerHTML = "انتهى وقت التصويت!";
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                            document.getElementById("f1_timer").innerHTML = minutes + "د " + seconds + "ث";
+                        }
+                    }, 1000);
+                }
+            </script>
+            
+            {% if not current_user.f1_has_voted %}
+            <form action="/f1/vote" method="POST">
+                <div class="vote-buttons">
+                    <select name="target" class="form-control" style="width: auto; min-width: 150px;" required>
+                        <option value="">اختر من تريد التصويت عليه...</option>
+                        {% for m in User.objects(group_id=current_user.group_id, status__in=['active', 'dead_body']) if m.id != current_user.id %}
+                            <option value="{{ m.username }}">{{ m.username }} {% if m.status == 'dead_body' %}💀{% endif %}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="vote-btn" onclick="return confirm('تأكيد التصويت؟ لا يمكن التراجع!')">🗳️ تصويت</button>
+                </div>
+            </form>
+            {% else %}
+            <p style="color: #2ecc71; margin-top: 15px;">✓ لقد قمت بالتصويت بالفعل. انتظر النتيجة...</p>
+            {% endif %}
+        </div>
         {% endif %}
+        
+        <!-- اللاعبون في نفس الغرفة -->
+        <div class="players-list">
+            <div class="players-title">👥 من معك في {{ current_user.current_room }}؟</div>
+            <div class="players-grid">
+                {% for p in room_players %}
+                <div class="player-card">
+                    <div class="player-status alive"></div>
+                    <span>{{ p.username }}</span>
+                    {% if current_user.is_cursed %}
+                    <form action="/f1/kill" method="POST" style="display: inline;">
+                        <input type="hidden" name="target_id" value="{{ p.hunter_id }}">
+                        <button type="submit" class="vote-btn" style="background: #e74c3c; padding: 3px 10px; font-size: 12px;" onclick="return confirm('⚠️ هل أنت متأكد من قتل {{ p.username }}؟ ⚠️')">🔪</button>
+                    </form>
+                    {% endif %}
+                </div>
+                {% else %}
+                <span style="color: #666;">لا يوجد أحد معك في هذه الغرفة</span>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- الجثث في نفس الغرفة -->
+        {% if dead_bodies_in_room %}
+        <div class="players-list" style="border-color: #e74c3c;">
+            <div class="players-title" style="color: #e74c3c;">💀 جثث في الغرفة 💀</div>
+            <div class="players-grid">
+                {% for b in dead_bodies_in_room %}
+                <div class="player-card">
+                    <div class="player-status dead"></div>
+                    <span>{{ b.username }}</span>
+                    <form action="/f1/report_body" method="POST">
+                        <input type="hidden" name="body_id" value="{{ b.hunter_id }}">
+                        <button type="submit" class="vote-btn" style="background: #f1c40f; color: #000;">📢 إبلاغ</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- مهام اللاعب -->
+        <div class="task-list">
+            <div class="players-title">📋 مهامك ({{ current_user.gems_collected }}/{{ settings.floor1_gems_target }} أحجار)</div>
+            {% for task in player_tasks %}
+            <div class="task-item {% if task.completed %}completed{% endif %}">
+                <div>
+                    <span class="task-name">{{ task.name }}</span>
+                    <span class="task-location">📍 {{ task.room }}</span>
+                </div>
+                {% if not task.completed and task.room == current_user.current_room %}
+                <form action="/f1/complete_task/{{ loop.index0 }}" method="POST">
+                    <button type="submit" class="complete-task-btn">إنجاز ➕</button>
+                </form>
+                {% elif task.completed %}
+                <span style="color: #2ecc71;">✓ منجزة</span>
+                {% else %}
+                <span style="color: #666;">🚫 اذهب إلى {{ task.room }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- أزرار الإجراءات -->
+        <div class="action-buttons">
+            {% if adjacent_rooms %}
+            <form action="/f1/move" method="POST">
+                <select name="room" class="form-control" style="margin-bottom: 10px;" required>
+                    <option value="">اختر الغرفة...</option>
+                    {% for room in adjacent_rooms %}
+                    <option value="{{ room }}">{{ room }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="action-btn">🚪 التنقل</button>
+            </form>
+            {% endif %}
+            
+            {% if not has_meeting %}
+                {% if not current_user.emergency_used %}
+                <form action="/f1/emergency_meeting" method="POST">
+                    <button type="submit" class="action-btn danger" onclick="return confirm('⚠️ هل تريد استدعاء اجتماع طارئ؟ (مرة واحدة فقط) ⚠️')">🚨 اجتماع طارئ</button>
+                </form>
+                {% endif %}
+                
+                {% if current_user.is_cursed and not current_user.used_vent %}
+                <form action="/f1/vent" method="POST">
+                    <button type="submit" class="action-btn" onclick="return confirm('🕳️ استخدام النفق السري (مرة واحدة فقط)؟ ستظهر في غرفة عشوائية. 🕳️')">🕳️ نفق سري</button>
+                </form>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- معلومات خاصة حسب الغرفة -->
+        {% if current_user.current_room == 'غرفة البصيرة' and admin_dots %}
+        <div class="radar-info">
+            <strong style="color: #3498db;">📡 رادار البصيرة:</strong>
+            <div style="margin-top: 10px;">
+                {% for room, dots in admin_dots.items() %}
+                <div>• {{ room }}: <span style="color: #f1c40f;">{{ dots|length }} شخص</span></div>
+                {% endfor %}
+            </div>
+            <small style="color: #666;">(تظهر النقاط دون أسماء)</small>
+        </div>
+        {% endif %}
+        
+        {% if current_user.current_room == 'مرصد الأبراج' and camera_feeds %}
+        <div class="camera-info">
+            <strong style="color: #2ecc71;">📷 كاميرات المراقبة:</strong>
+            <div style="margin-top: 10px;">
+                {% for room, players in camera_feeds.items() %}
+                <div>• {{ room }}: 
+                    {% for p in players %}
+                    <span style="color: #f1c40f;">{{ p.username }}</span>{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- معلومات المجموعة -->
+        <div style="margin-top: 20px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 8px; text-align: center; font-size: 13px;">
+            <span style="color: #d4af37;">المجموعة {{ current_user.group_id }}</span> | 
+            <span style="color: {% if current_user.is_cursed %}#e74c3c{% else %}#2ecc71{% endif %}">
+                {% if current_user.is_cursed %}🔥 أنت الملعون (يمكنك القتل) 🔥{% else %}✨ أنت صياد عادي ✨{% endif %}
+            </span> |
+            <span>💎 الأحجار: {{ current_user.gems_collected }}/{{ settings.floor1_gems_target }}</span>
+        </div>
     </div>
 
+    <script>
+    function moveToRoom(room) {
+        {% if has_meeting %}
+        alert("⚠️ لا يمكنك التحرك أثناء الاجتماع!");
+        return;
+        {% else %}
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/f1/move';
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'room';
+        input.value = room;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        {% endif %}
+    }
+    </script>
+
 {% elif settings and settings.gates_mode_active %}
+    <!-- البوابات -->
     <div class="arena-container" style="border-color: #d35400;">
         <h2 class="arena-title" style="color: #e67e22;">🚪 اختيار البوابات 🚪</h2>
         <div id="gates_timer" class="timer-box">يتم حساب الوقت...</div>
-        <script>startTimer("{{ meeting_info.end_time.isoformat() if meeting_info and meeting_info.end_time else '' }}", "f1_timer");</script>
+        <script>startTimer("{{ settings.gates_end_time.isoformat() if settings.gates_end_time else '' }}Z", "gates_timer");</script>
+
         <p style="color: #ddd; font-size: 16px; margin-bottom: 30px;">{{ settings.gates_description }}</p>
 
         {% if current_user and current_user.status == 'active' and current_user.chosen_gate == 0 %}
@@ -474,6 +935,7 @@
     </div>
 
 {% else %}
+    <!-- الوضع العادي - لوحة التحكم الرئيسية -->
     {% set display_rank = current_user.special_rank if current_user else '' %}
     <style>
         .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
@@ -528,4 +990,3 @@
 {% endif %}
 {% endif %}
 {% endblock %}
-
