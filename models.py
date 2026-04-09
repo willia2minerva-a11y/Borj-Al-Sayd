@@ -1,191 +1,301 @@
-from flask_mongoengine import MongoEngine
+from mongoengine import Document, StringField, IntField, BooleanField, DateTimeField, ListField, DictField, ReferenceField, FloatField
 from datetime import datetime
 
-db = MongoEngine()
-
-class User(db.Document):
-    meta = {'strict': False, 'indexes': ['hunter_id', 'username', 'status', 'chosen_gate', ('status', 'role'), 'last_active', 'gate_status', 'friends', 'friend_requests', 'created_at', 'group_id', 'current_room']}
-    hunter_id = db.IntField(unique=True)
-    username = db.StringField(unique=True, required=True)
-    password_hash = db.StringField(required=True)
-    role = db.StringField(default='hunter')
-    status = db.StringField(default='active')
-    health = db.IntField(default=100)
-    points = db.IntField(default=0)
-    loyalty_points = db.IntField(default=0)
-    intelligence_points = db.IntField(default=0)
-    zone = db.StringField(default='البوابات')
-    special_rank = db.StringField(default='')
-    avatar = db.StringField(default='')
-    inventory = db.ListField(db.StringField(), default=list)
-    friends = db.ListField(db.IntField(), default=list)
-    friend_requests = db.ListField(db.IntField(), default=list)
-    achievements = db.ListField(db.StringField(), default=list)
-    created_at = db.DateTimeField(default=datetime.utcnow)
-    last_active = db.DateTimeField(default=datetime.utcnow)
-    last_action_time = db.DateTimeField(default=datetime.utcnow)
-    last_health_check = db.DateTimeField(default=datetime.utcnow)
-    freeze_reason = db.StringField(default='')
-    chosen_gate = db.IntField(default=0)
-    gate_status = db.StringField(default='')
+class User(Document):
+    # المعلومات الأساسية
+    hunter_id = IntField(unique=True, required=True)
+    username = StringField(unique=True, required=True)
+    password_hash = StringField(required=True)
+    role = StringField(default='hunter', choices=['hunter', 'admin', 'ghost', 'cursed_ghost'])
+    status = StringField(default='active', choices=['active', 'inactive', 'eliminated', 'frozen', 'dead_body'])
+    zone = StringField(default='البوابات')
+    special_rank = StringField(default='مستكشف')
     
-    survival_votes = db.FloatField(default=0.0) 
-    has_voted = db.BooleanField(default=False)
-    f3_votes_cast = db.DictField(default=dict) 
+    # الروابط والإعدادات
+    facebook_link = StringField()
+    avatar = StringField()
+    created_at = DateTimeField(default=datetime.utcnow)
+    last_active = DateTimeField()
+    last_name_change = DateTimeField()
+    last_password_change = DateTimeField()
+    last_action_time = DateTimeField()
+    last_health_check = DateTimeField()
     
-    quicksand_lock_until = db.DateTimeField()
-    tajis_eye_until = db.DateTimeField()
-    unlocked_lore_room = db.BooleanField(default=False)
-    unlocked_top_room = db.BooleanField(default=False)
-    stats_ghosts_caught = db.IntField(default=0)
-    stats_puzzles_solved = db.IntField(default=0)
-    stats_items_bought = db.IntField(default=0)
-    destroyed_seals = db.IntField(default=0)
-    collected_seals = db.ListField(db.StringField(), default=list)
-    gate_test_answer = db.StringField(default='')
-    last_name_change = db.DateTimeField()
-    last_password_change = db.DateTimeField()
-    last_seen_news = db.DateTimeField()
-    last_seen_decs = db.DateTimeField()
-    last_seen_store = db.DateTimeField()
-    last_seen_puzzles = db.DateTimeField()
-    facebook_link = db.StringField(default='')
-    secret_achievements = db.ListField(db.StringField(), default=list)
-    has_shield = db.BooleanField(default=False)
-    totem_self = db.BooleanField(default=False)
-
-    current_room = db.StringField(default='الساحة')
-    is_cursed = db.BooleanField(default=False)
-    group_id = db.IntField(default=0)
-    gems_collected = db.IntField(default=0)
-    last_move_time = db.DateTimeField()
-    last_kill_time = db.DateTimeField()
-    emergency_used = db.BooleanField(default=False)
-    used_sabotage = db.BooleanField(default=False)
-    used_vent = db.BooleanField(default=False)
-    f1_has_voted = db.BooleanField(default=False)
-    f1_votes_received = db.IntField(default=0)
-    f1_tasks = db.ListField(db.DictField(), default=list)
-
-class News(db.Document):
-    meta = {'strict': False}
-    title = db.StringField(required=True)
-    content = db.StringField(required=True)
-    category = db.StringField(default='news')
-    puzzle_type = db.StringField(default='none')
-    puzzle_answer = db.StringField(default='')
-    reward_points = db.IntField(default=0)
-    max_winners = db.IntField(default=1)
-    current_winners = db.IntField(default=0)
-    winners_list = db.ListField(db.StringField(), default=list)
-    trap_duration_minutes = db.IntField(default=0)
-    trap_penalty_points = db.IntField(default=0)
-    reward_item = db.StringField(default='')
-    author = db.StringField(default='الإمبراطور')
-    status = db.StringField(default='approved')
-    image_data = db.StringField(default='')
-    likes = db.ListField(db.StringField(), default=list)
-    laughs = db.ListField(db.StringField(), default=list)
-    created_at = db.DateTimeField(default=datetime.utcnow)
-
-class StoreItem(db.Document):
-    meta = {'strict': False}
-    name = db.StringField(required=True, unique=True)
-    description = db.StringField(default='')
-    price = db.IntField(default=0)
-    item_type = db.StringField(default='box')
-    effect_amount = db.IntField(default=0)
-    is_mirage = db.BooleanField(default=False)
-    mirage_message = db.StringField(default='')
-    is_luck = db.BooleanField(default=False)
-    luck_min = db.IntField(default=0)
-    luck_max = db.IntField(default=0)
-    image = db.StringField(default='')
-    created_at = db.DateTimeField(default=datetime.utcnow)
-
-class GlobalSettings(db.Document):
-    meta = {'strict': False}
-    setting_name = db.StringField(unique=True, default='main_config')
-    maze_name = db.StringField(default='متاهة سيفار')
-    home_title = db.StringField(default='البوابة')
-    banner_url = db.StringField(default='')
-    global_news_active = db.BooleanField(default=False)
-    global_news_text = db.StringField(default='')
-    nav_home = db.StringField(default='الرئيسية')
-    nav_profile = db.StringField(default='هويتي')
-    nav_friends = db.StringField(default='التحالفات')
-    nav_news = db.StringField(default='المراسيم')
-    nav_puzzles = db.StringField(default='النقوش')
-    nav_decs = db.StringField(default='التصريحات')
-    nav_store = db.StringField(default='السوق المظلم')
-    nav_altar = db.StringField(default='مذبح الطلاسم')
-    nav_grave = db.StringField(default='المقبرة')
-    maintenance_mode = db.BooleanField(default=False)
-    maintenance_until = db.DateTimeField()
-    maintenance_pages = db.ListField(db.StringField(), default=list)
+    # الإحصائيات والنقاط
+    points = IntField(default=0)
+    health = IntField(default=100)
+    intelligence_points = IntField(default=0)
+    loyalty_points = IntField(default=0)
+    freeze_reason = StringField()
     
-    war_mode = db.BooleanField(default=False)
-    war_end_time = db.DateTimeField()
-    war_kill_target = db.IntField(default=15)
-    bleed_rate_minutes = db.IntField(default=60)
-    bleed_amount = db.IntField(default=1)
-    attack_cooldown_minutes = db.IntField(default=5)
-    safe_time_minutes = db.IntField(default=120)
+    # الطوابق والمراحل
+    chosen_gate = IntField(default=0)
+    gate_status = StringField(default='waiting', choices=['waiting', 'testing', 'passed', 'failed'])
+    gate_test_answer = StringField()
     
-    final_battle_mode = db.BooleanField(default=False)
-    gates_mode_active = db.BooleanField(default=False)
-    gates_end_time = db.DateTimeField()
-    gates_description = db.StringField(default='')
-    gate_1_name = db.StringField(default='بوابة 1')
-    gate_2_name = db.StringField(default='بوابة 2')
-    gate_3_name = db.StringField(default='بوابة 3')
-    gates_selection_locked = db.BooleanField(default=False)
-    gates_test_message = db.StringField(default='الاختبار')
+    # التحالفات والأصدقاء
+    friends = ListField(IntField(), default=list)
+    friend_requests = ListField(IntField(), default=list)
     
-    floor3_mode_active = db.BooleanField(default=False)
-    floor3_paused = db.BooleanField(default=False) 
-    floor3_time_left = db.IntField(default=0) 
-    floor3_results_active = db.BooleanField(default=False) 
-    vote_end_time = db.DateTimeField()
-    vote_top_n = db.IntField(default=5)
-    poneglyph_text = db.StringField(default='')
-    dead_count = db.IntField(default=0)
+    # المخزون والإنجازات
+    inventory = ListField(StringField(), default=list)
+    collected_seals = ListField(StringField(), default=list)
+    achievements = ListField(StringField(), default=list)
+    
+    # الإحصائيات الإضافية
+    stats_ghosts_caught = IntField(default=0)
+    stats_puzzles_solved = IntField(default=0)
+    stats_items_bought = IntField(default=0)
+    
+    # الطابق الأول (الاستنتاج - Among Us Style)
+    group_id = IntField()  # رقم المجموعة
+    current_room = StringField(default='قاعة العروش')  # الغرفة الحالية
+    is_cursed = BooleanField(default=False)  # هل هو الملعون (القاتل)
+    f1_tasks = ListField(DictField(), default=list)  # المهام الموزعة للاعب
+    gems_collected = IntField(default=0)  # عدد الأحجار الكريمة المجمعة
+    f1_has_voted = BooleanField(default=False)  # هل صوت في الاجتماع الحالي
+    f1_votes_received = IntField(default=0)  # عدد الأصوات التي حصل عليها
+    used_vent = BooleanField(default=False)  # هل استخدم النفق السري (مرة واحدة)
+    emergency_used = BooleanField(default=False)  # هل استخدم زر الطوارئ (مرة واحدة)
+    f1_last_move = DateTimeField()  # آخر وقت تحرك
+    f1_last_kill = DateTimeField()  # آخر وقت قتل
+    
+    # الطابق الثالث (المحكمة)
+    has_voted = BooleanField(default=False)  # هل صوت في المحكمة
+    survival_votes = FloatField(default=0.0)  # أصوات النجاة
+    f3_votes_cast = DictField(default=dict)  # الأصوات التي صوّتها اللاعب
+    f3_vote_target = IntField()  # من صوّت ضده
+    
+    # المؤثرات والمهارات الخاصة
+    quicksand_lock_until = DateTimeField()  # وقت انتهاء تجميد الرمال
+    has_shield = BooleanField(default=False)  # هل لديه درع حماية
+    totem_self = BooleanField(default=False)  # توتم إعادة الحياة
+    tajis_eye_until = DateTimeField()  # وقت انتهاء عين تاجي (التجسس)
+    
+    # مناطق خاصة مفتوحة
+    unlocked_lore_room = BooleanField(default=False)  # هل فتح غرفة البونغليف
+    unlocked_top_room = BooleanField(default=False)  # هل فتح قاعة الأساطير
+    
+    # الأختام الأربعة
+    has_seal_fire = BooleanField(default=False)
+    has_seal_water = BooleanField(default=False)
+    has_seal_earth = BooleanField(default=False)
+    has_seal_air = BooleanField(default=False)
+    
+    meta = {
+        'collection': 'users',
+        'indexes': [
+            'hunter_id',
+            'username',
+            'status',
+            'group_id',
+            'current_room'
+        ]
+    }
+    
+    def __str__(self):
+        return f"{self.username} (ID: {self.hunter_id})"
 
-    floor1_mode_active = db.BooleanField(default=False)
-    f1_active_meetings = db.DictField(default=dict) 
-    floor1_move_cooldown = db.IntField(default=30)
-    floor1_kill_cooldown = db.IntField(default=60)
-    floor1_gems_target = db.IntField(default=10)
-    floor1_darkness_until = db.DateTimeField()
-    floor1_locked_room = db.StringField(default='')
-    floor1_locked_until = db.DateTimeField()
 
-class SpellConfig(db.Document):
-    meta = {'strict': False, 'indexes': ['spell_word', 'expires_at']}
-    spell_word = db.StringField(required=True, unique=True)
-    spell_type = db.StringField(required=True)
-    effect_value = db.IntField(default=0)
-    is_percentage = db.BooleanField(default=False)
-    item_name = db.StringField(default='')
-    max_uses = db.IntField(default=1)
-    used_by = db.ListField(db.StringField(), default=list)
-    expires_at = db.DateTimeField()
-    created_at = db.DateTimeField(default=datetime.utcnow)
+class News(Document):
+    title = StringField(required=True)
+    content = StringField(required=True)
+    category = StringField(required=True, choices=['news', 'puzzle', 'declaration', 'hidden'])
+    image_data = StringField()
+    author = StringField()
+    status = StringField(default='pending', choices=['pending', 'approved'])
+    
+    # للحلول والألغاز
+    puzzle_type = StringField()
+    puzzle_answer = StringField()
+    reward_points = IntField(default=0)
+    trap_penalty_points = IntField(default=0)
+    reward_item = StringField()
+    trap_duration_minutes = IntField(default=0)
+    
+    # للحد من الفائزين
+    max_winners = IntField(default=1)
+    current_winners = IntField(default=0)
+    winners_list = ListField(StringField(), default=list)
+    
+    # للتفاعلات
+    likes = ListField(StringField(), default=list)
+    laughs = ListField(StringField(), default=list)
+    
+    created_at = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'news',
+        'indexes': ['category', 'status', 'created_at']
+    }
 
-class Notification(db.Document):
-    meta = {'strict': False, 'indexes': ['target_hunter_id', 'is_read', 'created_at']}
-    target_hunter_id = db.IntField(default=0)
-    group_id = db.IntField(default=0)
-    message = db.StringField(required=True)
-    notif_type = db.StringField(default='info')
-    is_read = db.BooleanField(default=False)
-    created_at = db.DateTimeField(default=datetime.utcnow)
 
-class GroupMessage(db.Document):
-    meta = {'strict': False, 'indexes': ['group_id', 'created_at']}
-    group_id = db.IntField(required=True)
-    sender_id = db.IntField()
-    sender_name = db.StringField(required=True)
-    message = db.StringField(required=True)
-    is_system_msg = db.BooleanField(default=False)
-    created_at = db.DateTimeField(default=datetime.utcnow)
+class StoreItem(Document):
+    name = StringField(required=True, unique=True)
+    description = StringField()
+    price = IntField(required=True, min_value=0)
+    item_type = StringField(choices=['weapon', 'heal', 'spy', 'steal', 'seal', 'special'])
+    effect_amount = IntField(default=0)
+    effect_description = StringField()
+    
+    # للعناصر الخاصة
+    is_mirage = BooleanField(default=False)
+    mirage_message = StringField()
+    is_luck = BooleanField(default=False)
+    luck_min = IntField(default=0)
+    luck_max = IntField(default=0)
+    
+    # الصورة
+    image_url = StringField()
+    
+    created_at = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'store_items',
+        'indexes': ['name', 'item_type', 'price']
+    }
+
+
+class GlobalSettings(Document):
+    setting_name = StringField(unique=True, required=True)
+    
+    # الإعدادات العامة
+    home_title = StringField(default='البوابة')
+    maze_name = StringField(default='متاهة سيفار')
+    banner_url = StringField()
+    
+    # أسماء القوائم
+    nav_home = StringField(default='الرئيسية')
+    nav_profile = StringField(default='هويتي')
+    nav_friends = StringField(default='التحالفات')
+    nav_news = StringField(default='المراسيم')
+    nav_puzzles = StringField(default='النقوش')
+    nav_store = StringField(default='السوق المظلم')
+    nav_altar = StringField(default='مذبح الطلاسم')
+    nav_decs = StringField(default='التصريحات')
+    nav_grave = StringField(default='المقبرة')
+    
+    # الإعلانات
+    global_news_active = BooleanField(default=False)
+    global_news_text = StringField()
+    
+    # وضع الصيانة
+    maintenance_mode = BooleanField(default=False)
+    maintenance_until = DateTimeField()
+    maintenance_pages = ListField(StringField(), default=list)
+    
+    # البوابات (Gate)
+    gates_mode_active = BooleanField(default=False)
+    gates_end_time = DateTimeField()
+    gates_description = StringField()
+    gate_1_name = StringField()
+    gate_2_name = StringField()
+    gate_3_name = StringField()
+    gates_test_message = StringField()
+    
+    # الطابق الأول (الاستنتاج)
+    floor1_mode_active = BooleanField(default=False)
+    floor1_move_cooldown = IntField(default=30)  # ثواني بين التحركات
+    floor1_kill_cooldown = IntField(default=60)  # ثواني بين القتلات
+    floor1_gems_target = IntField(default=10)  # عدد الأحجار للفوز
+    floor1_locked_room = StringField()
+    floor1_locked_until = DateTimeField()
+    floor1_darkness_until = DateTimeField()
+    f1_active_meetings = DictField(default=dict)  # الاجتماعات النشطة
+    
+    # الطابق الثاني (الحرب)
+    war_mode = BooleanField(default=False)
+    war_end_time = DateTimeField()
+    dead_count = IntField(default=0)
+    war_kill_target = IntField(default=15)
+    bleed_rate_minutes = IntField(default=60)  # كل كم دقيقة ينزف
+    bleed_amount = IntField(default=1)  # كم ينقص من الصحة
+    safe_time_minutes = IntField(default=120)  # وقت الأمان بعد آخر أكشن
+    attack_cooldown_minutes = IntField(default=5)  # تبريد الهجوم
+    
+    # الطابق الثالث (المحكمة)
+    floor3_mode_active = BooleanField(default=False)
+    floor3_paused = BooleanField(default=False)
+    floor3_time_left = IntField(default=0)
+    floor3_results_active = BooleanField(default=False)
+    vote_end_time = DateTimeField()
+    vote_top_n = IntField(default=5)
+    
+    # المعركة الأخيرة
+    final_battle_mode = BooleanField(default=False)
+    
+    # النصوص الأسطورية
+    poneglyph_text = StringField()
+    
+    meta = {
+        'collection': 'global_settings',
+        'indexes': ['setting_name']
+    }
+
+
+class SpellConfig(Document):
+    spell_word = StringField(unique=True, required=True)
+    spell_type = StringField(choices=['hp_gain', 'hp_loss', 'points_gain', 'points_loss', 'item_reward', 'unlock_lore', 'unlock_top', 'kill_emperor'])
+    effect_value = IntField(default=0)
+    is_percentage = BooleanField(default=False)
+    item_name = StringField()
+    max_uses = IntField(default=1)
+    used_by = ListField(StringField(), default=list)
+    expires_at = DateTimeField()
+    created_at = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'spells',
+        'indexes': ['spell_word', 'expires_at']
+    }
+
+
+class Notification(Document):
+    target_hunter_id = IntField(required=True)
+    message = StringField(required=True)
+    notif_type = StringField(default='info', choices=['info', 'success', 'error', 'danger'])
+    is_read = BooleanField(default=False)
+    created_at = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'notifications',
+        'indexes': ['target_hunter_id', 'is_read', 'created_at']
+    }
+
+
+class GroupMessage(Document):
+    group_id = IntField(required=True)
+    sender_name = StringField(required=True)
+    message = StringField(required=True)
+    is_system_msg = BooleanField(default=False)
+    created_at = DateTimeField(default=datetime.utcnow)
+    
+    meta = {
+        'collection': 'group_messages',
+        'indexes': ['group_id', 'created_at'],
+        'ordering': ['created_at']
+    }
+
+
+# دالة لتهيئة قاعدة البيانات
+def init_db():
+    # إنشاء المستخدم الإمبراطور إذا لم يكن موجوداً
+    if not User.objects(hunter_id=1000).first():
+        from werkzeug.security import generate_password_hash
+        User(
+            hunter_id=1000,
+            username='الإمبراطور',
+            password_hash=generate_password_hash('admin123'),
+            role='admin',
+            status='active',
+            zone='العرش',
+            special_rank='حاكم المتاهة'
+        ).save()
+        print("✅ تم إنشاء المستخدم الإمبراطور")
+    
+    # إنشاء الإعدادات العامة إذا لم تكن موجودة
+    if not GlobalSettings.objects(setting_name='main_config').first():
+        GlobalSettings(setting_name='main_config').save()
+        print("✅ تم إنشاء الإعدادات العامة")
+    
+    print("✅ تم تهيئة قاعدة البيانات بنجاح")
