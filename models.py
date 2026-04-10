@@ -1,6 +1,36 @@
-from mongoengine import Document, StringField, IntField, BooleanField, DateTimeField, ListField, DictField, ReferenceField, FloatField
-from datetime import datetime
+# models.py - الملف الكامل والنهائي لمتاهة سيفار
 
+from mongoengine import connect, Document, StringField, IntField, BooleanField, DateTimeField, ListField, DictField, FloatField
+from datetime import datetime
+import os
+
+# ==========================================
+# اتصال قاعدة البيانات
+# ==========================================
+MONGO_URI = os.getenv('MONGO_URI')
+if not MONGO_URI:
+    raise Exception("MONGO_URI environment variable not set")
+
+if 'retryWrites=true' not in MONGO_URI:
+    sep = '&' if '?' in MONGO_URI else '?'
+    MONGO_URI += f'{sep}retryWrites=true'
+
+# إنشاء الاتصال
+db = connect(
+    host=MONGO_URI,
+    tls=True,
+    tlsAllowInvalidCertificates=True,
+    connectTimeoutMS=30000,
+    socketTimeoutMS=30000,
+    serverSelectionTimeoutMS=30000
+)
+
+print("✅ تم الاتصال بقاعدة البيانات بنجاح")
+
+
+# ==========================================
+# نموذج المستخدم (User)
+# ==========================================
 class User(Document):
     # المعلومات الأساسية
     hunter_id = IntField(unique=True, required=True)
@@ -47,8 +77,10 @@ class User(Document):
     stats_puzzles_solved = IntField(default=0)
     stats_items_bought = IntField(default=0)
     
+    # ==========================================
     # الطابق الأول (الاستنتاج - Among Us Style)
-    group_id = IntField()  # رقم المجموعة
+    # ==========================================
+    group_id = IntField(default=0)  # رقم المجموعة
     current_room = StringField(default='قاعة العروش')  # الغرفة الحالية
     is_cursed = BooleanField(default=False)  # هل هو الملعون (القاتل)
     f1_tasks = ListField(DictField(), default=list)  # المهام الموزعة للاعب
@@ -60,13 +92,17 @@ class User(Document):
     f1_last_move = DateTimeField()  # آخر وقت تحرك
     f1_last_kill = DateTimeField()  # آخر وقت قتل
     
+    # ==========================================
     # الطابق الثالث (المحكمة)
+    # ==========================================
     has_voted = BooleanField(default=False)  # هل صوت في المحكمة
     survival_votes = FloatField(default=0.0)  # أصوات النجاة
     f3_votes_cast = DictField(default=dict)  # الأصوات التي صوّتها اللاعب
     f3_vote_target = IntField()  # من صوّت ضده
     
+    # ==========================================
     # المؤثرات والمهارات الخاصة
+    # ==========================================
     quicksand_lock_until = DateTimeField()  # وقت انتهاء تجميد الرمال
     has_shield = BooleanField(default=False)  # هل لديه درع حماية
     totem_self = BooleanField(default=False)  # توتم إعادة الحياة
@@ -97,6 +133,9 @@ class User(Document):
         return f"{self.username} (ID: {self.hunter_id})"
 
 
+# ==========================================
+# نموذج الأخبار والألغاز (News)
+# ==========================================
 class News(Document):
     title = StringField(required=True)
     content = StringField(required=True)
@@ -130,6 +169,9 @@ class News(Document):
     }
 
 
+# ==========================================
+# نموذج المتجر (StoreItem)
+# ==========================================
 class StoreItem(Document):
     name = StringField(required=True, unique=True)
     description = StringField()
@@ -156,6 +198,9 @@ class StoreItem(Document):
     }
 
 
+# ==========================================
+# نموذج الإعدادات العامة (GlobalSettings)
+# ==========================================
 class GlobalSettings(Document):
     setting_name = StringField(unique=True, required=True)
     
@@ -193,7 +238,9 @@ class GlobalSettings(Document):
     gate_3_name = StringField()
     gates_test_message = StringField()
     
+    # ==========================================
     # الطابق الأول (الاستنتاج)
+    # ==========================================
     floor1_mode_active = BooleanField(default=False)
     floor1_move_cooldown = IntField(default=30)  # ثواني بين التحركات
     floor1_kill_cooldown = IntField(default=60)  # ثواني بين القتلات
@@ -203,7 +250,9 @@ class GlobalSettings(Document):
     floor1_darkness_until = DateTimeField()
     f1_active_meetings = DictField(default=dict)  # الاجتماعات النشطة
     
+    # ==========================================
     # الطابق الثاني (الحرب)
+    # ==========================================
     war_mode = BooleanField(default=False)
     war_end_time = DateTimeField()
     dead_count = IntField(default=0)
@@ -213,7 +262,9 @@ class GlobalSettings(Document):
     safe_time_minutes = IntField(default=120)  # وقت الأمان بعد آخر أكشن
     attack_cooldown_minutes = IntField(default=5)  # تبريد الهجوم
     
+    # ==========================================
     # الطابق الثالث (المحكمة)
+    # ==========================================
     floor3_mode_active = BooleanField(default=False)
     floor3_paused = BooleanField(default=False)
     floor3_time_left = IntField(default=0)
@@ -221,7 +272,9 @@ class GlobalSettings(Document):
     vote_end_time = DateTimeField()
     vote_top_n = IntField(default=5)
     
+    # ==========================================
     # المعركة الأخيرة
+    # ==========================================
     final_battle_mode = BooleanField(default=False)
     
     # النصوص الأسطورية
@@ -233,6 +286,9 @@ class GlobalSettings(Document):
     }
 
 
+# ==========================================
+# نموذج التعاويذ (SpellConfig)
+# ==========================================
 class SpellConfig(Document):
     spell_word = StringField(unique=True, required=True)
     spell_type = StringField(choices=['hp_gain', 'hp_loss', 'points_gain', 'points_loss', 'item_reward', 'unlock_lore', 'unlock_top', 'kill_emperor'])
@@ -250,6 +306,9 @@ class SpellConfig(Document):
     }
 
 
+# ==========================================
+# نموذج الإشعارات (Notification)
+# ==========================================
 class Notification(Document):
     target_hunter_id = IntField(required=True)
     message = StringField(required=True)
@@ -263,6 +322,9 @@ class Notification(Document):
     }
 
 
+# ==========================================
+# نموذج رسائل المجموعة (GroupMessage)
+# ==========================================
 class GroupMessage(Document):
     group_id = IntField(required=True)
     sender_name = StringField(required=True)
@@ -277,11 +339,15 @@ class GroupMessage(Document):
     }
 
 
-# دالة لتهيئة قاعدة البيانات
+# ==========================================
+# دالة تهيئة قاعدة البيانات
+# ==========================================
 def init_db():
+    """تهيئة قاعدة البيانات وإنشاء المستخدم الإمبراطور والإعدادات الافتراضية"""
+    from werkzeug.security import generate_password_hash
+    
     # إنشاء المستخدم الإمبراطور إذا لم يكن موجوداً
     if not User.objects(hunter_id=1000).first():
-        from werkzeug.security import generate_password_hash
         User(
             hunter_id=1000,
             username='الإمبراطور',
@@ -299,3 +365,66 @@ def init_db():
         print("✅ تم إنشاء الإعدادات العامة")
     
     print("✅ تم تهيئة قاعدة البيانات بنجاح")
+
+
+# ==========================================
+# دالة ترحيل قاعدة البيانات (لإضافة الحقول الجديدة)
+# ==========================================
+def migrate_database():
+    """ترحيل قاعدة البيانات لإضافة الحقول الجديدة للمستخدمين الموجودين"""
+    print("🔄 جاري ترحيل قاعدة البيانات...")
+    
+    updated_count = 0
+    
+    for user in User.objects():
+        updates = {}
+        
+        # التحقق من الحقول المفقودة وإضافتها
+        if not hasattr(user, 'f1_last_move') or user.f1_last_move is None:
+            updates['f1_last_move'] = None
+        
+        if not hasattr(user, 'f1_last_kill') or user.f1_last_kill is None:
+            updates['f1_last_kill'] = None
+        
+        if not hasattr(user, 'used_vent'):
+            updates['used_vent'] = False
+        
+        if not hasattr(user, 'emergency_used'):
+            updates['emergency_used'] = False
+        
+        if not hasattr(user, 'f1_has_voted'):
+            updates['f1_has_voted'] = False
+        
+        if not hasattr(user, 'f1_votes_received'):
+            updates['f1_votes_received'] = 0
+        
+        if not hasattr(user, 'gems_collected'):
+            updates['gems_collected'] = 0
+        
+        if not hasattr(user, 'is_cursed'):
+            updates['is_cursed'] = False
+        
+        if not hasattr(user, 'group_id'):
+            updates['group_id'] = 0
+        
+        if not hasattr(user, 'current_room'):
+            updates['current_room'] = 'قاعة العروش'
+        
+        if not hasattr(user, 'f1_tasks'):
+            updates['f1_tasks'] = []
+        
+        if updates:
+            user.update(**updates)
+            updated_count += 1
+            print(f"  ✓ تم تحديث {user.username}")
+    
+    print(f"✅ تم ترحيل قاعدة البيانات بنجاح! (تم تحديث {updated_count} مستخدم)")
+
+
+# ==========================================
+# تشغيل الترحيل تلقائياً عند الاستيراد
+# ==========================================
+try:
+    migrate_database()
+except Exception as e:
+    print(f"⚠️ تحذير: فشل ترحيل قاعدة البيانات: {e}")
