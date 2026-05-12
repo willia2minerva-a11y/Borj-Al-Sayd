@@ -1194,12 +1194,15 @@ def admin_panel():
             )
             flash('تم تصفير محكمة الطابق الثالث بالكامل!', 'success')
             
-        elif act == 'toggle_final_battle': 
+                elif act == 'toggle_final_battle': 
             new_state = not getattr(settings, 'final_battle_mode', False)
             if new_state:
                 emp_hp = int(request.form.get('emperor_hp') or 100000)
                 User.objects(hunter_id=1000).update(set__health=emp_hp)
-            GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=new_state)
+                # السطر التالي يخبر النظام أن الرقم الذي أدخلته هو الحد الأقصى الجديد لحساب النسبة المئوية
+                GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=new_state, set__emperor_max_hp=emp_hp)
+            else:
+                GlobalSettings.objects(setting_name='main_config').update_one(set__final_battle_mode=new_state)
             flash('تغيرت حالة المعركة الأخيرة!', 'success')
 
         elif act == 'add_standalone_puzzle':
