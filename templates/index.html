@@ -35,17 +35,20 @@
         </div>
     {% endif %}
 
-    {% if settings and settings.final_battle_mode %}
+    {% if settings and settings.final_battle_mode and emperor %}
     <div class="card" style="border-color: #9b59b6; box-shadow: 0 0 30px rgba(155, 89, 182, 0.2);">
         <h2 style="color: #9b59b6; text-align: center; margin-top:0;">⚔️ ساحة المعركة الكبرى ⚔️</h2>
         
-        {% set max_hp = settings.emperor_max_hp if settings.emperor_max_hp and settings.emperor_max_hp > 0 else 1000 %}
+        {% set max_hp = settings.emperor_max_hp | default(1000, true) %}
+        {% if max_hp <= 0 %}{% set max_hp = 1000 %}{% endif %}
         {% set percent = (emperor.health / max_hp) * 100 %}
-        {% set percent = percent if percent > 0 else 0 %}
+        {% if percent < 0 %}{% set percent = 0 %}{% endif %}
+        {% if percent > 100 %}{% set percent = 100 %}{% endif %}
         
         <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: #000; border-radius: 8px; border: 1px dashed #333;">
             <h3 style="color: #e74c3c; font-size: 26px; margin-top:0;">👑 الإمبراطور {{ emperor.username }} 👑</h3>
-            <p style="font-weight: bold; letter-spacing: 2px;">الصحة: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
+            
+            <p style="font-weight: bold; letter-spacing: 1px; font-size: 15px;">الصحة: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
             
             <div style="width: 100%; background-color: #1a1a1a; height: 30px; border-radius: 15px; border: 2px solid #e74c3c; overflow: hidden; position: relative;">
                 <div style="width: {{ percent }}%; background-color: #e74c3c; height: 100%; transition: width 0.8s ease-in-out; background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 40px 40px;"></div>
@@ -82,7 +85,7 @@
                 <h3 style="color: var(--gold-main); margin-top:0;">📍 موقعك الحالي: {{ current_user.current_room }}</h3>
                 
                 {% if current_user.status == 'active' %}
-                <p style="color: #aaa; font-size: 13px;">تتحرك في الظلام.. إلى أين تتجه؟</p>
+                <p style="color: #aaa; font-size: 13px;">إلى أين تتجه؟</p>
                 <form action="/f1/move" method="POST" style="display: flex; gap: 10px;">
                     <select name="room" style="padding: 10px; flex: 1; background: #111; color: #fff; border: 1px solid #444; border-radius: 5px; outline: none;">
                         {% for adj in adjacent_rooms %}
@@ -189,4 +192,3 @@
 
 {% endif %}
 {% endblock %}
-
