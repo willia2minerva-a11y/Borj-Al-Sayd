@@ -56,7 +56,7 @@ class User(db.Document):
     has_shield = db.BooleanField(default=False)
     totem_self = db.BooleanField(default=False)
     
-    # إعدادات الطابق الأول (أمونج أس)
+    # إعدادات الطابق الأول
     current_room = db.StringField(default='الساحة')
     is_cursed = db.BooleanField(default=False)
     group_id = db.IntField(default=0)
@@ -123,6 +123,8 @@ class GlobalSettings(db.Document):
     safe_time_minutes = db.IntField(default=120)
     
     final_battle_mode = db.BooleanField(default=False)
+    emperor_max_hp = db.IntField(default=100000) # الحقل الجديد لضبط شريط الصحة
+    
     gates_mode_active = db.BooleanField(default=False)
     gates_end_time = db.DateTimeField()
     gates_description = db.StringField(default='')
@@ -178,42 +180,20 @@ class GroupMessage(db.Document):
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
 
-# ==========================================
-# دالة تهيئة قاعدة البيانات
-# ==========================================
 def init_db():
-    """تهيئة قاعدة البيانات وإنشاء المستخدم الإمبراطور والإعدادات الافتراضية"""
     from werkzeug.security import generate_password_hash
-    
-    # إنشاء المستخدم الإمبراطور إذا لم يكن موجوداً
     if not User.objects(hunter_id=1000).first():
         User(
-            hunter_id=1000,
-            username='الإمبراطور',
-            password_hash=generate_password_hash('admin123'), # يمكنك تغييره لاحقاً
-            role='admin',
-            status='active',
-            zone='العرش',
-            special_rank='حاكم المتاهة'
+            hunter_id=1000, username='الإمبراطور', password_hash=generate_password_hash('admin123'),
+            role='admin', status='active', zone='العرش', special_rank='حاكم المتاهة', health=100000
         ).save()
-        print("✅ تم إنشاء المستخدم الإمبراطور")
-    
-    # إنشاء الإعدادات العامة إذا لم تكن موجودة
     if not GlobalSettings.objects(setting_name='main_config').first():
         GlobalSettings(setting_name='main_config').save()
-        print("✅ تم إنشاء الإعدادات العامة")
 
-# ==========================================
-# دالة ترحيل قاعدة البيانات (لإضافة الحقول الجديدة)
-# ==========================================
 def migrate_database():
-    """ترحيل قاعدة البيانات لإضافة الحقول الجديدة للمستخدمين الموجودين"""
-    print("🔄 جاري فحص وترحيل قاعدة البيانات...")
-    
     updated_count = 0
     for user in User.objects():
         updates = {}
-        
         if not hasattr(user, 'used_vent'): updates['used_vent'] = False
         if not hasattr(user, 'emergency_used'): updates['emergency_used'] = False
         if not hasattr(user, 'f1_has_voted'): updates['f1_has_voted'] = False
@@ -223,20 +203,12 @@ def migrate_database():
         if not hasattr(user, 'group_id'): updates['group_id'] = 0
         if not hasattr(user, 'current_room'): updates['current_room'] = 'الساحة'
         if not hasattr(user, 'f1_tasks'): updates['f1_tasks'] = []
-        
         if updates:
             user.update(**updates)
             updated_count += 1
-            
-    if updated_count > 0:
-        print(f"✅ تم ترحيل قاعدة البيانات بنجاح! (تم تحديث {updated_count} مستخدم)")
 
-# ==========================================
-# تشغيل التهيئة والترحيل تلقائياً عند الاستيراد
-# ==========================================
 try:
     init_db()
     migrate_database()
 except Exception as e:
-    print(f"⚠️ تحذير: خطأ أثناء تهيئة أو ترحيل قاعدة البيانات: {e}")
-
+    pass
