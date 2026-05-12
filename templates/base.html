@@ -42,9 +42,9 @@
             {% if current_user %}
                 <a href="/profile">الهوية 👤</a>
                 <a href="/friends">التحالفات 🤝</a>
-                <a href="/store">السوق <span style="color:#f1c40f;">({{ current_user.points }} 🪙)</span></a>
-                <a href="/news">المراسيم {% if un_news > 0 %}<span style="color:#e74c3c;">({{ un_news }})</span>{% endif %}</a>
-                <a href="/puzzles">الألغاز {% if un_puz > 0 %}<span style="color:#e74c3c;">({{ un_puz }})</span>{% endif %}</a>
+                <a href="/store">السوق <span style="color:#f1c40f;">({{ current_user.points|default(0) }} 🪙)</span></a>
+                <a href="/news">المراسيم {% if un_news and un_news > 0 %}<span style="color:#e74c3c;">({{ un_news }})</span>{% endif %}</a>
+                <a href="/puzzles">الألغاز {% if un_puz and un_puz > 0 %}<span style="color:#e74c3c;">({{ un_puz }})</span>{% endif %}</a>
                 <a href="/declarations">التصريحات 📜</a>
                 <a href="/altar">المذبح 🔮</a>
                 
@@ -53,12 +53,10 @@
                 {% endif %}
                 
                 <div class="hp-container">
-                    {% if current_user.status == 'active' %}
-                        {% if current_user.role == 'admin' %}
-                            <span class="emperor-badge">👑 الحاكم</span>
-                        {% else %}
-                            <span class="hp-bar">HP: {{ current_user.health }}</span>
-                        {% endif %}
+                    {% if current_user.role == 'admin' %}
+                        <span class="emperor-badge">👑 الحاكم</span>
+                    {% elif current_user.status == 'active' %}
+                        <span class="hp-bar">HP: {{ current_user.health|default(0) }}</span>
                     {% else %}
                         <span class="observer-badge">👻 مراقب</span>
                     {% endif %}
