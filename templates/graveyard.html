@@ -2,24 +2,26 @@
 {% block content %}
 <div style="text-align: center; margin-bottom: 30px;">
     <h2 style="color: #e74c3c; margin: 0; text-shadow: 0 0 10px rgba(231,76,60,0.5);">مقبرة الساقطين 💀</h2>
-    <p style="color: #888;">أرواحهم عالقة هنا إلى الأبد...</p>
+    <p style="color: #888;">أرواحهم عالقة هنا إلى الأبد... واعتبروا بمن سبقكم!</p>
 </div>
 
 {% if users %}
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
         {% for u in users %}
-        <div style="background: #110d09; border: 1px solid #551111; padding: 20px; border-radius: 8px; text-align: center; box-shadow: inset 0 0 20px rgba(138,3,3,0.1);">
-            <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;">🪦</div>
+        <div style="background: #110d09; border: 1px solid #551111; padding: 20px; border-radius: 8px; text-align: center; box-shadow: inset 0 0 20px rgba(138,3,3,0.1); transition: 0.3s;">
+            <div style="font-size: 40px; margin-bottom: 10px; opacity: 0.8;">🪦</div>
             <strong style="color: #ccc; display: block; font-size: 18px;">{{ u.username }}</strong>
-            <div style="color: #e74c3c; font-size: 13px; margin-top: 10px;">السبب: {{ u.freeze_reason if u.freeze_reason else 'ابتلعته الرمال' }}</div>
+            <div style="color: #888; font-family: monospace; font-size: 12px; margin-top: 5px;">ID: {{ u.hunter_id }}</div>
+            <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; color: #e74c3c; font-size: 13px; font-weight: bold; margin-top: 10px; padding: 5px; border-radius: 4px;">
+                السبب: {{ u.freeze_reason if u.freeze_reason else 'ابتلعته الرمال للكسل' }}
+            </div>
         </div>
         {% endfor %}
     </div>
 {% else %}
-    <div style="text-align: center; padding: 50px; border: 1px dashed #332815; border-radius: 12px; background: #050403;">
-        <h1 style="font-size: 60px; margin: 0; opacity: 0.3;">🌫️</h1>
-        <h3 style="color: #888; font-weight: normal;">المقبرة صامتة وموحشة...</h3>
-        <p style="color: #555;">لم تبتلع الرمال أحداً بعد، الأرواح لا تزال تقاتل بشراسة.</p>
+    <div style="text-align: center; padding: 50px; background: #110d09; border-radius: 12px; border: 1px dashed #333;">
+        <span style="font-size: 50px; opacity: 0.5;">🕊️</span>
+        <h3 style="color: #888; margin-top: 15px;">المقبرة فارغة... لم يسقط أحد بعد!</h3>
     </div>
 {% endif %}
 {% endblock %}
