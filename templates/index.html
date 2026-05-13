@@ -283,3 +283,30 @@
                     </form>
                 </div>
                 {% else %}
+                <h3 style="color: #2ecc71;">لقد اخترت البوابة {{ current_user.chosen_gate }}. انتظر مصيرك!</h3>
+                {% endif %}
+            {% elif current_user.hunter_id == 1000 %}
+                <p style="color: #888;">الإمبراطور لا يعبر البوابات.</p>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <div style="text-align: center; padding: 10px 0 30px;">
+            <h1 style="color: var(--gold-main); font-weight: 900; margin-bottom: 5px;">{{ settings.home_title if settings else 'البوابة' }}</h1>
+            <p style="color: #666; font-size: 14px;">أهلاً بك يا <span style="color: #fff;">{{ current_user.username }}</span>.</p>
+        </div>
+        <div class="dashboard-grid">
+            <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">النقوش</h3></a>
+            <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">المراسيم</h3></a>
+            <a href="/friends" class="gold-card"><span class="card-icon">🤝</span><h3 class="card-title">التحالفات</h3></a>
+            <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">التصريحات</h3></a>
+            <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">السوق المظلم</h3></a>
+            <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">مذبح الطلاسم</h3></a>
+        </div>
+        <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111; min-height: 80px; padding: 15px;">
+            <span class="card-icon" style="font-size: 25px;">💀</span><h3 class="card-title" style="color: #e74c3c;">المقبرة</h3>
+        </a>
+    {% endif %}
+
+{% endif %}
+{% endblock %}
