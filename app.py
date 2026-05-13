@@ -1247,7 +1247,7 @@ def admin_panel():
 
         return redirect(url_for('admin_panel'))
     
-    users_query = User.objects(hunter_id__ne=1000)
+    users_query = User.objects()
     search_query = request.args.get('search_user', '').strip() 
     if search_query:
         if search_query.isdigit(): users_query = users_query.filter(hunter_id=int(search_query))
