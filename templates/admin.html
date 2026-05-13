@@ -56,14 +56,14 @@
         <div id="tab_dashboard" class="tab-section active">
             <div class="section-header">📊 النظرة العامة</div>
             <div class="stats-grid">
-                <div class="stat-card"><h4>إجمالي المسجلين</h4><span>{{ stats.total }}</span></div>
-                <div class="stat-card"><h4>أحياء يُرزقون</h4><span style="color:#2ecc71;">{{ stats.alive }}</span></div>
-                <div class="stat-card"><h4>جثث في المقبرة</h4><span style="color:#e74c3c;">{{ stats.dead }}</span></div>
-                <div class="stat-card"><h4>ميزانية المتاهة (دنانير)</h4><span style="color:#f1c40f;">{{ stats.points }} 🪙</span></div>
+                <div class="stat-card"><h4>إجمالي المسجلين</h4><span>{{ stats.total if stats else 0 }}</span></div>
+                <div class="stat-card"><h4>أحياء يُرزقون</h4><span style="color:#2ecc71;">{{ stats.alive if stats else 0 }}</span></div>
+                <div class="stat-card"><h4>جثث في المقبرة</h4><span style="color:#e74c3c;">{{ stats.dead if stats else 0 }}</span></div>
+                <div class="stat-card"><h4>ميزانية المتاهة (دنانير)</h4><span style="color:#f1c40f;">{{ stats.points if stats else 0 }} 🪙</span></div>
             </div>
             <div style="background: rgba(212,175,55,0.1); border: 1px solid var(--gold-main); padding: 20px; border-radius: 8px; text-align: center;">
                 <h3 style="color: var(--gold-main); margin-top: 0;">مرحباً بك يا إمبراطور</h3>
-                <p style="color: #ddd;">هذه لوحة التحكم الاحترافية الجديدة. الإحصائيات تعمل الآن بشكل فوري ودقيق.</p>
+                <p style="color: #ddd;">هذه لوحة التحكم الاحترافية. اختر القسم الذي ترغب بإدارته من القائمة الجانبية.</p>
             </div>
         </div>
 
@@ -141,9 +141,9 @@
             <div class="section-header" style="color: #d35400; border-bottom-color: #d35400;">🚪 إدارة البوابات (مرحلة الفرز)</div>
             
             <div class="stats-grid">
-                <div class="stat-card" style="border-color: #d35400;"><h4>البوابة 1 ({{ settings.gate_1_name }})</h4><span style="color: #d35400;">{{ gate_counts[1] if gate_counts else 0 }} رحالة</span></div>
-                <div class="stat-card" style="border-color: #3498db;"><h4>البوابة 2 ({{ settings.gate_2_name }})</h4><span style="color: #3498db;">{{ gate_counts[2] if gate_counts else 0 }} رحالة</span></div>
-                <div class="stat-card" style="border-color: #9b59b6;"><h4>البوابة 3 ({{ settings.gate_3_name }})</h4><span style="color: #9b59b6;">{{ gate_counts[3] if gate_counts else 0 }} رحالة</span></div>
+                <div class="stat-card" style="border-color: #d35400;"><h4>البوابة 1 ({{ settings.gate_1_name if settings else 'بوابة 1' }})</h4><span style="color: #d35400;">{{ gate_counts[1] if gate_counts else 0 }} رحالة</span></div>
+                <div class="stat-card" style="border-color: #3498db;"><h4>البوابة 2 ({{ settings.gate_2_name if settings else 'بوابة 2' }})</h4><span style="color: #3498db;">{{ gate_counts[2] if gate_counts else 0 }} رحالة</span></div>
+                <div class="stat-card" style="border-color: #9b59b6;"><h4>البوابة 3 ({{ settings.gate_3_name if settings else 'بوابة 3' }})</h4><span style="color: #9b59b6;">{{ gate_counts[3] if gate_counts else 0 }} رحالة</span></div>
             </div>
 
             <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
@@ -214,6 +214,16 @@
                                 </div>
                             </div>
                         {% endfor %}
+                        
+                        {% if settings and str(gid) in settings.f1_active_meetings %}
+                            <div style="background: rgba(231,76,60,0.2); padding: 10px; margin-top: 10px; border-radius: 4px; border: 1px dashed #e74c3c;">
+                                <strong style="color:#e74c3c; font-size:12px;">🚨 اجتماع طارئ قائم الآن!</strong>
+                                <form action="/admin" method="POST" style="margin-top:5px;">
+                                    <input type="hidden" name="action" value="cancel_f1_meeting"><input type="hidden" name="group_id" value="{{ gid }}">
+                                    <button type="submit" style="background:#e74c3c; color:#fff; border:none; padding:5px; border-radius:4px; cursor:pointer; width:100%;">إلغاء الاجتماع قسراً</button>
+                                </form>
+                            </div>
+                        {% endif %}
                     </div>
                 {% endfor %}
             </div>
@@ -407,6 +417,7 @@
                     <option value="points_loss">فقر مدقع (-دنانير)</option>
                     <option value="item_reward">استدعاء أداة / ختم</option>
                     <option value="unlock_lore">كشف غرفة البونغليف</option>
+                    <option value="unlock_top">كشف قاعة الأساطير</option>
                     <option value="kill_emperor" style="color: #e74c3c; font-weight: bold;">قتل الإمبراطور (التعويذة المحرمة)</option>
                 </select>
                 <div style="display:flex; gap:10px; flex-wrap: wrap;">
@@ -483,4 +494,3 @@
     }
 </script>
 {% endblock %}
-
