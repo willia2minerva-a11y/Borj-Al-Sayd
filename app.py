@@ -276,6 +276,9 @@ def pre_process():
             _settings_cache['timestamp'] = 0
             
         if settings.floor3_mode_active and not getattr(settings, 'floor3_paused', False) and settings.vote_end_time and now >= settings.vote_end_time:
+            if getattr(settings, 'war_mode', False) or getattr(settings, 'floor1_mode_active', False) or getattr(settings, 'gates_mode_active', False) or getattr(settings, 'final_battle_mode', False):
+                GlobalSettings.objects(setting_name='main_config').update_one(set__floor3_results_active=False)
+                _settings_cache['timestamp'] = 0
             all_active = User.objects(status='active', role='hunter', hunter_id__ne=1000)
             slackers = User.objects(has_voted=False, status='active', role='hunter', hunter_id__ne=1000)
             
