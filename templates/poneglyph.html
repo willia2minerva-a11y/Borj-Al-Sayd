@@ -21,11 +21,6 @@
         white-space: pre-wrap;
         font-weight: bold;
     }
-    .admin-edit-panel { background: rgba(0,0,0,0.8); border: 1px dashed #f39c12; padding: 20px; border-radius: 10px; margin-top: 30px; }
-    .form-control-smart { width: 100%; padding: 15px; background: #000; color: #f39c12; border: 1px solid #555; border-radius: 8px; outline: none; font-size: 16px; margin-bottom: 15px; font-family: monospace; }
-    .btn-gold { background: linear-gradient(45deg, #f39c12, #e67e22); color: #000; border: none; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-    .btn-danger { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; margin-right: 10px;}
-    .btn-danger:hover { background: #e74c3c; color:#fff;}
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
@@ -34,24 +29,10 @@
 </div>
 
 <div class="stone-wall">
-    {% if poneglyph_text and poneglyph_text != '' %}
-        <div class="stone-text">{{ poneglyph_text }}</div>
+    {% if settings and settings.poneglyph_text and settings.poneglyph_text != '' %}
+        <div class="stone-text">{{ settings.poneglyph_text }}</div>
     {% else %}
         <div class="stone-text" style="color: #555; text-shadow: none;">النقوش ممسوحة... الجدار صامت.</div>
-    {% endif %}
-    
-    {% if current_user.role == 'admin' %}
-        <div class="admin-edit-panel">
-            <h4 style="color: #fff; margin-top: 0; text-align: right;">👑 تعديل البونغليف (يظهر لك فقط)</h4>
-            <form action="/admin" method="POST">
-                <input type="hidden" name="action" value="update_poneglyph">
-                <textarea name="poneglyph_text" class="form-control-smart" rows="5" placeholder="اكتب أسرار المتاهة هنا...">{{ poneglyph_text }}</textarea>
-                <div style="text-align: right;">
-                    <button type="submit" class="btn-gold">حفظ النقش الجديد ➔</button>
-                    <button type="button" class="btn-danger" onclick="document.querySelector('textarea[name=\'poneglyph_text\']').value=''; this.form.submit();">مسح النقش بالكامل ✖</button>
-                </div>
-            </form>
-        </div>
     {% endif %}
 </div>
 {% endblock %}
