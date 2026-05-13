@@ -1,53 +1,132 @@
-#f3_results.html
 {% extends 'base.html' %}
 {% block content %}
 
 <style>
-    .results-container { background: #0c0a08; border: 2px solid #2ecc71; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(46,204,113,0.15); text-align: center; }
-    .results-title { color: #2ecc71; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(46,204,113,0.5); border-bottom: 1px dashed #333; padding-bottom: 15px; }
-    .winner-list { display: flex; flex-direction: column; gap: 15px; margin-top: 25px; }
-    .winner-item { display: flex; align-items: center; justify-content: space-between; background: #111; border: 1px solid #333; padding: 15px 25px; border-radius: 8px; transition: 0.3s; }
-    .winner-item:hover { border-color: var(--gold-main); transform: scale(1.02); box-shadow: 0 0 15px rgba(212,175,55,0.2); }
-    
-    .rank-badge { background: #2ecc71; color: #000; font-weight: bold; font-size: 20px; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+    /* التنسيق الأساسي للشاشات الكبيرة */
+    .results-wrapper {
+        background: #0c0a08;
+        border: 2px solid #2ecc71;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 0 30px rgba(46,204,113,0.15);
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+        box-sizing: border-box;
+    }
+    .results-title {
+        color: #2ecc71;
+        margin-top: 0;
+        font-size: 28px;
+        text-shadow: 0 0 10px rgba(46,204,113,0.5);
+        border-bottom: 1px dashed #333;
+        padding-bottom: 15px;
+    }
+    .winner-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    .winner-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #111;
+        border: 1px solid #333;
+        padding: 15px;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+    .winner-item:hover {
+        border-color: var(--gold-main);
+        transform: scale(1.02);
+        box-shadow: 0 0 15px rgba(212,175,55,0.2);
+    }
+    .rank-badge {
+        background: #2ecc71;
+        color: #000;
+        font-weight: bold;
+        font-size: 20px;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        flex-shrink: 0;
+    }
     .rank-1 { background: #f1c40f; } /* المركز الأول: ذهبي */
     .rank-2 { background: #bdc3c7; } /* المركز الثاني: فضي */
     .rank-3 { background: #cd7f32; } /* المركز الثالث: برونزي */
-    
+
+    .no-winners-box {
+        padding: 30px 15px;
+        background: #1a1a1a;
+        border-radius: 8px;
+        border: 1px dashed #e74c3c;
+        margin-top: 20px;
+    }
+
+    .btn-back-arena {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 12px 30px;
+        background: #111;
+        color: var(--gold-main);
+        border: 1px solid var(--gold-main);
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 18px;
+        transition: 0.3s;
+    }
+    .btn-back-arena:hover {
+        background: var(--gold-main);
+        color: #000;
+    }
+
+    /* التنسيق المخصص لشاشات الهواتف (لحل مشكلة التكدس) */
     @media (max-width: 600px) {
+        .results-wrapper { padding: 15px; }
+        .results-title { font-size: 24px; }
         .winner-item { flex-direction: column; gap: 15px; text-align: center; }
         .winner-info { flex-direction: column; }
+        .no-winners-box { padding: 20px 10px; }
+        .btn-back-arena { width: 100%; box-sizing: border-box; }
     }
 </style>
 
-<div class="results-container">
+<div class="results-wrapper">
     <h1 class="results-title">📜 المتأهلون للمعركة الأخيرة 📜</h1>
-    <p style="color: #ddd; font-size: 16px;">هؤلاء هم الرحالة الذين حازوا على ثقة الأغلبية، ونجوا من المحكمة للوقوف أمام الإمبراطور!</p>
+    <p style="color: #ddd; font-size: 15px; margin-bottom: 20px;">الرحالة الذين حازوا على ثقة الأغلبية، ونجوا من المحكمة للوقوف أمام الإمبراطور!</p>
 
     <div class="winner-list">
         {% for winner in winners %}
             <div class="winner-item">
-                <div class="winner-info" style="display: flex; align-items: center; gap: 20px;">
+                <div class="winner-info" style="display: flex; align-items: center; gap: 15px;">
                     <div class="rank-badge {% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
                         {{ loop.index }}
                     </div>
-                    <img src="/avatar/{{ winner.hunter_id }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-main);" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                    <h2 style="color: #fff; margin: 0;">{{ winner.username }}</h2>
+                    <img src="/avatar/{{ winner.hunter_id }}" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold-main);" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                    <h2 style="color: #fff; margin: 0; font-size: 20px;">{{ winner.username }}</h2>
                 </div>
-                <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 8px; border: 1px dashed #444;">
-                    <span style="display: block; color: var(--gold-light); font-size: 13px; margin-bottom: 5px;">أصوات النجاة</span>
-                    <span style="color: #2ecc71; font-weight: bold; font-size: 26px;">{{ winner.survival_votes|round(1) }}</span>
+                <div style="text-align: center; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 8px; border: 1px dashed #444; margin-top: 10px;">
+                    <span style="display: block; color: var(--gold-light); font-size: 12px; margin-bottom: 5px;">أصوات النجاة</span>
+                    <span style="color: #2ecc71; font-weight: bold; font-size: 24px;">{{ winner.survival_votes|round(1) }}</span>
                 </div>
             </div>
         {% else %}
-            <div style="padding: 40px; background: #1a1a1a; border-radius: 8px; border: 1px dashed #e74c3c;">
-                <h3 style="color: #e74c3c; margin: 0;">لم ينجُ أحد من المحكمة الكبرى!</h3>
-                <p style="color: #aaa; margin-top: 10px;">جميع الرحالة سقطوا في الظلام.</p>
+            <div class="no-winners-box">
+                <h3 style="color: #e74c3c; margin: 0 0 10px 0; font-size: 22px;">لم ينجُ أحد من المحكمة الكبرى!</h3>
+                <p style="color: #aaa; margin: 0; font-size: 15px;">جميع الرحالة سقطوا في الظلام.</p>
             </div>
         {% endfor %}
     </div>
 
-    <a href="/" style="display: inline-block; margin-top: 35px; padding: 12px 40px; background: #111; color: var(--gold-main); border: 1px solid var(--gold-main); border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 18px; transition: 0.3s;" onmouseover="this.style.background='var(--gold-main)'; this.style.color='#000';" onmouseout="this.style.background='#111'; this.style.color='var(--gold-main)';">العودة للساحة ⚔️</a>
+    <a href="/" class="btn-back-arena">العودة للساحة ⚔️</a>
 </div>
 
 {% endblock %}
