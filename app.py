@@ -1171,6 +1171,7 @@ def admin_panel():
                 time_left = (settings.vote_end_time - datetime.utcnow()).total_seconds() if settings.vote_end_time else 0
                 GlobalSettings.objects(setting_name='main_config').update_one(
                     set__floor3_mode_active=False, set__floor3_paused=True, set__floor3_time_left=max(0, int(time_left))
+                    set__floor3_results_active=False  # ⬅️ أضف هذا السطر
                 )
                 flash('تم إيقاف/تجميد المحكمة وحفظ الوقت!', 'success')
             elif getattr(settings, 'floor3_paused', False):
