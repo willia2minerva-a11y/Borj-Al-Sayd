@@ -10,7 +10,7 @@
     .health-bar-bg { width: 100%; background: #222; border-radius: 10px; border: 1px solid #444; height: 25px; overflow: hidden; margin-bottom: 10px;}
     .health-bar-fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 13px;}
     
-    /* تصميم الأزرار للوحة التحكم (الرئيسية) */
+    /* تصميم الأزرار للوحة التحكم */
     .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
     .gold-card { background: linear-gradient(145deg, #1a140a 0%, #050403 100%); border: 1px solid #44351c; border-radius: 12px; padding: 20px 10px; text-align: center; text-decoration: none; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 120px;}
     .gold-card:hover { transform: translateY(-5px); border-color: var(--gold-main); box-shadow: 0 5px 20px rgba(212,175,55,0.2); }
@@ -31,6 +31,16 @@
     .mystic-door { background: linear-gradient(180deg, #3e2723, #1a1110); border: 2px solid #e67e22; border-radius: 10px 10px 0 0; padding: 40px 20px; color: #e67e22; font-weight: 900; font-size: 20px; cursor: pointer; transition: 0.4s; box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(230,126,34,0.3); text-align: center; position: relative; overflow: hidden; width: 100%;}
     .mystic-door::after { content: '🚪'; font-size: 40px; display: block; margin-top: 10px; opacity: 0.8;}
     .mystic-door:hover { transform: scale(1.05); box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 0 30px rgba(230,126,34,0.8); border-color: #f1c40f; color: #f1c40f; }
+
+    /* تصميم بروفايل الواجهة الأساسية (فيسبوك ستايل) */
+    .fb-profile-wrap { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin-bottom: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .fb-cover { height: 150px; background: linear-gradient(45deg, #1a1a1a, var(--gold-dark), #000); position: relative; background-size: cover; background-position: center; }
+    .fb-info-box { padding: 0 20px 20px; text-align: center; position: relative; margin-top: -50px; }
+    .fb-avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid #111; background: #000; object-fit: cover; }
+    .fb-name { margin: 10px 0 5px; color: #fff; font-size: 24px; font-weight: bold; }
+    .fb-id { color: #888; font-family: monospace; margin: 0 0 15px; font-size: 13px; }
+    
+    .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px; }
 </style>
 
 <script>
@@ -89,7 +99,7 @@
                 <h3 style="color: #e74c3c; font-size: 26px; margin-top:0;">👑 الإمبراطور {{ emperor.username }} 👑</h3>
                 <p style="font-weight: bold; letter-spacing: 1px; font-size: 16px;">الصحة: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
                 <div class="health-bar-bg">
-                    <div class="health-bar-fill" style="width: {{ percent }}%;"></div>
+                    <div class="health-bar-fill" style="width: {{ percent }}%;">{{ "%.1f"|format(percent) }}%</div>
                 </div>
             </div>
 
@@ -135,13 +145,17 @@
             {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
                 {% if not current_user.has_voted %}
                     <p style="color: #ddd; margin-bottom:20px;">يجب توزيع <strong style="color:var(--gold-main);">100 صوت نجاة</strong> بدقة على 5 رحالة.</p>
+                    
+                    <datalist id="active_hunters_list">
+                        {% for h in active_hunters %}
+                            <option value="{{ h.hunter_id }}">{{ h.username }}</option>
+                        {% endfor %}
+                    </datalist>
+
                     <form id="voteForm" action="/submit_floor3_votes" method="POST" style="max-width: 500px; margin: auto; text-align: right;">
                         {% for i in range(1, 6) %}
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <select name="target_{{ i }}" id="t_{{ i }}" style="flex: 2; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;" required>
-                                <option value="" disabled selected>اختر الرحالة رقم {{ i }}...</option>
-                                {% for h in active_hunters %}<option value="{{ h.hunter_id }}">{{ h.username }}</option>{% endfor %}
-                            </select>
+                            <input type="text" name="target_{{ i }}" id="t_{{ i }}" list="active_hunters_list" placeholder="ابحث بالاسم أو الـ ID للرحالة {{ i }}..." style="flex: 2; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;" required autocomplete="off">
                             <input type="number" name="amount_{{ i }}" id="a_{{ i }}" placeholder="الأصوات" required min="1" max="96" step="1" style="flex: 1; padding: 12px; background: #111; color: #fff; border: 1px solid #333; border-radius: 6px;">
                         </div>
                         {% endfor %}
@@ -201,7 +215,7 @@
                 </div>
                 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <a href="/friends" class="btn-epic" style="flex: 1; min-width: 150px; background: #2980b9; border-color: #3498db;">🎯 استهداف</a>
+                    <a href="/friends" class="btn-epic" style="flex: 1; min-width: 150px; background: #2980b9; border-color: #3498db;">🎯 استهداف (تحالفات)</a>
                     <a href="/store" class="btn-epic" style="flex: 1; min-width: 150px; background: var(--gold-dark); border-color: var(--gold-main);">🛒 متجر الأسلحة</a>
                 </div>
             {% elif current_user.hunter_id == 1000 %}
@@ -293,9 +307,21 @@
         </div>
 
     {% else %}
-        <div style="text-align: center; padding: 10px 0 30px;">
-            <h1 style="color: var(--gold-main); font-weight: 900; margin-bottom: 5px;">{{ settings.home_title if settings else 'البوابة' }}</h1>
-            <p style="color: #666; font-size: 14px;">أهلاً بك يا <span style="color: #fff;">{{ current_user.username }}</span> في قلب المتاهة.</p>
+        <div class="fb-profile-wrap">
+            <div class="fb-cover" style="{% if settings and settings.banner_url %}background-image: url('{{ settings.banner_url }}');{% endif %}"></div>
+            <div class="fb-info-box">
+                <img src="/avatar/{{ current_user.hunter_id }}" class="fb-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+                <h2 class="fb-name">{{ current_user.username }} {% if current_user.hunter_id == 1000 %}👑{% endif %}</h2>
+                <p class="fb-id">ID: {{ current_user.hunter_id }}</p>
+                <div style="display:flex; justify-content:center; gap:10px;">
+                    <span class="status-badge" style="background:#222; border:1px solid var(--gold-dark); color:var(--gold-main);">الطابق: {{ current_user.zone }}</span>
+                    {% if current_user.status == 'active' %}
+                        <span class="status-badge" style="background:rgba(46, 204, 113, 0.1); border:1px solid #2ecc71; color:#2ecc71;">حي يُرزق</span>
+                    {% else %}
+                        <span class="status-badge" style="background:rgba(231, 76, 60, 0.1); border:1px solid #e74c3c; color:#e74c3c;">مقيد (مراقب)</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         <div class="dashboard-grid">
@@ -305,6 +331,14 @@
             <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">التصريحات</h3></a>
             <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">السوق المظلم</h3></a>
             <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">مذبح الطلاسم</h3></a>
+            
+            {% if current_user.unlocked_lore_room or current_user.role == 'admin' %}
+                <a href="/poneglyph" class="gold-card" style="border-color:#f39c12;"><span class="card-icon">🗿</span><h3 class="card-title" style="color:#f39c12;">البونغليف</h3></a>
+            {% endif %}
+            
+            {% if current_user.unlocked_top_room or current_user.role == 'admin' %}
+                <a href="/top_room" class="gold-card" style="border-color:#3498db;"><span class="card-icon">🏆</span><h3 class="card-title" style="color:#3498db;">قاعة الأساطير</h3></a>
+            {% endif %}
         </div>
         
         <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #1a0a0a; border-color: #551111; min-height: 80px; padding: 15px;">
