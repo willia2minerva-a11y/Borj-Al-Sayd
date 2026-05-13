@@ -1,3 +1,4 @@
+# models.py
 from flask_mongoengine import MongoEngine
 from datetime import datetime
 
@@ -56,7 +57,6 @@ class User(db.Document):
     has_shield = db.BooleanField(default=False)
     totem_self = db.BooleanField(default=False)
     
-    # إعدادات الطابق الأول
     current_room = db.StringField(default='الساحة')
     is_cursed = db.BooleanField(default=False)
     group_id = db.IntField(default=0)
@@ -123,7 +123,7 @@ class GlobalSettings(db.Document):
     safe_time_minutes = db.IntField(default=120)
     
     final_battle_mode = db.BooleanField(default=False)
-    emperor_max_hp = db.IntField(default=100000) # الحقل الجديد لضبط شريط الصحة
+    emperor_max_hp = db.IntField(default=100000)
     
     gates_mode_active = db.BooleanField(default=False)
     gates_end_time = db.DateTimeField()
@@ -131,6 +131,10 @@ class GlobalSettings(db.Document):
     gate_1_name = db.StringField(default='بوابة 1')
     gate_2_name = db.StringField(default='بوابة 2')
     gate_3_name = db.StringField(default='بوابة 3')
+    # الحقول الجديدة للتحكم في مصير البوابات
+    gate_1_fate = db.StringField(default='success') # success, death, test
+    gate_2_fate = db.StringField(default='success')
+    gate_3_fate = db.StringField(default='success')
     gates_test_message = db.StringField(default='الاختبار')
     
     floor3_mode_active = db.BooleanField(default=False)
@@ -190,25 +194,3 @@ def init_db():
     if not GlobalSettings.objects(setting_name='main_config').first():
         GlobalSettings(setting_name='main_config').save()
 
-def migrate_database():
-    updated_count = 0
-    for user in User.objects():
-        updates = {}
-        if not hasattr(user, 'used_vent'): updates['used_vent'] = False
-        if not hasattr(user, 'emergency_used'): updates['emergency_used'] = False
-        if not hasattr(user, 'f1_has_voted'): updates['f1_has_voted'] = False
-        if not hasattr(user, 'f1_votes_received'): updates['f1_votes_received'] = 0
-        if not hasattr(user, 'gems_collected'): updates['gems_collected'] = 0
-        if not hasattr(user, 'is_cursed'): updates['is_cursed'] = False
-        if not hasattr(user, 'group_id'): updates['group_id'] = 0
-        if not hasattr(user, 'current_room'): updates['current_room'] = 'الساحة'
-        if not hasattr(user, 'f1_tasks'): updates['f1_tasks'] = []
-        if updates:
-            user.update(**updates)
-            updated_count += 1
-
-try:
-    init_db()
-    migrate_database()
-except Exception as e:
-    pass
