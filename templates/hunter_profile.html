@@ -1,28 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .ambient-bg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at 50% 50%, rgba(212,175,55,0.03) 0%, transparent 70%); z-index: -1; pointer-events: none; animation: pulseBg 5s infinite alternate ease-in-out; }
-    @keyframes pulseBg { 0% { opacity: 0.3; transform: scale(0.9); } 100% { opacity: 1; transform: scale(1.1); } }
-
-    .profile-container { max-width: 800px; margin: 0 auto; }
-    .profile-header-box { text-align: center; margin-bottom: 30px; }
-    .profile-avatar-box { width: 140px; height: 140px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; box-shadow: 0 0 20px rgba(212,175,55,0.4); margin-bottom: 15px; }
-    .profile-name-box { color: var(--gold-main); font-size: 32px; margin: 0 0 5px 0; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); display: flex; justify-content: center; align-items: center; gap: 10px;}
-    .profile-id-box { color: var(--text-gray); font-family: monospace; font-size: 16px; margin-bottom: 15px; display: block;}
+    /* تصميم فيسبوك */
+    .fb-profile-wrap { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .fb-cover { height: 200px; background: linear-gradient(45deg, #1a1a1a, #d4af37, #000); position: relative; }
+    .fb-info-box { padding: 0 20px 20px; text-align: center; position: relative; margin-top: -60px; }
+    .fb-avatar { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #111; background: #000; object-fit: cover; }
+    .fb-name { margin: 10px 0 5px; color: #fff; font-size: 26px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+    .fb-id { color: #aaa; font-family: monospace; margin: 0 0 15px; font-size: 14px; }
     
-    .badges-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+    .fb-action-row { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
+    .fb-btn { padding: 10px 20px; border-radius: 6px; font-weight: bold; border: none; cursor: pointer; text-decoration: none; color: #fff; font-size: 14px; transition: 0.3s;}
+    .fb-btn:hover { opacity: 0.8; }
+    .fb-btn-blue { background: #0866ff; }
+    .fb-btn-red { background: #e74c3c; }
+    .fb-btn-gold { background: var(--gold-main); color: #000;}
+
+    /* الشارات */
+    .badges-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .badge { padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: bold; border: 1px solid; display: flex; align-items: center; gap: 5px; }
     .badge-status-active { background: rgba(46,204,113,0.1); color: #2ecc71; border-color: #2ecc71; }
     .badge-status-frozen { background: rgba(52,152,219,0.1); color: #3498db; border-color: #3498db; }
     .badge-status-dead { background: rgba(138,3,3,0.1); color: #e74c3c; border-color: #e74c3c; }
     .badge-zone { background: rgba(212,175,55,0.1); color: var(--gold-main); border-color: var(--gold-main); }
 
-    /* 🔲 شبكة المربعات 2x2 الإجبارية */
+    /* الإحصائيات وأدوات الإدارة */
     .stats-grid-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
     .stat-card-box { background: #0a0806; border: 1px solid #332815; padding: 25px 10px; border-radius: 12px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; aspect-ratio: 1 / 1; }
-    .stat-card-box:hover { border-color: var(--gold-dark); background: #110d09; transform: translateY(-3px); }
-    
-    .stat-val-box { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; word-break: break-all;}
+    .stat-val-box { font-size: 28px; font-weight: 900; color: #fff; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 5px; flex-wrap: wrap;}
     .stat-label-box { color: var(--text-gray); font-size: 13px; display: flex; align-items: center; gap: 5px; }
 
     .edit-icon { cursor: pointer; font-size: 16px; opacity: 0.5; transition: 0.3s; filter: grayscale(100%); margin: 0 5px; }
@@ -38,29 +43,29 @@
     .admin-actions-box { padding: 20px; background: rgba(138,3,3,0.05); border: 1px solid #8a0303; border-radius: 12px; text-align: center; display: flex; flex-direction: column; gap: 10px;}
     .btn-admin-action { padding: 12px 20px; border-radius: 6px; font-weight: bold; text-decoration: none; font-size: 15px; cursor: pointer; border: 1px solid; transition: 0.3s; width: 100%; box-sizing: border-box;}
     .btn-admin-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border-color: #e74c3c; }
-    .btn-admin-delete:hover { background: #e74c3c; color: #fff; }
     .btn-admin-ban { background: rgba(52,152,219,0.1); color: #3498db; border-color: #3498db; }
-    .btn-admin-ban:hover { background: #3498db; color: #fff; }
 </style>
 
-<div class="ambient-bg"></div>
-
-<div class="profile-container">
-    <div class="profile-header-box">
-        <img src="/avatar/{{ target_user.hunter_id }}" class="profile-avatar-box" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-        <h2 class="profile-name-box">
+<div class="fb-profile-wrap">
+    <div class="fb-cover"></div>
+    <div class="fb-info-box">
+        <img src="/avatar/{{ target_user.hunter_id }}" class="fb-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
+        
+        <h2 class="fb-name">
             <span id="txt_name">{{ target_user.username }}</span>
             {% if current_user and current_user.role == 'admin' %}
                 <span class="edit-icon" id="icon_name" onclick="toggleEdit('name')">✏️</span>
                 <form id="form_name" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="flex-direction:row;">
                     <input type="hidden" name="action" value="edit_name">
                     <input type="text" name="new_val" value="{{ target_user.username }}" class="inline-input" style="width:120px;">
-                    <button type="submit" class="btn-inline-save">✔️</button>
-                    <button type="button" class="btn-inline-cancel" onclick="toggleEdit('name')">❌</button>
+                    <button type="submit" class="btn-inline-save" style="width:auto;">✔️</button>
+                    <button type="button" class="btn-inline-cancel" style="width:auto;" onclick="toggleEdit('name')">❌</button>
                 </form>
             {% endif %}
         </h2>
-        <span class="profile-id-box">ID: {{ target_user.hunter_id }}</span>
+        
+        <p class="fb-id">ID: {{ target_user.hunter_id }}</p>
+
         <div class="badges-row">
             {% if target_user.status == 'active' %}
                 <span class="badge badge-status-active">حي يُرزق</span>
@@ -69,6 +74,7 @@
             {% else %}
                 <span class="badge badge-status-dead">جثة هامدة 💀</span>
             {% endif %}
+            
             <span class="badge badge-zone">
                 الطابق: <span id="txt_zone">{{ target_user.zone }}</span>
                 {% if current_user and current_user.role == 'admin' %}
@@ -76,13 +82,63 @@
                     <form id="form_zone" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="flex-direction:row;">
                         <input type="hidden" name="action" value="edit_zone">
                         <input type="text" name="new_val" value="{{ target_user.zone }}" class="inline-input" style="width:80px;">
-                        <button type="submit" class="btn-inline-save" style="width:auto;">✔️</button><button type="button" class="btn-inline-cancel" style="width:auto;" onclick="toggleEdit('zone')">❌</button>
+                        <button type="submit" class="btn-inline-save" style="width:auto;">✔️</button>
+                        <button type="button" class="btn-inline-cancel" style="width:auto;" onclick="toggleEdit('zone')">❌</button>
                     </form>
                 {% endif %}
             </span>
         </div>
-    </div>
 
+        {% if current_user.hunter_id != target_user.hunter_id %}
+        <div class="fb-action-row">
+            {% if target_user.hunter_id not in current_user.friends %}
+                <form action="/add_friend" method="POST" style="margin:0;">
+                    <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
+                    <button class="fb-btn fb-btn-blue">➕ إضافة تحالف</button>
+                </form>
+            {% else %}
+                <button class="fb-btn" style="background:#2ecc71; cursor: default;">✔ حليف</button>
+                <button class="fb-btn fb-btn-gold" onclick="document.getElementById('transferBox').style.display='block';">إرسال أداة/دنانير 🎁</button>
+            {% endif %}
+
+            {% if settings and (settings.war_mode or settings.final_battle_mode) %}
+                <button class="fb-btn fb-btn-red" onclick="document.getElementById('attackBox').style.display='block';">⚔️ هجوم / تجسس</button>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if current_user.hunter_id in target_user.friends %}
+<div id="transferBox" style="display:none; background:#111; border:1px solid var(--gold-main); padding:20px; border-radius:8px; margin-bottom:20px; text-align:center;">
+    <h4 style="color:var(--gold-main); margin-top:0;">إرسال للرحالة</h4>
+    <form action="/transfer/{{ target_user.hunter_id }}" method="POST" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <select name="transfer_type" id="transfer_type" style="padding:10px; background:#000; color:#fff; border:1px solid #444;" onchange="if(this.value=='points'){document.getElementById('amt_input').style.display='block'; document.getElementById('item_input').style.display='none';}else{document.getElementById('amt_input').style.display='none'; document.getElementById('item_input').style.display='block';}">
+            <option value="points">دنانير 🪙</option>
+            <option value="item">أداة / سلاح 🎁</option>
+        </select>
+        <input type="number" name="amount" id="amt_input" placeholder="المبلغ..." style="padding:10px; background:#000; color:#fff; border:1px solid #444; width:120px;">
+        <select name="item_name" id="item_input" style="padding:10px; background:#000; color:#fff; border:1px solid #444; display:none;">
+            {% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% else %}<option disabled>حقيبتك فارغة!</option>{% endfor %}
+        </select>
+        <button type="submit" class="fb-btn fb-btn-gold" style="margin:0;">إرسال</button>
+    </form>
+</div>
+{% endif %}
+
+<div id="attackBox" style="display:none; background:#1a0a0a; border:1px solid #e74c3c; padding:20px; border-radius:8px; margin-bottom:20px; text-align:center;">
+    <h4 style="color:#e74c3c; margin-top:0;">استهداف الرحالة</h4>
+    <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <select name="item_name" style="flex:1; min-width:200px; padding:10px; background:#000; color:#fff; border:1px solid #e74c3c;">
+            {% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% else %}<option disabled>حقيبتك فارغة!</option>{% endfor %}
+        </select>
+        <button type="submit" class="fb-btn fb-btn-red" style="margin:0;">تأكيد الهجوم ⚔️</button>
+    </form>
+</div>
+
+{% if current_user.hunter_id == target_user.hunter_id or current_user.role == 'admin' %}
+    <h3 style="color: var(--gold-main); text-align: center; margin-bottom: 20px;">📊 الإحصائيات السرية</h3>
+    
     <div class="stats-grid-box">
         <div class="stat-card-box">
             <div class="stat-val-box" style="color: #f1c40f;">
@@ -112,21 +168,19 @@
             <div class="stat-label-box">شرف ووفاء 🤝</div>
         </div>
 
-        {% if settings and (settings.war_mode or settings.final_battle_mode) %}
         <div class="stat-card-box">
             <div class="stat-val-box" style="color: #e74c3c;">
-                <span id="txt_hp">{{ target_user.health }}%</span>
+                <span id="txt_hp">{{ target_user.health }}</span>
                 {% if current_user and current_user.role == 'admin' %}
                     <span class="edit-icon" id="icon_hp" onclick="toggleEdit('hp')">✏️</span>
                     <form id="form_hp" class="inline-edit-form" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
-                        <input type="hidden" name="action" value="edit_hp"><input type="number" name="new_val" value="{{ target_user.health }}" class="inline-input" max="100">
+                        <input type="hidden" name="action" value="edit_hp"><input type="number" name="new_val" value="{{ target_user.health }}" class="inline-input">
                         <div style="display:flex; gap:5px;"><button type="submit" class="btn-inline-save">✔️</button><button type="button" class="btn-inline-cancel" onclick="toggleEdit('hp')">❌</button></div>
                     </form>
                 {% endif %}
             </div>
             <div class="stat-label-box">الروح (HP) ❤️</div>
         </div>
-        {% endif %}
 
         <div class="stat-card-box">
             <div class="stat-val-box" style="color: #1abc9c;">
@@ -149,12 +203,12 @@
             {% for item in target_user.inventory %}
                 <span class="item-chip">{{ item }}</span>
             {% else %}
-                <span style="color: #666; font-style: italic; font-size: 13px;">الحقيبة فارغة...</span>
+                <span style="color: #666; font-size: 13px;">الحقيبة فارغة...</span>
             {% endfor %}
         </div>
     </div>
 
-    {% if current_user and current_user.role == 'admin' and target_user.hunter_id != 1000 %}
+    {% if current_user.role == 'admin' and target_user.hunter_id != 1000 %}
     <div class="admin-actions-box">
         <h4 style="color: #e74c3c; margin: 0 0 5px 0; font-size: 16px;">🛠️ أدوات القصاص الإمبراطوري</h4>
         
@@ -166,7 +220,7 @@
         {% if target_user.status != 'eliminated' %}
         <form action="/admin" method="POST" style="margin:0;">
             <input type="hidden" name="action" value="bulk_action"><input type="hidden" name="bulk_type" value="eliminate"><input type="hidden" name="selected_users" value="{{ target_user.id }}">
-            <button type="submit" class="btn-admin-action btn-admin-delete" style="background:none; border-color:#fff; color:#fff;">إقصاء للمقبرة 💀</button>
+            <button type="submit" class="btn-admin-action btn-admin-delete" style="background:none; border-color:#e74c3c; color:#e74c3c;">إقصاء للمقبرة 💀</button>
         </form>
         {% endif %}
 
@@ -183,7 +237,13 @@
         {% endif %}
     </div>
     {% endif %}
-</div>
+
+{% else %}
+    <div style="background: #111; border: 1px dashed #444; padding: 40px; text-align: center; border-radius: 12px; margin-top: 20px;">
+        <span style="font-size: 40px;">🔒</span>
+        <h3 style="color: #aaa; margin: 15px 0 0;">إحصائيات هذا الرحالة مخفية عن العوام.</h3>
+    </div>
+{% endif %}
 
 <script>
     function toggleEdit(field) {
@@ -195,7 +255,8 @@
             if(icon) icon.style.display = 'none';
             frm.style.display = 'flex';
         } else {
-            txt.style.display = 'inline'; 
+            txt.style.display = 'flex'; 
+            if(field === 'name' || field === 'zone') txt.style.display = 'inline';
             if(icon) icon.style.display = 'inline';
             frm.style.display = 'none';
         }
