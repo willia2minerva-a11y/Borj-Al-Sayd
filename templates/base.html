@@ -19,7 +19,6 @@
         .admin-crown { position: absolute; left: 15px; font-size: 26px; text-decoration: none; transition: 0.3s; filter: drop-shadow(0 0 5px rgba(212,175,55,0.8));}
         .admin-crown:hover { transform: scale(1.2); }
 
-        /* خلفية العزل للموبايل */
         .sidebar-overlay { display: none; position: fixed; top: 60px; left: 0; width: 100%; height: calc(100vh - 60px); background: rgba(0,0,0,0.8); z-index: 999; backdrop-filter: blur(2px); }
 
         .sidebar { width: 250px; background: var(--bg-card); position: fixed; top: 60px; bottom: 0; right: 0; border-left: 1px solid var(--gold-dark); box-shadow: -5px 0 15px rgba(0,0,0,0.9); z-index: 1000; overflow-y: auto; transition: transform 0.3s ease; display: block; }
@@ -74,7 +73,7 @@
 <div class="sidebar" id="sidebar">
     <div class="logo-area">
         {% if current_user %}
-            <a href="{% if current_user.status == 'active' or current_user.role == 'admin' %}/profile{% else %}#{% endif %}" class="profile-link-area">
+            <a href="/profile" class="profile-link-area">
                 <img src="/avatar/{{ current_user.hunter_id }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
                 <p class="sidebar-name">{{ current_user.username }}</p>
             </a>
@@ -86,19 +85,17 @@
     <div class="nav-links">
         <a href="/" class="{% if request.path == '/' %}active{% endif %}">الرئيسية</a>
         {% if current_user %}
-            {% if current_user.status == 'active' or current_user.role == 'admin' %}
-                {% if settings and settings.floor1_mode_active %}
-                    <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">غرفة الاجتماعات</a>
-                {% endif %}
-                <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">هويتي</a>
-                <a href="/friends" class="{% if request.path == '/friends' %}active{% endif %}">التحالفات</a>
-                <a href="/store" class="{% if request.path == '/store' %}active{% endif %}">السوق المظلم</a>
-                <a href="/altar" class="{% if request.path == '/altar' %}active{% endif %}">مذبح الطلاسم</a>
+            {% if settings and settings.floor1_mode_active %}
+                <a href="/meeting" class="nav-meeting {% if request.path == '/meeting' %}active{% endif %}">غرفة الاجتماعات</a>
             {% endif %}
             
+            <a href="/profile" class="{% if request.path == '/profile' %}active{% endif %}">هويتي</a>
+            <a href="/friends" class="{% if request.path == '/friends' %}active{% endif %}">التحالفات</a>
             <a href="/news" class="{% if request.path == '/news' %}active{% endif %}">المراسيم</a>
             <a href="/puzzles" class="{% if request.path == '/puzzles' %}active{% endif %}">النقوش</a>
             <a href="/declarations" class="{% if request.path == '/declarations' %}active{% endif %}">التصريحات</a>
+            <a href="/store" class="{% if request.path == '/store' %}active{% endif %}">السوق المظلم</a>
+            <a href="/altar" class="{% if request.path == '/altar' %}active{% endif %}">مذبح الطلاسم</a>
             <a href="/graveyard" class="{% if request.path == '/graveyard' %}active{% endif %}">المقبرة</a>
         {% else %}
             <a href="/login">تسجيل الدخول</a>
