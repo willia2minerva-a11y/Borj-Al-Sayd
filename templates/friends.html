@@ -1,159 +1,116 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .friends-header { text-align: center; margin-bottom: 30px; }
-    .friends-title { color: var(--gold-main); font-size: 32px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin: 0 0 10px 0;}
+    .fb-friend-row { display: flex; align-items: center; background: #111; padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 12px; transition: 0.3s; flex-wrap: wrap; gap: 15px;}
+    .fb-friend-row:hover { background: #1a1a1a; border-color: #444; }
+    .fb-friend-avatar { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--gold-dark); object-fit: cover; }
+    .fb-friend-info { flex: 1; text-align: right; min-width: 150px;}
+    .fb-friend-name { margin: 0; color: #fff; font-size: 16px; font-weight: bold; text-decoration: none; display: block; }
+    .fb-friend-id { margin: 5px 0 0; color: #888; font-size: 12px; font-family: monospace; }
+    .fb-friend-btn { background: #0866ff; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 14px; width: 100%; white-space: nowrap; transition: 0.3s;}
+    .fb-friend-btn:hover { background: #0056e0; }
+    .fb-friend-btn-cancel { background: #e74c3c; }
+    .fb-friend-btn-cancel:hover { background: #c0392b; }
     
-    /* إصلاح صندوق البحث للموبايل */
     .search-box { background: #0a0806; border: 1px solid var(--gold-dark); padding: 15px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box;}
     .search-input { flex-grow: 1; min-width: 200px; background: #000; border: 1px solid #332815; color: #fff; padding: 12px; border-radius: 6px; outline: none; font-size: 16px; box-sizing: border-box;}
     .search-input:focus { border-color: var(--gold-main); }
-    .btn-search { background: var(--gold-main); color: #000; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; white-space: nowrap; flex: 1; box-sizing: border-box; text-align: center;}
-    .btn-search:hover { background: var(--gold-light); transform: scale(1.02); }
-
-    /* إصلاح تقسيم الشاشة */
-    .split-layout { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; width: 100%; box-sizing: border-box;}
-    .col-right, .col-left { flex: 1 1 100%; background: rgba(10,8,6,0.5); padding: 20px; border-radius: 12px; border: 1px solid #222; box-sizing: border-box; overflow: hidden; }
-    
-    @media (min-width: 900px) { .col-right, .col-left { flex: 1; } }
-
-    .section-title { color: var(--gold-light); border-bottom: 1px dashed #332815; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; text-align: center;}
-
-    .users-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;}
-    .user-card { background: #0a0806; border: 1px solid #332815; border-radius: 12px; padding: 20px; text-align: center; position: relative; box-sizing: border-box;}
-    
-    .user-avatar { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; margin-bottom: 10px; }
-    .user-name { color: #fff; font-size: 16px; margin: 0 0 5px 0; font-weight: bold; text-decoration: none; display: block; word-break: break-word;}
-    .user-id { color: var(--text-gray); font-family: monospace; font-size: 12px; margin-bottom: 15px; display: block; }
-    
-    /* أزرار الإجراءات */
-    .btn-action { background: transparent; border: 1px solid #2ecc71; color: #2ecc71; padding: 8px 15px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 13px; box-sizing: border-box;}
-    .btn-action:hover { background: #2ecc71; color: #000; }
-    .btn-cancel-req { border-color: #e67e22; color: #e67e22; }
-    .btn-cancel-req:hover { background: #e67e22; color: #fff; }
-
-    /* قائمة الـ 3 نقاط للأصدقاء */
-    .dropdown { position: absolute; top: 10px; left: 10px; }
-    .dropbtn { background: transparent; color: #aaa; font-size: 20px; border: none; cursor: pointer; padding: 5px; font-weight: bold; outline: none;}
-    .dropdown-content { display: none; position: absolute; right: 0; background-color: #110d09; min-width: 150px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.9); z-index: 10; border: 1px solid var(--gold-dark); border-radius: 6px; overflow: hidden; text-align: right;}
-    .dropdown-content form { margin: 0; }
-    .dropdown-content button { color: #ddd; padding: 12px 16px; text-decoration: none; display: block; background: none; border: none; width: 100%; text-align: right; cursor: pointer; border-bottom: 1px solid #222; font-family: inherit;}
-    .dropdown-content button:hover { background-color: #222; color: var(--gold-main); }
-    .dropdown:hover .dropdown-content { display: block; }
+    .btn-search { background: var(--gold-main); color: #000; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s;}
 </style>
 
-<div class="friends-header">
-    <h2 class="friends-title">التحالفات الكبرى</h2>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); font-size: 28px; margin: 0;">التحالفات (الأصدقاء)</h2>
 </div>
 
 <form action="/friends" method="GET" class="search-box">
-    <input type="text" name="search" placeholder="ابحث بالهوية الرقمية (ID)..." class="search-input" value="{{ request.args.get('search', '') }}">
-    <button type="submit" class="btn-search">بحث 🦅</button>
+    <input type="text" name="search" placeholder="ابحث بالاسم أو الـ ID..." class="search-input" value="{{ request.args.get('search', '') }}">
+    <button type="submit" class="btn-search">بحث 🔍</button>
 </form>
 
-{% if request.args.get('search') and search_result %}
-<div style="background: #110d09; padding: 20px; border: 1px solid var(--gold-main); border-radius: 12px; margin-bottom: 30px; text-align: center; box-sizing: border-box; width: 100%;">
-    <h3 style="color: var(--gold-main); margin-top:0;">نتيجة البحث:</h3>
-    <img src="/avatar/{{ search_result.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-    <a href="/hunter/{{ search_result.hunter_id }}" class="user-name">{{ search_result.username }}</a>
-    <span class="user-id">ID: {{ search_result.hunter_id }}</span>
-    {% if search_result.hunter_id == current_user.hunter_id %}
-        <span style="color: #888;">هذا أنت!</span>
-    {% elif search_result.hunter_id in current_user.friends %}
-        <span style="color: #2ecc71;">✔ حليف حالي</span>
-    {% elif search_result.hunter_id in current_user.sent_requests %}
-        <form action="/cancel_request" method="POST">
-            <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
-            <button type="submit" class="btn-action btn-cancel-req" style="width:auto; padding: 10px 20px;">إلغاء الطلب ✖</button>
-        </form>
-    {% else %}
-        <form action="/add_friend" method="POST">
-            <input type="hidden" name="target_id" value="{{ search_result.hunter_id }}">
-            <button type="submit" class="btn-action" style="width:auto; padding: 10px 20px;">إرسال تحالف ➕</button>
-        </form>
-    {% endif %}
+{% if search_result %}
+<h3 style="color: var(--gold-main); border-bottom: 1px solid #333; padding-bottom: 10px;">🎯 نتيجة البحث</h3>
+<div class="fb-friend-row" style="border-color: var(--gold-main);">
+    <a href="/hunter/{{ search_result.hunter_id }}"><img src="/avatar/{{ search_result.hunter_id }}" class="fb-friend-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'"></a>
+    <div class="fb-friend-info">
+        <a href="/hunter/{{ search_result.hunter_id }}" class="fb-friend-name">{{ search_result.username }}</a>
+        <p class="fb-friend-id">ID: {{ search_result.hunter_id }}</p>
+    </div>
+    <div>
+        {% if search_result.hunter_id in current_user.friends %}
+            <button class="fb-friend-btn" style="background: #2ecc71; cursor: default;">✔ حليف</button>
+        {% elif search_result.hunter_id in current_user.friend_requests %}
+            <form action="/accept_friend/{{ search_result.hunter_id }}" method="GET" style="margin:0;"><button type="submit" class="fb-friend-btn" style="background:#f1c40f; color:#000;">قبول التحالف</button></form>
+        {% elif search_result.hunter_id in current_user.sent_requests %}
+            <form action="/cancel_request" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ search_result.hunter_id }}"><button type="submit" class="fb-friend-btn fb-friend-btn-cancel">إلغاء الطلب</button></form>
+        {% else %}
+            <form action="/add_friend" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ search_result.hunter_id }}"><button type="submit" class="fb-friend-btn">إضافة تحالف</button></form>
+        {% endif %}
+    </div>
 </div>
 {% endif %}
 
-<div class="split-layout">
-    <div class="col-right">
-        <h3 class="section-title">🤝 حلفائي ({{ friends.count() }})</h3>
-        <div class="users-grid">
-            {% for f in friends %}
-                <div class="user-card">
-                    <div class="dropdown">
-                        <button class="dropbtn">⋮</button>
-                        <div class="dropdown-content">
-                            {% if settings and (settings.war_mode or settings.final_battle_mode) %}
-                            <form action="/hunter/{{ f.hunter_id }}" method="GET">
-                                <button type="submit" style="color:#e74c3c;">⚔️ هجوم / علاج</button>
-                            </form>
-                            {% endif %}
-                            <form action="/hunter/{{ f.hunter_id }}" method="GET">
-                                <button type="submit" style="color:#f1c40f;">🎁 إرسال دنانير/أداة</button>
-                            </form>
-                            <form action="/cancel_friend/{{ f.hunter_id }}" method="POST" onsubmit="return confirm('تأكيد خيانة الحليف؟');">
-                                <button type="submit" style="color:#e74c3c;">🔪 إلغاء التحالف</button>
-                            </form>
-                        </div>
-                    </div>
-                    <a href="/hunter/{{ f.hunter_id }}" style="text-decoration:none;">
-                        <img src="/avatar/{{ f.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                        <h4 class="user-name">{{ f.username }}</h4>
-                    </a>
-                    <span class="user-id">ID: {{ f.hunter_id }}</span>
-                </div>
-            {% else %}
-                <p style="color:#666; font-size:13px; text-align: center;">لا تملك حلفاء بعد...</p>
-            {% endfor %}
+{% if friend_requests and friend_requests.count() > 0 %}
+<h3 style="color: #f1c40f; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 30px;">📩 طلبات تحالف معلقة</h3>
+<div style="display: flex; flex-direction: column;">
+    {% for req in friend_requests %}
+        <div class="fb-friend-row">
+            <a href="/hunter/{{ req.hunter_id }}"><img src="/avatar/{{ req.hunter_id }}" class="fb-friend-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'"></a>
+            <div class="fb-friend-info">
+                <a href="/hunter/{{ req.hunter_id }}" class="fb-friend-name">{{ req.username }}</a>
+                <p class="fb-friend-id">ID: {{ req.hunter_id }}</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <form action="/accept_friend/{{ req.hunter_id }}" method="GET" style="margin:0;"><button type="submit" class="fb-friend-btn" style="background:#2ecc71;">قبول</button></form>
+                <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="fb-friend-btn fb-friend-btn-cancel">رفض</button></form>
+            </div>
         </div>
-        
-        {% if friend_requests and friend_requests.count() > 0 %}
-        <h3 class="section-title" style="margin-top:30px; color:#3498db;">📬 طلبات واردة ({{ friend_requests.count() }})</h3>
-        <div class="users-grid">
-            {% for req in friend_requests %}
-                <div class="user-card" style="border-color: #3498db;">
-                    <a href="/hunter/{{ req.hunter_id }}" style="text-decoration:none;">
-                        <img src="/avatar/{{ req.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                        <h4 class="user-name">{{ req.username }}</h4>
-                    </a>
-                    <div style="display: flex; gap: 5px; margin-top:10px;">
-                        <form action="/accept_friend/{{ req.hunter_id }}" style="flex:1;"><button type="submit" style="background:#2ecc71; border:none; border-radius:4px; width:100%; padding:8px; cursor:pointer; font-weight:bold;">قبول</button></form>
-                        <form action="/cancel_friend/{{ req.hunter_id }}" method="POST" style="flex:1;"><button type="submit" style="background:#e74c3c; border:none; border-radius:4px; width:100%; padding:8px; color:#fff; cursor:pointer; font-weight:bold;">رفض</button></form>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
-    <div class="col-left">
-        <h3 class="section-title">🌍 رحالة مقترحون</h3>
-        <div class="users-grid">
-            {% for h in suggested_hunters %}
-                <div class="user-card">
-                    <a href="/hunter/{{ h.hunter_id }}" style="text-decoration:none;">
-                        <img src="/avatar/{{ h.hunter_id }}" class="user-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-                        <h4 class="user-name">{{ h.username }}</h4>
-                    </a>
-                    <span class="user-id">ID: {{ h.hunter_id }}</span>
-                    
-                    {% if h.hunter_id in current_user.sent_requests %}
-                        <form action="/cancel_request" method="POST">
-                            <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
-                            <button type="submit" class="btn-action btn-cancel-req">إلغاء الطلب ✖</button>
-                        </form>
-                    {% else %}
-                        <form action="/add_friend" method="POST">
-                            <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
-                            <button type="submit" class="btn-action">إرسال تحالف ➕</button>
-                        </form>
-                    {% endif %}
-                </div>
-            {% else %}
-                <p style="color:#666; font-size:13px; text-align: center;">لا يوجد رحالة جدد...</p>
-            {% endfor %}
+{% if friends and friends.count() > 0 %}
+<h3 style="color: #2ecc71; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 30px;">🤝 حلفائي</h3>
+<div style="display: flex; flex-direction: column;">
+    {% for fr in friends %}
+        <div class="fb-friend-row">
+            <a href="/hunter/{{ fr.hunter_id }}"><img src="/avatar/{{ fr.hunter_id }}" class="fb-friend-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'"></a>
+            <div class="fb-friend-info">
+                <a href="/hunter/{{ fr.hunter_id }}" class="fb-friend-name">{{ fr.username }}</a>
+                <p class="fb-friend-id">ID: {{ fr.hunter_id }}</p>
+            </div>
+            <div>
+                <form action="/cancel_friend/{{ fr.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="fb-friend-btn fb-friend-btn-cancel" onclick="return confirm('إنهاء التحالف؟ سيكلفك هذا نقاط وفاء!');">إنهاء التحالف</button></form>
+            </div>
         </div>
-    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<h3 style="color: #ddd; border-bottom: 1px solid #333; padding-bottom: 10px; margin-top: 30px;">🌍 رحالة مقترحون لك</h3>
+<div style="display: flex; flex-direction: column;">
+    {% for h in suggested_hunters %}
+        <div class="fb-friend-row">
+            <a href="/hunter/{{ h.hunter_id }}"><img src="/avatar/{{ h.hunter_id }}" class="fb-friend-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'"></a>
+            <div class="fb-friend-info">
+                <a href="/hunter/{{ h.hunter_id }}" class="fb-friend-name">{{ h.username }}</a>
+                <p class="fb-friend-id">ID: {{ h.hunter_id }}</p>
+            </div>
+            <div>
+                {% if h.hunter_id in current_user.sent_requests %}
+                    <form action="/cancel_request" method="POST" style="margin:0;">
+                        <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
+                        <button type="submit" class="fb-friend-btn fb-friend-btn-cancel">إلغاء الطلب</button>
+                    </form>
+                {% else %}
+                    <form action="/add_friend" method="POST" style="margin:0;">
+                        <input type="hidden" name="target_id" value="{{ h.hunter_id }}">
+                        <button type="submit" class="fb-friend-btn">إضافة تحالف</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <p style="color:#666; text-align: center;">لا يوجد رحالة جدد...</p>
+    {% endfor %}
 </div>
 {% endblock %}
