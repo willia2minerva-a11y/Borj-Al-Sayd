@@ -1091,6 +1091,7 @@ def submit_gate_test():
 def admin_panel():
     settings = GlobalSettings.objects(setting_name='main_config').first()
     if request.method == 'POST':
+        _settings_cache['timestamp'] = 0
         act = request.form.get('action')
         
         if act == 'toggle_gates':
