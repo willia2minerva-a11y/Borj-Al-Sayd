@@ -278,7 +278,7 @@
             
             {% if settings and (settings.floor3_mode_active or settings.floor3_paused or settings.floor3_results_active) %}
             <form action="/admin" method="POST" style="margin-top: 10px;">
-                <input type="hidden" name="action" value="cancel_floor3">
+                <input type="hidden" name="action" value="reset_floor3">
                 <button type="submit" class="btn-danger" onclick="return confirm('إيقاف المحكمة وإعادتها لنقطة الصفر بدون عرض أي نتائج؟');">إيقاف المحكمة فوراً (إلغاء تام بدون نتائج) 🛑</button>
             </form>
             {% endif %}
