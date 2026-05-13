@@ -1,193 +1,155 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <style>
-    .zone-title { color: var(--gold-main); border-bottom: 1px dashed var(--gold-dark); padding-bottom: 10px; margin-top: 0; }
+    /* تحسينات الواجهة والسرعة */
     .card { background: #0c0a08; border: 1px solid #332815; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .btn { background: #1a1a1a; color: #fff; border: 1px solid #444; padding: 10px 20px; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; transition: 0.3s; }
-    .btn:hover { background: #333; border-color: var(--gold-main); color: var(--gold-main); }
-    .btn-attack { background: rgba(231,76,60,0.1); color: #e74c3c; border-color: #e74c3c; }
-    .btn-attack:hover { background: #e74c3c; color: #fff; }
-    .player-list { list-style: none; padding: 0; margin: 0; }
-    .player-list li { background: #000; padding: 12px 15px; border: 1px solid #222; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+    .btn-epic { background: linear-gradient(45deg, #c0392b, #8a0303); color: #fff; border: 1px solid #ff0000; padding: 12px; border-radius: 8px; font-weight: 900; cursor: pointer; transition: 0.3s; width: 100%; text-decoration: none; display: block; text-align: center;}
+    .health-bar-bg { width: 100%; background: #222; border-radius: 10px; border: 1px solid #444; height: 25px; overflow: hidden; margin-top: 10px;}
+    .health-bar-fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.8s ease-in-out; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 11px;}
+    
+    /* تصميم خريطة الطابق الأول - نسخة سريعة */
+    .map-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; }
+    .map-room { background: #1a140a; border: 1px solid #332815; border-radius: 8px; padding: 10px; text-align: center; position: relative; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
+    .map-room.current { border: 2px solid #2ecc71; box-shadow: 0 0 15px rgba(46,204,113,0.2); }
+    .room-name { color: var(--gold-main); font-size: 12px; font-weight: bold; }
+    .dot-container { display: flex; justify-content: center; gap: 3px; margin-top: 5px; flex-wrap: wrap; }
+    .p-dot { width: 6px; height: 6px; border-radius: 50%; background: #2ecc71; }
+    .p-dot.is-dead { background: #e74c3c; }
 </style>
 
 {% if settings and settings.global_news_active %}
-<div style="background: rgba(212,175,55,0.05); border: 1px solid var(--gold-main); padding: 20px; text-align: center; border-radius: 12px; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(212,175,55,0.1);">
-    <h3 style="color: var(--gold-main); margin:0 0 10px 0;">📢 نداء إمبراطوري</h3>
-    <p style="margin:0; font-size: 16px; line-height: 1.6;">{{ settings.global_news_text }}</p>
+<div class="card" style="border-color: var(--gold-main); text-align: center; background: rgba(212,175,55,0.02);">
+    <h3 style="color: var(--gold-main); margin-top:0;">📢 نداء إمبراطوري</h3>
+    <p>{{ settings.global_news_text }}</p>
 </div>
 {% endif %}
 
 {% if not current_user %}
-    <div class="card" style="text-align: center; padding: 50px;">
-        <h2 style="color: var(--gold-main); font-size: 32px;">مرحباً بك في ساحة المتاهة</h2>
-        <p style="color: #aaa; font-size: 18px;">يجب عليك تسجيل الدخول أو إنشاء هوية جديدة لتتمكن من استكشاف الأسرار.</p>
-        <div style="margin-top: 25px;">
-            <a href="/login" class="btn" style="border-color: var(--gold-main); color: var(--gold-main);">تسجيل الدخول</a>
-        </div>
+    <div class="card" style="text-align: center; padding: 40px;">
+        <h2 style="color: var(--gold-main);">مرحباً بك في سيفار</h2>
+        <p>يجب عليك تسجيل الدخول لاستكشاف المتاهة.</p>
+        <a href="/login" class="btn-epic" style="max-width: 200px; margin: 20px auto;">دخول</a>
     </div>
 {% else %}
 
     {% if current_user.status != 'active' and current_user.role != 'admin' %}
-        <div class="card" style="border-color: #e74c3c; text-align: center; background: rgba(231,76,60,0.05);">
-            <h3 style="color: #e74c3c;">أنت الآن في وضع المراقب 👻</h3>
-            <p style="color: #aaa;">حسابك مقيد بسبب: <strong style="color:#fff;">({{ current_user.freeze_reason }})</strong>. يمكنك مشاهدة الأحداث الحية، قراءة النقوش، ونشر التصريحات فقط.</p>
-        </div>
-    {% endif %}
-
-    {% if settings and settings.final_battle_mode and emperor %}
-    <div class="card" style="border-color: #9b59b6; box-shadow: 0 0 30px rgba(155, 89, 182, 0.2);">
-        <h2 style="color: #9b59b6; text-align: center; margin-top:0;">⚔️ ساحة المعركة الكبرى ⚔️</h2>
-        
-        {% set max_hp = settings.emperor_max_hp | default(1000, true) %}
-        {% if max_hp <= 0 %}{% set max_hp = 1000 %}{% endif %}
-        {% set percent = (emperor.health / max_hp) * 100 %}
-        {% if percent < 0 %}{% set percent = 0 %}{% endif %}
-        {% if percent > 100 %}{% set percent = 100 %}{% endif %}
-        
-        <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: #000; border-radius: 8px; border: 1px dashed #333;">
-            <h3 style="color: #e74c3c; font-size: 26px; margin-top:0;">👑 الإمبراطور {{ emperor.username }} 👑</h3>
-            
-            <p style="font-weight: bold; letter-spacing: 1px; font-size: 15px;">الصحة: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
-            
-            <div style="width: 100%; background-color: #1a1a1a; height: 30px; border-radius: 15px; border: 2px solid #e74c3c; overflow: hidden; position: relative;">
-                <div style="width: {{ percent }}%; background-color: #e74c3c; height: 100%; transition: width 0.8s ease-in-out; background-image: linear-gradient(45deg, rgba(255,255,255,0.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.15) 75%, transparent 75%, transparent); background-size: 40px 40px;"></div>
-            </div>
-        </div>
-
-        {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
-        <div style="text-align: center; background: rgba(231,76,60,0.05); padding: 20px; border-radius: 8px;">
-            <p style="color: #ddd;">اختر سلاحاً من حقيبتك ووجه ضربتك نحو الإمبراطور!</p>
-            <form action="/use_item/1000" method="POST" style="display: inline-flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center;">
-                <select name="item_name" style="padding: 12px; background: #000; color: #fff; border: 1px solid #e74c3c; border-radius: 6px; outline: none;">
-                    {% if current_user.inventory %}
-                        {% for item in current_user.inventory %}
-                            <option value="{{ item }}">{{ item }}</option>
-                        {% endfor %}
-                    {% else %}
-                        <option value="" disabled selected>حقيبتك فارغة من الأسلحة!</option>
-                    {% endif %}
-                </select>
-                <button type="submit" class="btn btn-attack" {% if not current_user.inventory %}disabled{% endif %}>توجيه الضربة ⚔️</button>
-            </form>
-        </div>
-        {% endif %}
+    <div class="card" style="border-color: #e74c3c; text-align: center;">
+        <h3 style="color: #e74c3c;">وضع المراقب 👻</h3>
+        <p style="font-size: 14px; color: #aaa;">حسابك مقيد ({{ current_user.freeze_reason }}). يمكنك المشاهدة فقط.</p>
     </div>
     {% endif %}
 
-    {% if settings and settings.floor1_mode_active and current_user.group_id > 0 %}
-    <div class="card" style="border-color: #3498db; box-shadow: inset 0 0 20px rgba(52, 152, 219, 0.05);">
-        <h2 style="color: #3498db; margin-top: 0; border-bottom: 1px solid #1a1a1a; padding-bottom: 15px;">🕵️ ساحة الاستنتاج (المجموعة {{ current_user.group_id }})</h2>
-        
-        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
+    {% if settings and settings.final_battle_mode and emperor %}
+        {% if current_user.hunter_id != 1000 %}
+        <div class="card" style="border-color: #e74c3c; box-shadow: 0 0 25px rgba(231,76,60,0.15);">
+            <h2 style="color: #e74c3c; text-align: center; margin-top:0;">⚔️ ساحة المعركة الكبرى ⚔️</h2>
             
-            <div style="flex: 1; min-width: 280px; background: #000; padding: 15px; border-radius: 8px; border: 1px solid #222;">
-                <h3 style="color: var(--gold-main); margin-top:0;">📍 موقعك الحالي: {{ current_user.current_room }}</h3>
+            {% set max_hp = settings.emperor_max_hp if settings.emperor_max_hp and settings.emperor_max_hp > 0 else 1000 %}
+            {% set percent = (emperor.health / max_hp) * 100 %}
+            {% set percent = percent if percent > 0 else 0 %}
+            {% set percent = 100 if percent > 100 else percent %}
+
+            <div style="text-align: center; background: #000; padding: 15px; border-radius: 10px; border: 1px dashed #333;">
+                <h3 style="color: var(--gold-main); margin:0;">👑 الإمبراطور {{ emperor.username }}</h3>
+                <p style="font-family: monospace; margin: 5px 0;">HP: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
                 
-                {% if current_user.status == 'active' %}
-                <p style="color: #aaa; font-size: 13px;">إلى أين تتجه؟</p>
-                <form action="/f1/move" method="POST" style="display: flex; gap: 10px;">
-                    <select name="room" style="padding: 10px; flex: 1; background: #111; color: #fff; border: 1px solid #444; border-radius: 5px; outline: none;">
+                <div class="health-bar-bg">
+                    <div class="health-bar-fill" style="width: {{ percent }}%;"></div>
+                </div>
+            </div>
+
+            {% if current_user.status == 'active' %}
+            <div style="margin-top: 20px;">
+                <p style="text-align: center; font-size: 13px; color: #888;">اختر سلاحك وهاجم القمة:</p>
+                <form action="/use_item/1000" method="POST" style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <select name="item_name" style="flex: 2; padding: 12px; background: #000; color: #fff; border: 1px solid #444; border-radius: 6px;">
+                        {% if current_user.inventory %}
+                            {% for item in current_user.inventory %}
+                                <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>حقيبتك فارغة!</option>
+                        {% endif %}
+                    </select>
+                    <button type="submit" class="btn-epic" style="flex: 1; padding: 10px;">هجوم ⚔️</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    {% endif %}
+
+    {% if settings and settings.floor1_mode_active and current_user.group_id > 0 %}
+    <div class="card" style="border-color: #3498db;">
+        <h3 style="color: #3498db; margin-top: 0;">🕵️ ساحة الاستنتاج (المجموعة {{ current_user.group_id }})</h3>
+        
+        <div class="map-grid">
+            {% for room, neighbors in f1_map.items() %}
+                <div class="map-room {% if current_user.current_room == room %}current{% endif %}">
+                    <span class="room-name">{{ room }}</span>
+                    <div class="dot-container">
+                        {% if admin_dots and room in admin_dots %}
+                            {% for dot in admin_dots[room] %}
+                                <div class="p-dot {% if dot.is_dead %}is-dead{% endif %}" title="رحالة"></div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div style="background: #111; padding: 10px; border-radius: 8px;">
+                <h4 style="margin:0 0 10px 0; font-size: 13px; color: #2ecc71;">📍 التحرك إلى:</h4>
+                <form action="/f1/move" method="POST" style="display: flex; gap: 5px;">
+                    <select name="room" style="flex:1; padding: 8px; background: #000; color: #fff; border: 1px solid #333; font-size: 12px;">
                         {% for adj in adjacent_rooms %}
                             <option value="{{ adj }}">{{ adj }}</option>
                         {% endfor %}
                     </select>
-                    <button type="submit" class="btn" style="border-color:#3498db; color:#3498db;">انتقال 🚶</button>
+                    <button type="submit" style="background:#3498db; border:none; color:#fff; padding:5px 10px; border-radius:4px; font-size:12px;">🚶</button>
                 </form>
-                {% else %}
-                <p style="color: #888; font-style: italic;">روحك عالقة في هذه الغرفة.. لا يمكنك التحرك.</p>
-                {% endif %}
             </div>
 
-            <div style="flex: 1; min-width: 280px; background: #000; padding: 15px; border-radius: 8px; border: 1px solid #222;">
-                {% if current_user.status == 'active' and not current_user.is_cursed %}
-                    <h3 style="color: #2ecc71; margin-top:0;">📜 مهام النجاة</h3>
-                    <ul style="list-style: none; padding: 0; margin: 0;">
-                    {% for task in player_tasks %}
-                        <li style="margin-bottom: 12px; font-size: 14px;">
-                            {% if task.completed %}
-                                <span style="color: #2ecc71; text-decoration: line-through;">✅ {{ task.name }}</span>
-                            {% else %}
-                                <div style="display: flex; justify-content: space-between; align-items: center;">
-                                    <span style="color: #e67e22;">⏳ {{ task.name }} <br><small style="color:#666;">(في {{ task.room }})</small></span>
-                                    {% if task.room == current_user.current_room %}
-                                        <form action="/f1/complete_task/{{ loop.index0 }}" method="POST" style="margin: 0;">
-                                            <button type="submit" class="btn" style="padding: 5px 12px; font-size: 12px; background: #2ecc71; border: none; color:#000;">إنجاز</button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </li>
-                    {% else %}
-                        <li style="color: #aaa;">لا توجد مهام حالياً.</li>
-                    {% endfor %}
-                    </ul>
-
-                {% elif current_user.status == 'active' and current_user.is_cursed %}
-                    <h3 style="color: #e74c3c; margin-top:0;">🩸 أنت الملعون</h3>
-                    <p style="color: #aaa; font-size: 14px;">مهمتك هي التخلص من الجميع في الظلام قبل أن يكملوا المهام.</p>
-                    {% if current_user.current_room in ['دهليز الأجداد', 'مخزن الآثار'] and not current_user.used_vent %}
-                        <form action="/f1/vent" method="POST">
-                            <button type="submit" class="btn" style="background: rgba(142, 68, 173, 0.2); color: #9b59b6; border-color: #9b59b6; width: 100%;">تسلل عبر النفق المظلم 🕳️</button>
-                        </form>
-                    {% else %}
-                        <p style="color: #666; font-size: 12px; margin-bottom: 0;">(الأنفاق السحرية توجد في الدهليز والمخزن فقط)</p>
-                    {% endif %}
-                {% endif %}
+            <div style="background: #111; padding: 10px; border-radius: 8px;">
+                <h4 style="margin:0 0 10px 0; font-size: 13px; color: #f1c40f;">📋 المهام الحالية:</h4>
+                {% for task in current_room_tasks %}
+                    <form action="/f1/complete_task/{{ player_tasks.index(task) }}" method="POST">
+                        <button type="submit" style="width:100%; padding:5px; background:#2ecc71; border:none; border-radius:4px; font-size:11px; font-weight:bold;">إنجاز: {{ task.name }}</button>
+                    </form>
+                {% else %}
+                    <p style="font-size: 11px; color: #666; text-align: center;">لا مهام في هذه الغرفة</p>
+                {% endfor %}
             </div>
         </div>
 
-        <h3 style="color: var(--gold-main); margin-top: 25px; border-top: 1px dashed #333; padding-top: 15px;">👥 من معك في الغرفة؟</h3>
-        <ul class="player-list">
-            {% for p in room_players %}
-                <li>
-                    <span>{{ p.username }}</span>
-                    {% if current_user.status == 'active' and current_user.is_cursed %}
-                        <form action="/f1/kill" method="POST" style="margin: 0;">
-                            <input type="hidden" name="target_id" value="{{ p.hunter_id }}">
-                            <button type="submit" class="btn btn-attack" style="padding: 6px 12px; font-size: 12px;">اغتيال 🔪</button>
-                        </form>
-                    {% endif %}
-                </li>
-            {% else %}
-                <li style="color: #666; justify-content: center; background: transparent; border: 1px dashed #333;">الغرفة خالية.. لا تسمع سوى صدى أنفاسك.</li>
-            {% endfor %}
-            
-            {% for b in dead_bodies_in_room %}
-                <li style="border-color: #e74c3c; background: rgba(231,76,60,0.05);">
-                    <span style="color: #e74c3c; font-weight: bold;">💀 جثة {{ b.username }}</span>
-                    {% if current_user.status == 'active' %}
-                        <form action="/f1/report_body" method="POST" style="margin: 0;">
-                            <input type="hidden" name="body_id" value="{{ b.hunter_id }}">
-                            <button type="submit" class="btn" style="padding: 6px 12px; font-size: 12px; background: #e67e22; border: none; color:#000; font-weight: bold;">إطلاق جرس الإنذار 📢</button>
-                        </form>
-                    {% endif %}
-                </li>
-            {% endfor %}
-        </ul>
-        
-        {% if current_user.status == 'active' and not current_user.emergency_used %}
-            <form action="/f1/emergency_meeting" method="POST" style="margin-top: 20px;">
-                <button type="submit" class="btn" style="background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px dashed #e74c3c; width: 100%; font-size: 15px; padding: 12px;">🚨 ضغط زر الطوارئ (مسموح مرة واحدة فقط) 🚨</button>
-            </form>
-        {% endif %}
-
         {% if has_meeting %}
-            <div style="background: rgba(231,76,60,0.1); padding: 20px; margin-top: 25px; border-radius: 8px; border: 1px solid #e74c3c; text-align: center; animation: pulse 2s infinite;">
-                <h3 style="color: #e74c3c; margin-top: 0;">🚨 انعقاد محكمة طارئة الآن!</h3>
-                <p style="color: #ddd;">تم استدعاء جميع الأحياء في مجموعتك للتصويت.</p>
-                <a href="/f1/meeting_room" class="btn" style="background: #e74c3c; border-color: #e74c3c; color:#fff; font-size: 16px;">دخول قاعة الاجتماع ⚖️</a>
-            </div>
-            <style>@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(231,76,60,0.4); } 70% { box-shadow: 0 0 0 10px rgba(231,76,60,0); } 100% { box-shadow: 0 0 0 0 rgba(231,76,60,0); } }</style>
+            <a href="/f1/meeting_room" class="btn-epic" style="margin-top: 15px; background: #e67e22; border-color: #d35400;">⚖️ دخول قاعة الاجتماع الطارئ!</a>
         {% endif %}
     </div>
     {% endif %}
 
     {% if not settings.floor1_mode_active and not settings.final_battle_mode %}
-        <div class="card" style="text-align: center; padding: 40px 20px;">
-            <h2 class="zone-title" style="border:none; font-size: 28px;">بوابة العبور العظيمة</h2>
-            <p style="color: #aaa; font-size: 16px; max-width: 600px; margin: 0 auto;">الأبواب مغلقة حالياً. استعد، تسلح، وابنِ تحالفاتك. استخدم القائمة العلوية لتصفح السوق، وقراءة المراسيم وحل الألغاز لجمع الدنانير.</p>
-        </div>
+    <div style="text-align: center; padding: 20px 0;">
+        <h1 style="color: var(--gold-main); font-weight: 900; margin-bottom: 5px;">{{ settings.home_title if settings else 'البوابة' }}</h1>
+        <p style="color: #666; font-size: 14px;">أهلاً بك يا <span style="color: #fff;">{{ current_user.username }}</span> في قلب المتاهة.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px;">
+        <a href="/news" class="card" style="text-align: center; text-decoration: none; padding: 20px 10px;">
+            <span style="font-size: 30px;">📜</span><h4 style="margin: 10px 0 0 0; color: #fff;">المراسيم</h4>
+        </a>
+        <a href="/puzzles" class="card" style="text-align: center; text-decoration: none; padding: 20px 10px;">
+            <span style="font-size: 30px;">🧩</span><h4 style="margin: 10px 0 0 0; color: #fff;">النقوش</h4>
+        </a>
+        <a href="/declarations" class="card" style="text-align: center; text-decoration: none; padding: 20px 10px;">
+            <span style="font-size: 30px;">📢</span><h4 style="margin: 10px 0 0 0; color: #fff;">التصريحات</h4>
+        </a>
+        <a href="/graveyard" class="card" style="text-align: center; text-decoration: none; padding: 20px 10px;">
+            <span style="font-size: 30px;">💀</span><h4 style="margin: 10px 0 0 0; color: #fff;">المقبرة</h4>
+        </a>
+    </div>
     {% endif %}
 
 {% endif %}
