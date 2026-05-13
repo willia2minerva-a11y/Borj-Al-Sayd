@@ -532,7 +532,7 @@ def update_settings():
             file = request.files.get('avatar_file')
             if file and file.filename != '':
                 data = file.read()
-                if len(data) > 2 * 1024 * 1024: 
+                if len(data) > 16 * 1024 * 1024: 
                     flash('الصورة كبيرة جداً.', 'error')
                 else: 
                     user.update(set__avatar=f"data:image/jpeg;base64,{base64.b64encode(compress_image(data)).decode('utf-8')}")
