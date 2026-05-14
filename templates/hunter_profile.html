@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* تصميم البروفايل - ستايل فيسبوك المتاهة */
+    /* تصميم البروفايل - ستايل فيسبوك المتاهة الموحد */
     .fb-profile-wrap { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     .fb-cover { height: 220px; background: linear-gradient(45deg, #1a1a1a, var(--gold-dark), #000); position: relative; background-size: cover; background-position: center;}
     .fb-info-box { padding: 0 20px 25px; text-align: center; position: relative; margin-top: -70px; }
@@ -28,7 +28,7 @@
 </style>
 
 <div class="fb-profile-wrap">
-    <div class="fb-cover" {% if target_user.avatar %}style="background-image: url('{{ target_user.avatar }}'); filter: brightness(0.5);"{% endif %}></div>
+    <div class="fb-cover" style="{% if settings and settings.banner_url %}background-image: url('{{ settings.banner_url }}'); filter: brightness(0.8);{% endif %}"></div>
     
     <div class="fb-info-box">
         <img src="/avatar/{{ target_user.hunter_id }}" class="fb-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
