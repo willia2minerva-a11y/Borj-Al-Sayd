@@ -56,14 +56,14 @@
         <div id="tab_dashboard" class="tab-section active">
             <div class="section-header">📊 النظرة العامة</div>
             <div class="stats-grid">
-                <div class="stat-card"><h4>إجمالي المسجلين</h4><span>{{ stats.total if stats else 0 }}</span></div>
-                <div class="stat-card"><h4>أحياء يُرزقون</h4><span style="color:#2ecc71;">{{ stats.alive if stats else 0 }}</span></div>
-                <div class="stat-card"><h4>جثث في المقبرة</h4><span style="color:#e74c3c;">{{ stats.dead if stats else 0 }}</span></div>
-                <div class="stat-card"><h4>ميزانية المتاهة (دنانير)</h4><span style="color:#f1c40f;">{{ stats.points if stats else 0 }} 🪙</span></div>
+                <div class="stat-card"><h4>إجمالي المسجلين</h4><span>{{ stats.total }}</span></div>
+                <div class="stat-card"><h4>أحياء يُرزقون</h4><span style="color:#2ecc71;">{{ stats.alive }}</span></div>
+                <div class="stat-card"><h4>جثث في المقبرة</h4><span style="color:#e74c3c;">{{ stats.dead }}</span></div>
+                <div class="stat-card"><h4>ميزانية المتاهة</h4><span style="color:#f1c40f;">{{ stats.points }} 🪙</span></div>
             </div>
             <div style="background: rgba(212,175,55,0.1); border: 1px solid var(--gold-main); padding: 20px; border-radius: 8px; text-align: center;">
                 <h3 style="color: var(--gold-main); margin-top: 0;">مرحباً بك يا إمبراطور</h3>
-                <p style="color: #ddd;">هذه لوحة التحكم الاحترافية. اختر القسم الذي ترغب بإدارته من القائمة الجانبية.</p>
+                <p style="color: #ddd;">الإحصائيات الآن حية ومباشرة. تحكم في المتاهة من القائمة الجانبية.</p>
             </div>
         </div>
 
@@ -81,7 +81,7 @@
                 </select>
                 <input type="text" name="global_news_text" placeholder="نص الإعلان الإمبراطوري..." value="{{ settings.global_news_text if settings else '' }}" class="form-control">
                 
-                <label style="color:#aaa;">تغيير صورة البانر الرئيسي:</label>
+                <label style="color:#aaa;">تغيير صورة البانر الرئيسي (وغلاف اللاعبين):</label>
                 <input type="file" name="banner_file" class="form-control" accept="image/*">
                 
                 <button type="submit" class="btn-gold">حفظ التعديلات العامة</button>
@@ -119,7 +119,7 @@
                         <tr>
                             <td><input type="checkbox" name="selected_users" value="{{ u.id }}"></td>
                             <td style="color:#f1c40f; font-weight:bold;">{{ u.hunter_id }}</td>
-                            <td>{{ u.username }} {% if u.hunter_id == 1000 %}👑{% endif %}</td>
+                            <td>{{ u.username }}</td>
                             <td style="color: {% if u.status=='active' %}#2ecc71{% elif u.status=='inactive' %}#f1c40f{% elif u.status=='dead_body' %}#e67e22{% else %}#e74c3c{% endif %};">
                                 {{ 'حي' if u.status=='active' else ('مراجعة' if u.status=='inactive' else ('جثة' if u.status=='dead_body' else 'ميت')) }}
                             </td>
@@ -128,7 +128,6 @@
                             <td>{{ u.zone }}</td>
                             <td>
                                 <a href="/hunter/{{ u.hunter_id }}" target="_blank" style="color:var(--gold-main); text-decoration:none; margin-left:10px;">ملفه 👁️</a>
-                                <a href="/?test_victory={{ u.hunter_id }}" target="_blank" style="color:#2ecc71; text-decoration:none;">تتويج 🏆</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -138,70 +137,66 @@
         </div>
 
         <div id="tab_gates" class="tab-section">
-            <div class="section-header" style="color: #d35400; border-bottom-color: #d35400;">🚪 إدارة البوابات ومصائرها</div>
+            <div class="section-header" style="color: #d35400; border-bottom-color: #d35400;">🚪 إدارة البوابات (النظام الجديد)</div>
             
             <div class="stats-grid">
-                <div class="stat-card" style="border-color: #d35400;"><h4>البوابة 1</h4><span style="color: #d35400;">{{ gate_counts[1] if gate_counts else 0 }} رحالة</span></div>
-                <div class="stat-card" style="border-color: #3498db;"><h4>البوابة 2</h4><span style="color: #3498db;">{{ gate_counts[2] if gate_counts else 0 }} رحالة</span></div>
-                <div class="stat-card" style="border-color: #9b59b6;"><h4>البوابة 3</h4><span style="color: #9b59b6;">{{ gate_counts[3] if gate_counts else 0 }} رحالة</span></div>
+                <div class="stat-card" style="border-color: #d35400;"><h4>البوابة 1</h4><span style="color: #d35400;">{{ gate_counts[1] if gate_counts else 0 }} منتظر</span></div>
+                <div class="stat-card" style="border-color: #3498db;"><h4>البوابة 2</h4><span style="color: #3498db;">{{ gate_counts[2] if gate_counts else 0 }} منتظر</span></div>
+                <div class="stat-card" style="border-color: #9b59b6;"><h4>البوابة 3</h4><span style="color: #9b59b6;">{{ gate_counts[3] if gate_counts else 0 }} منتظر</span></div>
             </div>
 
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
+            <form action="/admin" method="POST" style="background: rgba(211, 84, 0, 0.1); padding: 20px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 20px;">
+                <h4 style="color:#d35400; margin-top:0;">⚡ تنفيذ الأقدار (اختر البوابة وحدد مصير منتظريها):</h4>
+                <input type="hidden" name="action" value="execute_gates_fate">
+                <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <select name="target_gate" class="form-control" style="margin:0; flex:1;" required>
+                        <option value="" disabled selected>اختر البوابة...</option>
+                        <option value="1">البوابة 1 ({{ gate_counts[1] }} منتظر)</option>
+                        <option value="2">البوابة 2 ({{ gate_counts[2] }} منتظر)</option>
+                        <option value="3">البوابة 3 ({{ gate_counts[3] }} منتظر)</option>
+                    </select>
+                    <select name="fate_decision" class="form-control" style="margin:0; flex:1;" required>
+                        <option value="" disabled selected>اختر المصير...</option>
+                        <option value="success">عبور آمن (نجاح للطابق 1)</option>
+                        <option value="death">فخ مميت (طرد للمقبرة)</option>
+                        <option value="test">غرفة الاختبار (تجميد للاستجواب)</option>
+                    </select>
+                    <button type="submit" class="btn-danger" style="background:#d35400; border-color:#d35400; margin:0; flex:1;" onclick="return confirm('هل أنت متأكد من إنزال هذا المصير على الجميع في هذه البوابة؟');">أنزل المصير ⚡</button>
+                </div>
+            </form>
+
+            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
+                <h4 style="color:#aaa; margin-top:0;">إعدادات البوابات (فتح وإغلاق الاختيار):</h4>
                 <input type="hidden" name="action" value="toggle_gates">
                 <label style="color:#aaa;">وصف المرحلة للرحالة:</label>
                 <textarea name="desc" class="form-control" rows="2">{{ settings.gates_description if settings else '' }}</textarea>
                 
-                <h4 style="color:#aaa; border-bottom: 1px dashed #333; padding-bottom:5px;">أسماء ومصائر البوابات (الخيار الذي سيحدث لمن يدخلها):</h4>
-                
                 <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" name="g1" value="{{ settings.gate_1_name if settings else 'بوابة 1' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 1">
-                    <select name="g1_fate" class="form-control" style="margin:0; flex:1;">
-                        <option value="success" {% if settings and settings.gate_1_fate == 'success' %}selected{% endif %}>نجاح (دخول الطابق 1)</option>
-                        <option value="death" {% if settings and settings.gate_1_fate == 'death' %}selected{% endif %}>فخ مميت (المقبرة)</option>
-                        <option value="test" {% if settings and settings.gate_1_fate == 'test' %}selected{% endif %}>غرفة الاختبار</option>
-                    </select>
-                </div>
-
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
                     <input type="text" name="g2" value="{{ settings.gate_2_name if settings else 'بوابة 2' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 2">
-                    <select name="g2_fate" class="form-control" style="margin:0; flex:1;">
-                        <option value="success" {% if settings and settings.gate_2_fate == 'success' %}selected{% endif %}>نجاح (دخول الطابق 1)</option>
-                        <option value="death" {% if settings and settings.gate_2_fate == 'death' %}selected{% endif %}>فخ مميت (المقبرة)</option>
-                        <option value="test" {% if settings and settings.gate_2_fate == 'test' %}selected{% endif %}>غرفة الاختبار</option>
-                    </select>
-                </div>
-
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
                     <input type="text" name="g3" value="{{ settings.gate_3_name if settings else 'بوابة 3' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 3">
-                    <select name="g3_fate" class="form-control" style="margin:0; flex:1;">
-                        <option value="success" {% if settings and settings.gate_3_fate == 'success' %}selected{% endif %}>نجاح (دخول الطابق 1)</option>
-                        <option value="death" {% if settings and settings.gate_3_fate == 'death' %}selected{% endif %}>فخ مميت (المقبرة)</option>
-                        <option value="test" {% if settings and settings.gate_3_fate == 'test' %}selected{% endif %}>غرفة الاختبار</option>
-                    </select>
                 </div>
                 
-                <label style="color:#aaa;">مدة فتح البوابات (بالساعات):</label>
+                <label style="color:#aaa;">مدة فتح البوابات للاختيار (بالساعات):</label>
                 <input type="number" name="gates_hours" placeholder="0 للإغلاق الفوري" class="form-control">
                 
                 {% if settings and settings.gates_mode_active %}
-                    <button type="submit" class="btn-danger">إغلاق البوابات (وتصفير الاختيارات) 🛑</button>
+                    <button type="submit" class="btn-danger">إغلاق التصويت/الاختيار 🛑</button>
                     <p style="color: #f1c40f; font-size: 13px; text-align: center;">تنتهي في: {{ settings.gates_end_time }}</p>
                 {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #d35400, #e67e22);">فتح البوابات ▶️</button>
+                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #d35400, #e67e22);">فتح البوابات للاختيار ▶️</button>
                 {% endif %}
             </form>
         </div>
 
         <div id="tab_f1" class="tab-section">
             <div class="section-header" style="color: #3498db; border-bottom-color: #3498db;">🕵️ ساحة الاستنتاج (ط1)</div>
-            
             {% if settings and settings.floor1_mode_active %}
             <div class="stats-grid">
                 <div class="stat-card" style="border-color: #3498db;"><h4>مجموعات نشطة</h4><span style="color:#3498db;">{{ (users.filter(group_id__gt=0).distinct('group_id')|length) if users else 0 }}</span></div>
                 <div class="stat-card" style="border-color: #e74c3c;"><h4>جثث في الساحة</h4><span style="color:#e74c3c;">{{ users.filter(status='dead_body').count() if users else 0 }}</span></div>
             </div>
             {% endif %}
-
             <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
                 <input type="hidden" name="action" value="toggle_floor1">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -209,40 +204,12 @@
                     <div style="flex:1; min-width: 120px;"><label style="color:#aaa;">تبريد التنقل (ثواني):</label><input type="number" name="move_cooldown" value="{{ settings.floor1_move_cooldown if settings else 30 }}" class="form-control"></div>
                     <div style="flex:1; min-width: 120px;"><label style="color:#aaa;">تبريد القتل (ثواني):</label><input type="number" name="kill_cooldown" value="{{ settings.floor1_kill_cooldown if settings else 60 }}" class="form-control"></div>
                 </div>
-                
                 {% if settings and settings.floor1_mode_active %}
                     <button type="submit" class="btn-danger">إيقاف وتصفير الطابق الأول 🛑</button>
                 {% else %}
                     <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #2980b9, #3498db);">بدء الطابق وتوزيع اللعنات ▶️</button>
                 {% endif %}
             </form>
-
-            {% if settings and settings.floor1_mode_active %}
-            <h3 style="color: #3498db;">👁️ رادار الإمبراطور (مراقبة المجموعات):</h3>
-            <div class="spy-grid">
-                {% set active_groups = users.filter(group_id__gt=0).distinct('group_id') %}
-                {% for gid in active_groups %}
-                    <div class="spy-room">
-                        <h4>المجموعة {{ gid }}</h4>
-                        {% set group_members = users.filter(group_id=gid) %}
-                        {% for m in group_members %}
-                            <div class="spy-player" style="border-left: 3px solid {% if m.status=='dead_body' %}#e74c3c{% elif m.is_cursed %}#9b59b6{% else %}#2ecc71{% endif %}; opacity: {% if m.status=='eliminated' %}0.4{% else %}1{% endif %};">
-                                <div>
-                                    <strong style="color: {% if m.is_cursed %}#9b59b6{% else %}#fff{% endif %};">{{ m.username }}</strong>
-                                    {% if m.is_cursed %} <span style="font-size:10px; color:#9b59b6;">(الملعون)</span> {% endif %}
-                                    <br><span style="color:#888; font-size:11px;">موقعه: {{ m.current_room }}</span>
-                                </div>
-                                <div style="text-align:left; font-size:12px;">
-                                    {% if m.status == 'dead_body' %} <span style="color:#e74c3c;">💀 جثة</span>
-                                    {% elif m.status == 'eliminated' %} <span style="color:#555;">مطرود</span>
-                                    {% else %} <span style="color:#f1c40f;">💎 {{ m.gems_collected }}</span> {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-            </div>
-            {% endif %}
         </div>
 
         <div id="tab_f2" class="tab-section">
@@ -261,18 +228,18 @@
                         <input type="number" name="war_kill_target" value="{{ settings.war_kill_target if settings else 15 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
                     </div>
                     <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">نسبة النزيف السلبي (Amount):</label>
+                        <label style="color:#aaa;">معدل النزيف (-HP في كل دورة):</label>
                         <input type="number" name="bleed_amount" value="{{ settings.bleed_amount if settings else 1 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">مؤقت النزيف (كل كم دقيقة):</label>
+                        <label style="color:#aaa;">مؤقت النزيف (كل كم دقيقة ينزف):</label>
                         <input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes if settings else 60 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
                     </div>
                     <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">كولداون الهجوم (يمنع الهجوم المتتالي بالدقائق):</label>
+                        <label style="color:#aaa;">تبريد الهجوم (يمنع الهجوم المتتالي بالدقائق):</label>
                         <input type="number" name="attack_cooldown_minutes" value="{{ settings.attack_cooldown_minutes if settings else 5 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
                     </div>
                 </div>
@@ -315,6 +282,18 @@
 
         <div id="tab_f4" class="tab-section">
             <div class="section-header" style="color: #9b59b6; border-bottom-color: #9b59b6;">⚔️ المعركة الأخيرة (ضد الإمبراطور)</div>
+            
+            {% if settings and settings.maze_winner_id > 0 %}
+            <div style="background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <h3 style="color: #2ecc71; margin-top: 0;">👑 بطل المتاهة متوج حالياً (ID: {{ settings.maze_winner_id }})!</h3>
+                <p style="color: #ddd;">شاشة الفوز تظهر للجميع الآن والمتاهة معطلة.</p>
+                <form action="/admin" method="POST" style="margin: 0;">
+                    <input type="hidden" name="action" value="reset_maze_winner">
+                    <button type="submit" class="btn-gold" style="background: #2ecc71; color: #000; width: auto;" onclick="return confirm('هل أنت متأكد من تصفير الفوز وبدء عصر جديد في المتاهة؟');">تجريد البطل وبدء عصر جديد 🔄</button>
+                </form>
+            </div>
+            {% endif %}
+
             <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
                 <input type="hidden" name="action" value="toggle_final_battle">
                 <label style="color:#aaa;">نقاط صحة الإمبراطور (HP):</label>
@@ -506,3 +485,4 @@
     }
 </script>
 {% endblock %}
+
