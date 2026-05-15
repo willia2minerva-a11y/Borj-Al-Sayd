@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    /* تصميم البروفايل - ستايل فيسبوك المتاهة الموحد */
     .fb-profile-wrap { background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
     .fb-cover { height: 220px; background: linear-gradient(45deg, #1a1a1a, var(--gold-dark), #000); position: relative; background-size: cover; background-position: center;}
     .fb-info-box { padding: 0 20px 25px; text-align: center; position: relative; margin-top: -70px; }
@@ -9,7 +8,6 @@
     .fb-name { margin: 10px 0 5px; color: #fff; font-size: 28px; font-weight: bold; }
     .fb-id { color: #aaa; font-family: monospace; margin: 0 0 15px; font-size: 15px; }
     
-    /* تصميم الأزرار الذكية */
     .action-btn { background: #333; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 5px; box-sizing: border-box;}
     .action-btn:hover { background: #444; transform: translateY(-2px); }
     .action-btn.primary { background: #0866ff; color: #fff; }
@@ -20,7 +18,6 @@
     .action-btn.war:hover { box-shadow: 0 0 15px #e74c3c; }
     .action-btn.heal { background: #2ecc71; color: #000; border: none; }
     
-    /* الصناديق المنبثقة للعمليات */
     .action-box { display: none; background: #1a1a1a; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #333; animation: fadeIn 0.3s; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     .action-select { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #444; border-radius: 8px; margin-bottom: 10px; outline: none; }
@@ -36,94 +33,97 @@
         <p class="fb-id">ID: {{ target_user.hunter_id }} | متواجد في: {{ target_user.zone }}</p>
         
         <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
-            {% if current_user.status == 'active' and target_user.id != current_user.id and current_user.hunter_id not in [1000, 1001] and target_user.hunter_id not in [1000, 1001] %}
+            {% if current_user and current_user.status == 'active' and target_user.id != current_user.id %}
                 
-                {% if target_user.hunter_id in current_user.friends %}
-                    <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
-                        <button type="submit" class="action-btn danger" onclick="return confirm('هل أنت متأكد من فك التحالف؟');">إلغاء التحالف ❌</button>
-                    </form>
-                    <button onclick="document.getElementById('transfer_box').style.display='block'; window.scrollTo(0, document.getElementById('transfer_box').offsetTop);" class="action-btn">إرسال دعم 🎁</button>
-                {% elif current_user.hunter_id in target_user.friend_requests %}
-                    <form action="/cancel_request" method="POST" style="margin:0;">
-                        <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
-                        <button type="submit" class="action-btn">سحب الطلب ⏳</button>
-                    </form>
-                {% elif target_user.hunter_id in current_user.friend_requests %}
-                    <a href="/accept_friend/{{ target_user.hunter_id }}" class="action-btn primary">قبول التحالف ✅</a>
-                {% else %}
-                    <form action="/add_friend" method="POST" style="margin:0;">
-                        <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
-                        <button type="submit" class="action-btn primary">طلب تحالف 🤝</button>
-                    </form>
-                {% endif %}
+                {% if target_user.hunter_id not in [1000, 1001] or current_user.hunter_id == 1000 %}
+                    {% if target_user.hunter_id in current_user.friends %}
+                        <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
+                            <button type="submit" class="action-btn danger" onclick="return confirm('هل أنت متأكد من فك التحالف؟');">إلغاء التحالف ❌</button>
+                        </form>
+                        <button onclick="document.getElementById('transfer_box').style.display='block'; window.scrollTo(0, document.getElementById('transfer_box').offsetTop);" class="action-btn">إرسال دعم 🎁</button>
+                    {% elif current_user.hunter_id in target_user.friend_requests %}
+                        <form action="/cancel_request" method="POST" style="margin:0;">
+                            <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
+                            <button type="submit" class="action-btn">سحب الطلب ⏳</button>
+                        </form>
+                    {% elif target_user.hunter_id in current_user.friend_requests %}
+                        <a href="/accept_friend/{{ target_user.hunter_id }}" class="action-btn primary">قبول التحالف ✅</a>
+                    {% else %}
+                        <form action="/add_friend" method="POST" style="margin:0;">
+                            <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
+                            <button type="submit" class="action-btn primary">طلب تحالف 🤝</button>
+                        </form>
+                    {% endif %}
 
-                {% if settings and settings.war_mode %}
-                    {% if my_weapons %}
-                        <button onclick="document.getElementById('attack_box').style.display='block'; window.scrollTo(0, document.getElementById('attack_box').offsetTop);" class="action-btn war">هجوم ⚔️</button>
+                    {% if settings and settings.war_mode %}
+                        {% if my_weapons %}
+                            <button onclick="document.getElementById('attack_box').style.display='block'; window.scrollTo(0, document.getElementById('attack_box').offsetTop);" class="action-btn war">هجوم ⚔️</button>
+                        {% endif %}
+                        {% if my_steals %}
+                            <button onclick="document.getElementById('steal_box').style.display='block'; window.scrollTo(0, document.getElementById('steal_box').offsetTop);" class="action-btn" style="background:#8e44ad; color:#fff;">سرقة 🪝</button>
+                        {% endif %}
+                        {% if my_spies %}
+                            <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
+                                <input type="hidden" name="item_name" value="{{ my_spies[0].name }}">
+                                <button type="submit" class="action-btn" style="background:#3498db; color:#fff;">تجسس 👁️</button>
+                            </form>
+                        {% endif %}
                     {% endif %}
-                    {% if my_steals %}
-                        <button onclick="document.getElementById('steal_box').style.display='block'; window.scrollTo(0, document.getElementById('steal_box').offsetTop);" class="action-btn" style="background:#8e44ad; color:#fff;">سرقة 🪝</button>
-                    {% endif %}
-                    {% if my_spies %}
+
+                    {% if my_heals %}
                         <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
-                            <input type="hidden" name="item_name" value="{{ my_spies[0].name }}">
-                            <button type="submit" class="action-btn" style="background:#3498db; color:#fff;">تجسس 👁️</button>
+                            <input type="hidden" name="item_name" value="{{ my_heals[0].name }}">
+                            <button type="submit" class="action-btn heal">إرسال علاج 💚</button>
                         </form>
                     {% endif %}
                 {% endif %}
-
-                {% if my_heals %}
-                    <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
-                        <input type="hidden" name="item_name" value="{{ my_heals[0].name }}">
-                        <button type="submit" class="action-btn heal">إرسال علاج 💚</button>
-                    </form>
-                {% endif %}
                 
-            {% elif current_user.hunter_id == 1000 %}
-                <div style="background: #1a0a0a; border: 1px solid #e74c3c; border-radius: 12px; padding: 20px; width: 100%; text-align: right; margin-top: 15px;">
-                    <h3 style="color: #e74c3c; margin-top: 0; text-align: center;">👑 لوحة تحكم الإمبراطور (تعديل مباشر)</h3>
-                    
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 14px;">
-                        {% set fields = [
-                            ('edit_name', 'الاسم', target_user.username),
-                            ('edit_hp', 'الصحة (HP)', target_user.health),
-                            ('edit_points', 'الدنانير', target_user.points),
-                            ('edit_iq', 'الذكاء', target_user.intelligence_points),
-                            ('edit_loyalty', 'الولاء', target_user.loyalty_points),
-                            ('edit_zone', 'الطابق', target_user.zone)
-                        ] %}
+                {% if current_user.hunter_id == 1000 %}
+                    <div style="background: #1a0a0a; border: 1px solid #e74c3c; border-radius: 12px; padding: 20px; width: 100%; text-align: right; margin-top: 15px;">
+                        <h3 style="color: #e74c3c; margin-top: 0; text-align: center;">👑 لوحة تحكم الإمبراطور (تعديل مباشر)</h3>
                         
-                        {% for action, label, val in fields %}
-                        <tr style="border-bottom: 1px solid #333;">
-                            <td style="padding: 10px; color: #aaa; width: 30%;">{{ label }}</td>
-                            <td style="padding: 10px; color: var(--gold-main); font-weight: bold;">
-                                <span id="txt_{{ action }}">{{ val }}</span>
-                                <form id="form_{{ action }}" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display: none; margin: 0; gap: 5px; align-items: center;">
-                                    <input type="hidden" name="action" value="{{ action }}">
-                                    <input type="text" name="new_val" value="{{ val }}" style="padding: 5px; width: 100px; background: #000; color: #fff; border: 1px solid #555; border-radius: 4px;">
-                                    <button type="submit" style="background: #2ecc71; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; color:#000; font-weight:bold;">حفظ</button>
-                                    <button type="button" onclick="document.getElementById('txt_{{ action }}').style.display='inline'; document.getElementById('form_{{ action }}').style.display='none'; document.getElementById('btn_{{ action }}').style.display='inline';" style="background: transparent; color: #e74c3c; border: none; cursor: pointer; font-size: 16px;">✖</button>
-                                </form>
-                            </td>
-                            <td style="padding: 10px; text-align: left; width: 20%;">
-                                <button id="btn_{{ action }}" onclick="document.getElementById('txt_{{ action }}').style.display='none'; document.getElementById('form_{{ action }}').style.display='flex'; this.style.display='none';" style="background: transparent; border: none; font-size: 18px; cursor: pointer;">✏️</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </table>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 14px;">
+                            {% set fields = [
+                                ('edit_name', 'الاسم', target_user.username),
+                                ('edit_hp', 'الصحة (HP)', target_user.health),
+                                ('edit_points', 'الدنانير', target_user.points),
+                                ('edit_iq', 'الذكاء', target_user.intelligence_points),
+                                ('edit_loyalty', 'الولاء', target_user.loyalty_points),
+                                ('edit_zone', 'الطابق', target_user.zone)
+                            ] %}
+                            
+                            {% for action, label, val in fields %}
+                            <tr style="border-bottom: 1px solid #333;">
+                                <td style="padding: 10px; color: #aaa; width: 30%;">{{ label }}</td>
+                                <td style="padding: 10px; color: var(--gold-main); font-weight: bold;">
+                                    <span id="txt_{{ action }}">{{ val }}</span>
+                                    <form id="form_{{ action }}" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST" style="display: none; margin: 0; gap: 5px; align-items: center;">
+                                        <input type="hidden" name="action" value="{{ action }}">
+                                        <input type="text" name="new_val" value="{{ val }}" style="padding: 5px; width: 100px; background: #000; color: #fff; border: 1px solid #555; border-radius: 4px;">
+                                        <button type="submit" style="background: #2ecc71; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; color:#000; font-weight:bold;">حفظ</button>
+                                        <button type="button" onclick="document.getElementById('txt_{{ action }}').style.display='inline'; document.getElementById('form_{{ action }}').style.display='none'; document.getElementById('btn_{{ action }}').style.display='inline';" style="background: transparent; color: #e74c3c; border: none; cursor: pointer; font-size: 16px;">✖</button>
+                                    </form>
+                                </td>
+                                <td style="padding: 10px; text-align: left; width: 20%;">
+                                    <button id="btn_{{ action }}" onclick="document.getElementById('txt_{{ action }}').style.display='none'; document.getElementById('form_{{ action }}').style.display='flex'; this.style.display='none';" style="background: transparent; border: none; font-size: 18px; cursor: pointer;">✏️</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
 
-                    {% if target_user.hunter_id not in [1000, 1001] %}
-                    <form action="/admin_hard_delete/{{ target_user.hunter_id }}" method="POST" style="margin: 0;">
-                        <button type="submit" class="action-btn danger" style="width: 100%; background: rgba(231,76,60,0.2); padding: 15px;" onclick="return confirm('هل أنت متأكد من مسح هذا الرحالة نهائياً من الوجود؟ (سيتاح رقمه لشخص جديد)');">🗑️ طمس الأثر (حذف نهائي)</button>
-                    </form>
-                    {% endif %}
-                </div>
+                        {% if target_user.hunter_id not in [1000, 1001] %}
+                        <form action="/admin_hard_delete/{{ target_user.hunter_id }}" method="POST" style="margin: 0;">
+                            <button type="submit" class="action-btn danger" style="width: 100%; background: rgba(231,76,60,0.2); padding: 15px;" onclick="return confirm('هل أنت متأكد من مسح هذا الرحالة نهائياً من الوجود؟ (سيتاح رقمه لشخص جديد)');">🗑️ طمس الأثر (حذف نهائي)</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
     </div>
 </div>
 
-{% if current_user.status == 'active' and target_user.id != current_user.id %}
+{% if current_user and current_user.status == 'active' and target_user.id != current_user.id %}
 <div id="transfer_box" class="action-box" style="border-color: var(--gold-main);">
     <h3 style="color:var(--gold-main); margin-top:0;">إرسال دعم إلى {{ target_user.username }}</h3>
     <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
@@ -182,3 +182,4 @@
 {% endif %}
 
 {% endblock %}
+
