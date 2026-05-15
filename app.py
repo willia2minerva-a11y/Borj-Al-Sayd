@@ -48,9 +48,9 @@ _SETTINGS_CACHE_TTL = 10
 # 🛡️ الصلاحيات والمتغيرات العامة
 # ==========================================
 @app.context_processor
+@app.context_processor
 def inject_global_vars():
-    # هذا السطر يحل مشكلة اختفاء الأزرار للمستخدم الحالي
-    return dict(current_user=getattr(g, 'user', None))
+    return dict(current_user=getattr(g, 'user', None), settings=getattr(g, 'settings', None))
 
 def login_required(f):
     @wraps(f)
