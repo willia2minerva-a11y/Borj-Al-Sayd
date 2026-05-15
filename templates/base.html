@@ -9,54 +9,44 @@
         :root { --gold-main: #d4af37; --gold-dark: #aa8a2e; --bg-dark: #050403; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* سحر حبات الرمال الذهبية */
-        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; overflow: hidden; }
-        .particle { position: absolute; background: rgba(212,175,55,0.5); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 6px rgba(212,175,55,0.3); }
+        /* حبات الرمال الذهبية (أصبحت واضحة الآن) */
+        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
+        .particle { position: absolute; background: rgba(212,175,55,0.8); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 8px rgba(212,175,55,0.8); }
         @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
             20% { opacity: 1; }
             80% { opacity: 1; }
-            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
         }
 
-        /* أنميشن الطفو السلس للصور */
-        @keyframes smoothFloat {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
-        }
-        .floating { animation: smoothFloat 4s infinite ease-in-out; }
+        /* الهيدر */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #000; border-bottom: 1px solid #1a150c; position: sticky; top: 0; z-index: 1000; }
 
-        /* الهيدر المهيب */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(5,4,3,0.95); border-bottom: 1px solid #1a150c; position: sticky; top: 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.9); }
-
-        /* الشعار الاحترافي المتداخل (برج صيد) */
         .logo-container { flex: 2; text-align: center; }
         .logo-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-        .logo-text { font-family: 'Reem Kufi', sans-serif; font-size: 28px; font-weight: 900; background: linear-gradient(180deg, #f9f295 0%, #d4af37 100%); -webkit-background-clip: text; color: transparent; letter-spacing: 2px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); margin-right: 15px;}
-        .logo-hook { position: absolute; right: 48px; top: -6px; width: 18px; height: 35px; fill: none; stroke: #d4af37; stroke-width: 2.5; stroke-linecap: round; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.8)); z-index: 2; }
+        .logo-text { font-family: 'Reem Kufi', sans-serif; font-size: 26px; font-weight: 900; color: var(--gold-main); letter-spacing: 1px; margin-right: 15px;}
+        .logo-hook { position: absolute; right: 42px; top: -6px; width: 16px; height: 30px; fill: none; stroke: var(--gold-main); stroke-width: 2.5; stroke-linecap: round; z-index: 2; }
 
         .header-side { flex: 1; }
-        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.3s; }
-        #menu-btn:hover { background: var(--gold-main); color: #000; box-shadow: 0 0 15px rgba(212,175,55,0.4); }
-        .crown-icon { font-size: 26px; text-decoration: none; display: inline-block; transition: 0.3s; filter: drop-shadow(0 0 5px var(--gold-main)); }
-        .crown-icon:hover { transform: scale(1.2); filter: drop-shadow(0 0 15px var(--gold-main)); }
-
-        /* القائمة الجانبية (سريعة وناعمة) */
-        #sidebar { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: #080705; transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 2000; border-left: 1px solid #1a150c; overflow-y: auto; }
-        #sidebar.active { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.9); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; backdrop-filter: blur(2px); transition: 0.4s; opacity: 0;}
-        .overlay.active { display: block; opacity: 1; }
-
-        .sidebar-header { padding: 35px 20px 20px; text-align: center; border-bottom: 1px solid #110d09; background: #050403; }
-        .sidebar-avatar { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--gold-main); margin-bottom: 15px; object-fit: cover; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; }
+        #menu-btn:active { background: var(--gold-main); color: #000; }
+        .crown-icon { font-size: 26px; text-decoration: none; display: inline-block; }
         
-        /* روابط القائمة الأصلية بالحرف */
-        .sidebar-link { display: block; padding: 16px 25px; color: #ccc; text-decoration: none; border-bottom: 1px solid #0f0d0a; font-weight: bold; font-size: 15px; transition: all 0.3s ease; }
-        .sidebar-link:hover { color: var(--gold-main); background: #0c0a08; padding-right: 35px; border-right: 3px solid var(--gold-main); }
+        /* القائمة الجانبية (عادت كما كانت تماماً) */
+        #sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #0a0806; transition: 0.3s ease; z-index: 2000; overflow-y: auto; }
+        #sidebar.active { right: 0; box-shadow: -5px 0 20px rgba(0,0,0,0.9); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; }
+        .overlay.active { display: block; }
 
-        .container { padding: 20px; max-width: 1100px; margin: auto; position: relative; z-index: 10; }
-        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid var(--gold-dark); box-shadow: 0 5px 20px #000; font-size: 14px; }
+        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #111; background: #050403; }
+        .sidebar-avatar { width: 70px; height: 70px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: none; }
+        
+        .sidebar-link { display: block; padding: 15px 25px; color: #fff; text-decoration: none; border-bottom: 1px solid #111; font-weight: bold; font-size: 15px; }
+        .sidebar-link:active { color: var(--gold-main); background: #111; }
+
+        /* الحاوية شفافة قليلاً لتظهر الرمال من خلفها */
+        .container { padding: 15px; max-width: 1100px; margin: auto; position: relative; z-index: 10; }
+        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid var(--gold-main); box-shadow: 0 5px 20px #000; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -66,8 +56,8 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar floating" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-            <h3 style="color: var(--gold-main); margin: 0; font-size: 18px;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h3>
+            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar" alt="Avatar">
+            <h3 style="color: var(--gold-main); margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h3>
         </div>
         <a href="/" class="sidebar-link">الرئيسية</a>
         {% if current_user %}
@@ -127,35 +117,27 @@
     </div>
 
     <script>
-        // الحل الشامل والنهائي لأي صورة مكسورة في الموقع (صورة ظل فيسبوك)
-        const fbAvatar = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
-        document.addEventListener("error", function(e) {
-            if (e.target.tagName.toLowerCase() === 'img') {
-                e.target.src = fbAvatar;
-            }
-        }, true);
-
-        // القائمة الجانبية
         const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
         menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
         
-        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 4000);
+        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 3000);
 
         // تشغيل حبات الرمال
         const pContainer = document.getElementById('particles');
-        for(let i=0; i<20; i++) {
+        for(let i=0; i<25; i++) {
             let p = document.createElement('div');
             p.className = 'particle';
             p.style.left = Math.random() * 100 + 'vw';
             p.style.width = Math.random() * 3 + 1 + 'px';
             p.style.height = p.style.width;
-            p.style.animationDuration = Math.random() * 8 + 7 + 's';
-            p.style.animationDelay = Math.random() * 5 + 's';
+            p.style.animationDuration = Math.random() * 6 + 4 + 's'; // أسرع قليلاً
+            p.style.animationDelay = Math.random() * 3 + 's';
             pContainer.appendChild(p);
         }
     </script>
 </body>
 </html>
+
