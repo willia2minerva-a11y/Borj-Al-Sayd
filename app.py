@@ -1634,8 +1634,10 @@ def get_avatar(hunter_id):
             data = base64.b64decode(encoded)
             return Response(data, mimetype=header.split(';')[0].split(':')[1])
         except: pass
-    # صورة افتراضية في حال لم يضع اللاعب صورة
-    return redirect('https://i.imgur.com/7eP1Y6P.png')
+    
+    # أيقونة ذهبية مدمجة في الخادم (مستحيل أن تنكسر أو تعطي رسالة خطأ)
+    default_svg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#d4af37"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>'''
+    return Response(default_svg, mimetype='image/svg+xml')
 
 def check_titles(user):
     titles = []
