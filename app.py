@@ -1622,6 +1622,48 @@ def submit_floor3_votes():
         
     flash('تم تسجيل أصواتك بنجاح!', 'success')
     return redirect(url_for('home'))
+# ==========================================
+# 🖼️ نظام الصور والألقاب (Achievements)
+# ==========================================
+@app.route('/avatar/<int:hunter_id>')
+def get_avatar(hunter_id):
+    u = User.objects(hunter_id=hunter_id).first()
+    if u and getattr(u, 'avatar', ''):
+        try:
+            header, encoded = u.avatar.split(",", 1)
+            data = base64.b64decode(encoded)
+            return Response(data, mimetype=header.split(';')[0].split(':')[1])
+        except: pass
+    # صورة افتراضية في حال لم يضع اللاعب صورة
+    return redirect('https://i.imgur.com/7eP1Y6P.png')
+
+def check_titles(user):
+    titles = []
+    puzzles = getattr(user, 'stats_puzzles_solved', 0)
+    kills = getattr(user, 'stats_ghosts_caught', 0)
+    
+    if puzzles >= 5: titles.append('عالم الآثار')
+    if puzzles >= 15: titles.append('حكيم سيفار')
+    if kills >= 1: titles.append('صائد الأرواح')
+    if kills >= 5: titles.append('سفاح المتاهة')
+    if len(getattr(user, 'friends', [])) >= 3: titles.append('زعيم التحالف')
+    
+    existing = getattr(user, 'achievements', [])
+    new_titles = [t for t in titles if t not in existing]
+    
+    if new_titles:
+        user.update(push_all__achievements=new_titles)
+        for t in new_titles:
+            Notification(target_hunter_id=user.hunter_id, message=f'🏆 حصدت لقباً جديداً: {t}', notif_type='success').save()
+
+@app.route('/set_title', methods=['POST'])
+@login_required
+def set_title():
+    title = request.form.get('title', '')
+    if title in getattr(g.user, 'achievements', []) or title == '':
+        g.user.update(set__special_rank=title)
+        flash('تم تغيير اللقب المعروض بنجاح!', 'success')
+    return redirect(url_for('profile'))
 
 # ==========================================
 # 🛑 الأخطاء والتشغيل
