@@ -9,37 +9,40 @@
         :root { --gold-main: #d4af37; --gold-dark: #aa8a2e; --bg-dark: #050403; --card-bg: #0c0a08; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; line-height: 1.6; }
         
-        /* الهيدر الأسطوري - اسم المتاهة في المنتصف */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #050403; border-bottom: 1px solid #332815; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
-        .logo-section { flex: 1; display: flex; align-items: center; }
-        .logo-section img { height: 35px; border-radius: 4px; }
+        /* الهيدر الأسطوري - قاسي ومظلم */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: #000; border-bottom: 2px solid var(--gold-dark); position: sticky; top: 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.9); }
+        
+        /* زر القائمة في اليمين */
+        .menu-section { flex: 1; text-align: right; }
+        #menu-btn { background: #111; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.3s; }
+        #menu-btn:hover { background: var(--gold-main); color: #000; box-shadow: 0 0 15px rgba(212,175,55,0.5); }
+
+        /* اسم المتاهة في المنتصف (قابل للضغط ومهيب) */
         .title-section { flex: 2; text-align: center; }
-        .title-section h1 { color: var(--gold-main); font-size: 18px; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.4); font-weight: 900; letter-spacing: 0.5px; }
-        .menu-section { flex: 1; text-align: left; }
-        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 18px; transition: 0.3s; }
-        #menu-btn:hover { background: var(--gold-main); color: #000; }
+        .title-section a { color: var(--gold-main); font-size: 26px; margin: 0; text-shadow: 0 0 15px rgba(212,175,55,0.8); font-weight: 900; letter-spacing: 2px; text-decoration: none; display: inline-block; transition: 0.3s; }
+        .title-section a:hover { transform: scale(1.05); text-shadow: 0 0 25px rgba(212,175,55,1); }
 
-        /* القائمة الجانبية المنسدلة */
-        #sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #0c0a08; transition: 0.4s; z-index: 2000; border-right: 1px solid var(--gold-dark); overflow-y: auto; box-shadow: 5px 0 20px rgba(0,0,0,0.9); }
-        #sidebar.active { left: 0; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; backdrop-filter: blur(5px); }
+        /* التاج في اليسار */
+        .admin-section { flex: 1; text-align: left; }
+        .admin-crown { font-size: 28px; text-decoration: none; filter: drop-shadow(0 0 5px rgba(212,175,55,0.8)); transition: 0.3s; display: inline-block; }
+        .admin-crown:hover { transform: scale(1.2); filter: drop-shadow(0 0 15px rgba(212,175,55,1)); }
+
+        /* القائمة الجانبية الأصلية */
+        #sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: #0a0806; transition: 0.4s; z-index: 2000; border-left: 2px solid var(--gold-dark); overflow-y: auto; }
+        #sidebar.active { right: 0; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 1500; }
         .overlay.active { display: block; }
-        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #222; background: linear-gradient(to bottom, #111, #0c0a08); }
-        .sidebar-link { display: block; padding: 14px 25px; color: #ccc; text-decoration: none; border-bottom: 1px solid #111; font-weight: bold; transition: 0.3s; font-size: 15px; }
-        .sidebar-link:hover { background: #1a150c; color: var(--gold-main); padding-right: 35px; border-right: 4px solid var(--gold-main); }
+        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #332815; background: #000; }
+        .sidebar-link { display: block; padding: 15px 25px; color: #ccc; text-decoration: none; border-bottom: 1px solid #110d09; font-weight: bold; transition: 0.3s; font-size: 16px; }
+        .sidebar-link:hover { background: #1a140a; color: var(--gold-main); border-right: 4px solid var(--gold-main); padding-right: 35px; }
 
-        /* حاوية التنبيهات */
         .flash-container { padding: 0 15px; position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); z-index: 3000; width: 90%; max-width: 400px; }
-        .flash { padding: 15px; border-radius: 10px; margin-bottom: 10px; text-align: center; font-weight: 900; animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.1); }
-        .flash-success { background: linear-gradient(45deg, #2ecc71, #27ae60); color: #000; }
-        .flash-error { background: linear-gradient(45deg, #e74c3c, #c0392b); color: #fff; }
-        .flash-info { background: linear-gradient(45deg, #3498db, #2980b9); color: #fff; }
+        .flash { padding: 15px; border-radius: 4px; margin-bottom: 10px; text-align: center; font-weight: 900; animation: slideUp 0.4s; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #333; }
+        .flash-success { background: #111; color: #2ecc71; border-color: #2ecc71; }
+        .flash-error { background: #111; color: #e74c3c; border-color: #e74c3c; }
         @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .container { padding: 20px; max-width: 1100px; margin: auto; min-height: 80vh; }
-        
-        /* أيقونات بسيطة */
-        .icon { margin-left: 8px; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -48,37 +51,40 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" style="width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--gold-main); margin-bottom: 10px;" onerror="this.src='https://i.imgur.com/7eP1Y6P.png'">
-            <h2 style="color: var(--gold-main); font-size: 16px; margin: 0;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h2>
+            <h2 style="color: var(--gold-main); font-size: 20px; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.5);">الملاح المجهول</h2>
         </div>
-        <a href="/" class="sidebar-link">🏰 الساحة الرئيسية</a>
+        <a href="/" class="sidebar-link">الرئيسية</a>
         {% if current_user %}
-            <a href="/profile" class="sidebar-link">👤 هويتي الشخصية</a>
-            <a href="/friends" class="sidebar-link">🤝 التحالفات</a>
-            <a href="/news" class="sidebar-link">📜 المراسيم الملكية</a>
-            <a href="/puzzles" class="sidebar-link">🧩 النقوش الأثرية</a>
-            <a href="/store" class="sidebar-link">🐪 السوق المظلم</a>
-            <a href="/declarations" class="sidebar-link">📢 قاعة التصريحات</a>
-            <a href="/altar" class="sidebar-link">🔮 مذبح الطلاسم</a>
+            <a href="/profile" class="sidebar-link">هويتي</a>
+            <a href="/friends" class="sidebar-link">التحالفات</a>
+            <a href="/news" class="sidebar-link">المراسيم</a>
+            <a href="/puzzles" class="sidebar-link">النقوش</a>
+            <a href="/store" class="sidebar-link">السوق المظلم</a>
+            <a href="/declarations" class="sidebar-link">التصريحات</a>
+            <a href="/altar" class="sidebar-link">مذبح الطلاسم</a>
             {% if current_user.role == 'admin' %}
-                <a href="/admin" class="sidebar-link" style="color: #e74c3c; background: rgba(231, 76, 60, 0.05);">👑 مركز القيادة</a>
+                <a href="/admin" class="sidebar-link" style="color: #e74c3c; border-top: 1px dashed #e74c3c;">مركز القيادة</a>
             {% endif %}
-            <a href="/logout" class="sidebar-link" style="border-top: 2px solid #222; margin-top: 10px; color: #888;">🚪 مغادرة المتاهة</a>
+            <a href="/logout" class="sidebar-link" style="color: #888;">مغادرة</a>
         {% else %}
-            <a href="/login" class="sidebar-link">🔑 العودة للمتاهة</a>
-            <a href="/register" class="sidebar-link">📝 إنشاء هوية جديدة</a>
+            <a href="/login" class="sidebar-link">تسجيل الدخول</a>
+            <a href="/register" class="sidebar-link">إنشاء هوية</a>
         {% endif %}
     </nav>
 
     <div class="top-bar">
-        <div class="logo-section">
-            <a href="/"><img src="/static/logo.png" alt="Logo" onerror="this.src='https://i.imgur.com/7eP1Y6P.png'"></a>
-        </div>
-        <div class="title-section">
-            <h1>{{ settings.home_title if settings and settings.home_title else 'متاهة سيفار' }}</h1>
-        </div>
         <div class="menu-section">
             <button id="menu-btn">☰</button>
+        </div>
+        
+        <div class="title-section">
+            <a href="/">{{ settings.home_title if settings and settings.home_title else 'متاهة سيفار' }}</a>
+        </div>
+        
+        <div class="admin-section">
+            {% if current_user and current_user.role == 'admin' %}
+                <a href="/admin" class="admin-crown" title="مركز القيادة">👑</a>
+            {% endif %}
         </div>
     </div>
 
@@ -104,7 +110,6 @@
         menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
         
-        // إخفاء التنبيهات تلقائياً بعد 6 ثوانٍ
         setTimeout(() => {
             const flashes = document.querySelectorAll('.flash');
             flashes.forEach(f => {
@@ -112,7 +117,7 @@
                 f.style.transition = '0.5s';
                 setTimeout(() => f.remove(), 500);
             });
-        }, 6000);
+        }, 5000);
     </script>
 </body>
 </html>
