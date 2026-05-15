@@ -15,6 +15,7 @@
     .badge-status { background: rgba(46,204,113,0.1); color: #2ecc71; border-color: #2ecc71; }
     .badge-status-inactive { background: rgba(241,196,15,0.1); color: #f1c40f; border-color: #f1c40f; }
     .badge-zone { background: rgba(212,175,55,0.1); color: var(--gold-main); border-color: var(--gold-main); }
+    .badge-title { background: linear-gradient(45deg, #d4af37, #f39c12); color: #000; border: none; box-shadow: 0 0 10px rgba(212,175,55,0.4); }
 
     /* 🔲 شبكة المربعات 2x2 الإجبارية */
     .stats-grid-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
@@ -34,7 +35,7 @@
     .inventory-section { background: #0a0806; border: 1px solid #332815; padding: 20px; border-radius: 12px; margin-bottom: 30px; text-align: center; }
     .item-chip { display: inline-block; background: #1a140a; border: 1px solid #44351c; padding: 8px 15px; border-radius: 20px; margin: 5px; color: var(--gold-light); font-size: 13px; font-weight: bold; }
 
-    .settings-section { background: #050403; border: 1px solid #222; padding: 25px; border-radius: 12px; }
+    .settings-section { background: #050403; border: 1px solid #222; padding: 25px; border-radius: 12px; margin-bottom: 30px;}
     .form-control-new { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; outline: none; box-sizing: border-box;}
     .btn-gold-new { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; width: 100%; font-size: 15px;}
 </style>
@@ -72,6 +73,9 @@
                     </form>
                 {% endif %}
             </span>
+            {% if user.special_rank %}
+                <span class="badge badge-title">🏆 {{ user.special_rank }}</span>
+            {% endif %}
         </div>
     </div>
 
@@ -146,6 +150,27 @@
         </div>
     </div>
 
+    <div class="settings-section" style="border-color: #f39c12;">
+        <h3 style="color: #f39c12; border-bottom: 1px dashed #f39c12; padding-bottom: 10px; margin-top: 0;">🏆 قاعة الألقاب والإنجازات</h3>
+        {% if user.achievements %}
+            <p style="color:#aaa; font-size:13px; margin-bottom: 15px;">لقد فتحت هذه الألقاب العظيمة. اختر واحداً ليعرض للجميع:</p>
+            <form action="/set_title" method="POST" style="display: flex; gap: 10px;">
+                <select name="title" class="form-control-new" style="margin: 0; flex-grow: 1; border-color: #f39c12;">
+                    <option value="">(بدون لقب / إخفاء)</option>
+                    {% for ach in user.achievements %}
+                        <option value="{{ ach }}" {% if user.special_rank == ach %}selected{% endif %}>{{ ach }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn-gold-new" style="width: auto; background: linear-gradient(45deg, #d4af37, #f39c12);">تثبيت 🏅</button>
+            </form>
+        {% else %}
+            <div style="text-align: center; padding: 10px; color: #555;">
+                <span style="font-size: 30px;">🔒</span>
+                <p style="font-size: 13px;">لم تفتح أي ألقاب أسطورية بعد. شارك في الألغاز والقتال لتحصدها!</p>
+            </div>
+        {% endif %}
+    </div>
+
     <div class="settings-section">
         <h3 style="color: var(--gold-main); border-bottom: 1px dashed #222; padding-bottom: 10px; margin-top: 0;">⚙️ إعدادات الهوية الأساسية</h3>
         <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 20px;">
@@ -160,7 +185,7 @@
             <input type="hidden" name="action" value="change_name">
             <label style="color:var(--text-gray); font-size:13px; display:block; margin-bottom:5px;">تغيير اسم الرحالة (مرة كل 15 يوماً):</label>
             <div style="display: flex; gap: 10px;">
-                <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control-new" required style="margin:0; flex-grow:1;">
+                <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-control-new" value="{{ user.username }}" required style="margin:0; flex-grow:1;">
                 <button type="submit" class="btn-gold-new" style="width: auto;">تغيير</button>
             </div>
         </form>
