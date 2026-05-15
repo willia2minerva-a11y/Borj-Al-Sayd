@@ -4,112 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold-main: #d4af37; --gold-dark: #aa8a2e; --bg-dark: #020101; }
-        
+        :root { --gold-main: #d4af37; --gold-dark: #aa8a2e; --bg-dark: #050403; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* 1. سحر حبات الرمال الذهبية (خلف كل شيء) */
-        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 1; overflow: hidden; }
-        .particle { position: absolute; background: rgba(212,175,55,0.7); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 8px rgba(212,175,55,0.9); }
-        @keyframes floatUp {
-            0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
-        }
+        /* الهيدر المظلم والمهيب */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: #000; border-bottom: 1px solid #111; position: sticky; top: 0; z-index: 1000; }
 
-        /* ההيدر المهيب */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(2, 1, 1, 0.95); border-bottom: 1px solid #1a150c; position: sticky; top: 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.9); }
-
-        /* 2. الشعار الاحترافي المتغير (مع أنميشن البريق المعدني) */
         .logo-container { flex: 2; text-align: center; }
-        .logo-wrapper { position: relative; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-        
-        .logo-text { 
-            font-family: 'Reem Kufi', sans-serif; 
-            font-size: 28px; 
-            font-weight: 900; 
-            /* تأثير البريق (Shimmer) */
-            background: linear-gradient(to right, #d4af37 20%, #fffdea 50%, #d4af37 80%);
-            background-size: 200% auto;
-            -webkit-background-clip: text; 
-            color: transparent; 
-            letter-spacing: 2px; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
-            animation: textShimmer 4s linear infinite;
-        }
-        @keyframes textShimmer {
-            to { background-position: 200% center; }
-        }
+        .logo-text { font-size: 26px; font-weight: 900; color: #b59b4c; letter-spacing: 1px; text-decoration: none; text-shadow: 0 2px 4px #000; }
 
         .header-side { flex: 1; }
-        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid var(--gold-dark); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.3s; }
-        #menu-btn:active { background: var(--gold-main); color: #000; box-shadow: 0 0 15px rgba(212,175,55,0.4); }
-        
-        /* 3. نبض التاج الإمبراطوري */
-        .crown-icon { font-size: 26px; text-decoration: none; display: inline-block; animation: crownPulse 2s infinite alternate ease-in-out; }
-        @keyframes crownPulse {
-            0% { filter: drop-shadow(0 0 2px var(--gold-main)); transform: scale(1); }
-            100% { filter: drop-shadow(0 0 12px var(--gold-main)); transform: scale(1.1); }
-        }
+        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid #222; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.2s; }
+        #menu-btn:active { background: #111; transform: scale(0.95); }
+        .crown-icon { font-size: 24px; text-decoration: none; display: inline-block; transition: 0.2s; filter: grayscale(20%); }
+        .crown-icon:active { transform: scale(1.1); filter: grayscale(0); }
 
-        /* القائمة الجانبية الفخمة */
-        #sidebar { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: #050403; transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 2000; border-left: 1px solid #1a150c; overflow-y: auto; }
-        #sidebar.active { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.95); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; transition: 0.4s; opacity: 0;}
+        /* القائمة الجانبية (أيقونات + لون قاتم جداً) */
+        #sidebar { position: fixed; top: 0; right: -300px; width: 260px; height: 100%; background: #030202; transition: right 0.3s ease-in-out; z-index: 2000; border-left: 1px solid #111; overflow-y: auto; }
+        #sidebar.active { right: 0; box-shadow: -5px 0 25px rgba(0,0,0,0.95); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 1500; opacity: 0; transition: 0.3s; }
         .overlay.active { display: block; opacity: 1; }
 
-        .sidebar-header { padding: 35px 20px 20px; text-align: center; border-bottom: 1px solid #110d09; background: #020101; }
-        .sidebar-avatar { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--gold-main); margin-bottom: 15px; object-fit: cover; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+        .sidebar-header { padding: 30px 20px 20px; text-align: center; border-bottom: 1px solid #0a0806; background: #000; }
+        .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: none; }
         
-        .sidebar-link { display: block; padding: 16px 25px 16px 15px; color: #ddd; text-decoration: none; border-bottom: 1px solid #0f0d0a; font-weight: bold; font-size: 16px; transition: 0.2s; border-right: 4px solid transparent; }
-        .sidebar-link:hover, .sidebar-link:active { color: var(--gold-main); background: #0c0a08; border-right: 4px solid var(--gold-main); }
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 15px 20px; color: #aaa; text-decoration: none; border-bottom: 1px solid #0a0806; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .sidebar-link:active { color: var(--gold-main); background: #0c0a08; }
 
-        /* 4. الظهور التدريجي للحاوية (FadeUp) */
-        .container { 
-            padding: 20px; 
-            max-width: 1100px; 
-            margin: auto; 
-            position: relative; 
-            z-index: 10; 
-            animation: fadeUp 0.6s ease-out forwards; 
-        }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        /* الظهور التدريجي للحاوية (Micro-interaction) */
+        .container { padding: 15px; max-width: 1100px; margin: auto; animation: fadeUp 0.4s ease-out forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid var(--gold-dark); box-shadow: 0 5px 20px #000; font-size: 14px; }
+        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 4px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid #222; box-shadow: 0 5px 20px #000; font-size: 13px; width: 85%; text-align: center;}
     </style>
 </head>
 <body>
-
-    <div class="particles" id="particles"></div>
     <div class="overlay" id="overlay"></div>
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-            <h3 style="color: var(--gold-main); margin: 0; font-size: 18px;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h3>
+            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar" alt="Avatar">
+            <h3 style="color: #b59b4c; margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h3>
         </div>
-        <a href="/" class="sidebar-link">الرئيسية</a>
+        <a href="/" class="sidebar-link"><span>🗡️</span> الساحة</a>
         {% if current_user %}
-            <a href="/profile" class="sidebar-link">هويتي</a>
-            <a href="/friends" class="sidebar-link">التحالفات</a>
-            <a href="/news" class="sidebar-link">المراسيم</a>
-            <a href="/puzzles" class="sidebar-link">النقوش</a>
-            <a href="/store" class="sidebar-link">السوق المظلم</a>
-            <a href="/declarations" class="sidebar-link">التصريحات</a>
-            <a href="/altar" class="sidebar-link">مذبح الطلاسم</a>
+            <a href="/profile" class="sidebar-link"><span>👤</span> هويتي</a>
+            <a href="/friends" class="sidebar-link"><span>🤝</span> التحالفات</a>
+            <a href="/news" class="sidebar-link"><span>📜</span> المراسيم</a>
+            <a href="/puzzles" class="sidebar-link"><span>🧩</span> النقوش</a>
+            <a href="/store" class="sidebar-link"><span>🐪</span> السوق</a>
+            <a href="/declarations" class="sidebar-link"><span>📢</span> التصريحات</a>
+            <a href="/altar" class="sidebar-link"><span>🔮</span> المذبح</a>
             {% if current_user.role == 'admin' %}
-                <a href="/admin" class="sidebar-link" style="color: #e74c3c; border-bottom-color: #e74c3c33;">مركز القيادة</a>
+                <a href="/admin" class="sidebar-link" style="color: #c0392b;"><span>👑</span> القيادة</a>
             {% endif %}
-            <a href="/logout" class="sidebar-link" style="color: #777;">مغادرة</a>
+            <a href="/logout" class="sidebar-link" style="color: #555;"><span>🚪</span> مغادرة</a>
         {% else %}
-            <a href="/login" class="sidebar-link">تسجيل دخول</a>
-            <a href="/register" class="sidebar-link">إنشاء هوية</a>
+            <a href="/login" class="sidebar-link"><span>🔑</span> دخول</a>
+            <a href="/register" class="sidebar-link"><span>📝</span> تسجيل</a>
         {% endif %}
     </nav>
 
@@ -119,9 +73,7 @@
         </div>
 
         <div class="logo-container">
-            <a href="/" class="logo-wrapper">
-                <span class="logo-text">{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</span>
-            </a>
+            <a href="/" class="logo-text">{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</a>
         </div>
 
         <div class="header-side" style="text-align: left;">
@@ -139,42 +91,26 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="flash" style="color: {{ '#2ecc71' if category == 'success' else '#e74c3c' }};">
-                        {{ message }}
-                    </div>
+                    <div class="flash" style="color: {{ '#2ecc71' if category == 'success' else '#e74c3c' }};">{{ message }}</div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
     </div>
 
     <script>
-        // الحل الشامل والنهائي لأي صورة مكسورة
+        // الحل النهائي الجذري لأي صورة مكسورة
         const fbAvatar = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
         document.addEventListener("error", function(e) {
             if (e.target.tagName.toLowerCase() === 'img') { e.target.src = fbAvatar; }
         }, true);
 
-        // القائمة الجانبية
         const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
         menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
         
-        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 4000);
-
-        // تشغيل حبات الرمال
-        const pContainer = document.getElementById('particles');
-        for(let i=0; i<25; i++) {
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.width = Math.random() * 3 + 1 + 'px';
-            p.style.height = p.style.width;
-            p.style.animationDuration = Math.random() * 8 + 6 + 's'; 
-            p.style.animationDelay = Math.random() * 5 + 's';
-            pContainer.appendChild(p);
-        }
+        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 3000);
     </script>
 </body>
 </html>
