@@ -6,16 +6,20 @@
     <title>برج صيد - المتاهة</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --gold-main: #d4af37; 
-            --gold-dark: #aa8a2e; 
-            --bg-dark: #050403; 
-            --transition-fast: 0.25s;
-        }
-        
+        :root { --gold-main: #d4af37; --gold-dark: #aa8a2e; --bg-dark: #050403; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
 
-        /* أنميشن الطفو السلس - Floating Animation */
+        /* سحر حبات الرمال الذهبية (خفيف جداً ولا يستهلك الرام) */
+        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; overflow: hidden; }
+        .particle { position: absolute; background: rgba(212,175,55,0.4); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 5px rgba(212,175,55,0.2); }
+        @keyframes floatUp {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        /* أنميشن الطفو السلس للصور */
         @keyframes smoothFloat {
             0% { transform: translateY(0px); }
             50% { transform: translateY(-8px); }
@@ -23,75 +27,80 @@
         }
         .floating { animation: smoothFloat 4s infinite ease-in-out; }
 
-        /* الهيدر الأسطوري */
-        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.9); border-bottom: 1px solid var(--gold-dark); position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px); }
+        /* الهيدر المهيب */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(5,4,3,0.95); border-bottom: 1px solid var(--gold-dark); position: sticky; top: 0; z-index: 1000; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
 
-        /* شعار برج صيد والسنارة المتداخلة */
+        /* شعار برج صيد المصحح والمضبوط */
         .logo-container { flex: 2; text-align: center; }
-        .tower-logo { text-decoration: none; display: inline-flex; align-items: center; position: relative; }
-        .tower-text { font-family: 'Reem Kufi', sans-serif; color: var(--gold-main); font-size: 26px; font-weight: 900; text-shadow: 0 0 15px rgba(212,175,55,0.4); margin-right: 5px; }
-        .hook-svg { height: 40px; fill: var(--gold-main); filter: drop-shadow(0 0 8px var(--gold-main)); transform: rotate(-10deg); margin-left: -12px; z-index: 1; }
+        .tower-logo { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; position: relative; }
+        .tower-text { font-family: 'Reem Kufi', sans-serif; color: var(--gold-main); font-size: 24px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin-right: 2px; letter-spacing: 1px; }
+        .hook-svg { fill: var(--gold-main); filter: drop-shadow(0 0 5px rgba(212,175,55,0.6)); transform: rotate(-15deg) translateY(2px); margin-left: -8px; z-index: 1; }
 
         /* أزرار الهيدر */
-        #menu-btn { background: #111; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 20px; transition: var(--transition-fast); }
-        #menu-btn:hover { background: var(--gold-main); color: #000; box-shadow: 0 0 15px var(--gold-main); }
-        .crown-icon { font-size: 26px; text-decoration: none; transition: 0.3s; display: inline-block; }
-        .crown-icon:hover { transform: scale(1.2) rotate(10deg); }
+        .header-side { flex: 1; }
+        #menu-btn { background: #0a0806; color: var(--gold-main); border: 1px solid var(--gold-dark); padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 20px; transition: 0.3s; }
+        #menu-btn:hover { background: var(--gold-main); color: #000; box-shadow: 0 0 10px var(--gold-main); }
+        .crown-icon { font-size: 24px; text-decoration: none; display: inline-block; transition: 0.3s; filter: drop-shadow(0 0 5px var(--gold-main)); }
+        .crown-icon:hover { transform: scale(1.2); filter: drop-shadow(0 0 15px var(--gold-main)); }
 
-        /* القائمة الجانبية (تصحيح الشريط الأصفر والسرعة) */
-        #sidebar { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: #080705; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; border-left: 1.5px solid var(--gold-dark); }
-        #sidebar.active { right: 0; }
+        /* القائمة الجانبية (تم إصلاح الشريط والمقاسات) */
+        #sidebar { position: fixed; top: 0; right: -300px; width: 260px; height: 100%; background: #080705; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; border-left: 1px solid #221a0d; }
+        #sidebar.active { right: 0; box-shadow: -5px 0 25px rgba(0,0,0,0.9); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; z-index: 1500; }
         .overlay.active { display: block; }
 
-        .sidebar-header { padding: 40px 20px; text-align: center; border-bottom: 1px solid #1a150c; }
-        .sidebar-avatar { width: 85px; height: 85px; border-radius: 50%; border: 2px solid var(--gold-main); margin-bottom: 10px; object-fit: cover; }
-        .sidebar-link { display: block; padding: 15px 25px; color: #bbb; text-decoration: none; border-bottom: 1px solid #111; font-weight: bold; transition: 0.2s; }
-        .sidebar-link:hover { color: var(--gold-main); background: #110d09; border-right: 4px solid var(--gold-main); padding-right: 30px; }
+        .sidebar-header { padding: 30px 20px; text-align: center; border-bottom: 1px solid #1a150c; background: #050403; }
+        .sidebar-avatar { width: 80px; height: 80px; border-radius: 50%; border: 2px solid var(--gold-main); margin-bottom: 10px; object-fit: cover; box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+        .sidebar-link { display: block; padding: 15px 25px; color: #aaa; text-decoration: none; border-bottom: 1px solid #0f0d0a; font-weight: bold; transition: 0.3s; }
+        .sidebar-link:hover { color: var(--gold-main); background: #110d09; padding-right: 35px; border-right: 3px solid var(--gold-main); }
 
-        .container { padding: 20px; max-width: 1100px; margin: auto; }
-        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 15px 30px; border-radius: 8px; z-index: 3000; font-weight: 900; background: #000; border: 1px solid var(--gold-main); box-shadow: 0 10px 30px #000; }
+        .container { padding: 20px; max-width: 1100px; margin: auto; position: relative; z-index: 10; }
+        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid var(--gold-dark); box-shadow: 0 5px 20px #000; font-size: 14px; }
     </style>
 </head>
 <body>
+
+    <div class="particles" id="particles"></div>
 
     <div class="overlay" id="overlay"></div>
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar floating" onerror="this.src='https://i.imgur.com/7eP1Y6P.png'">
+            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar floating" alt="Avatar">
             <h3 style="color: var(--gold-main); margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'رحالة مجهول' }}</h3>
         </div>
-        <a href="/" class="sidebar-link">الرئيسية</a>
+        <a href="/" class="sidebar-link">🏰 الساحة الرئيسية</a>
         {% if current_user %}
-            <a href="/profile" class="sidebar-link">هويتي</a>
-            <a href="/friends" class="sidebar-link">التحالفات</a>
-            <a href="/news" class="sidebar-link">المراسيم</a>
-            <a href="/puzzles" class="sidebar-link">النقوش</a>
-            <a href="/store" class="sidebar-link">السوق</a>
-            <a href="/altar" class="sidebar-link">المذبح</a>
+            <a href="/profile" class="sidebar-link">👤 هويتي الشخصية</a>
+            <a href="/friends" class="sidebar-link">🤝 التحالفات</a>
+            <a href="/news" class="sidebar-link">📜 المراسيم</a>
+            <a href="/puzzles" class="sidebar-link">🧩 النقوش</a>
+            <a href="/store" class="sidebar-link">🐪 السوق المظلم</a>
+            <a href="/altar" class="sidebar-link">🔮 مذبح الطلاسم</a>
             {% if current_user.role == 'admin' %}
-                <a href="/admin" class="sidebar-link" style="color: #e74c3c;">مركز القيادة</a>
+                <a href="/admin" class="sidebar-link" style="color: #e74c3c;">👑 مركز القيادة</a>
             {% endif %}
-            <a href="/logout" class="sidebar-link" style="color: #666;">مغادرة</a>
+            <a href="/logout" class="sidebar-link" style="color: #666; border-top: 1px dashed #333;">🚪 مغادرة</a>
         {% else %}
-            <a href="/login" class="sidebar-link">تسجيل دخول</a>
+            <a href="/login" class="sidebar-link">🔑 دخول للمتاهة</a>
         {% endif %}
     </nav>
 
     <div class="top-bar">
-        <div style="flex: 1;"><button id="menu-btn">☰</button></div>
+        <div class="header-side" style="text-align: right;">
+            <button id="menu-btn">☰</button>
+        </div>
 
         <div class="logo-container">
             <a href="/" class="tower-logo">
-                <svg class="hook-svg" viewBox="0 0 24 24">
+                <svg class="hook-svg" width="28" height="28" viewBox="0 0 24 24">
                     <path d="M12 2C10.9 2 10 2.9 10 4V15.5C10 16.3 10.7 17 11.5 17S13 16.3 13 15.5V13H15V15.5C15 17.4 13.4 19 11.5 19S8 17.4 8 15.5V4C8 1.8 9.8 0 12 0S16 1.8 16 4V6H14V4C14 2.9 13.1 2 12 2Z"/>
                 </svg>
                 <span class="tower-text">برج صيد</span>
             </a>
         </div>
 
-        <div style="flex: 1; text-align: left;">
+        <div class="header-side" style="text-align: left;">
             {% if current_user and current_user.role == 'admin' %}
                 <a href="/admin" class="crown-icon">👑</a>
             {% endif %}
@@ -102,12 +111,49 @@
         {% block content %}{% endblock %}
     </div>
 
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash" style="color: {{ '#2ecc71' if category == 'success' else '#e74c3c' }};">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
     <script>
+        // الحل الجذري الأسطوري للصور المكسورة في كامل الموقع
+        document.addEventListener("error", function(e) {
+            if (e.target.tagName.toLowerCase() === 'img') {
+                // أيقونة ذهبية داخلية لا يمكن أن تنكسر أبداً
+                e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23d4af37'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+            }
+        }, true);
+
+        // تشغيل القائمة
         const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
         menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+        
+        // إخفاء التنبيهات
+        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 4000);
+
+        // توليد حبات الرمال الذهبية (خفيفة جداً برمجياً)
+        const pContainer = document.getElementById('particles');
+        for(let i=0; i<25; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = Math.random() * 3 + 1 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = Math.random() * 8 + 6 + 's';
+            p.style.animationDelay = Math.random() * 5 + 's';
+            pContainer.appendChild(p);
+        }
     </script>
 </body>
 </html>
