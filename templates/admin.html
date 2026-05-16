@@ -1,133 +1,180 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    body { background-color: #050403; color: #fff; margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    /* تصميم لوحة الإدارة - Dark Matte */
     .admin-layout { display: flex; min-height: 85vh; flex-direction: row-reverse; gap: 20px; }
-    .admin-sidebar { width: 250px; background: #0c0a08; border-left: 2px solid var(--gold-dark); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 10px; height: fit-content; box-shadow: -5px 0 20px rgba(0,0,0,0.8); }
-    .admin-sidebar h3 { color: var(--gold-main); text-align: center; border-bottom: 1px dashed #333; padding-bottom: 15px; margin-top: 0; }
-    .tab-btn { background: #111; color: #aaa; border: 1px solid #333; padding: 12px; border-radius: 8px; cursor: pointer; text-align: right; font-weight: bold; transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-    .tab-btn:hover { background: #1a1a1a; color: #fff; border-color: var(--gold-main); }
-    .tab-btn.active { background: linear-gradient(90deg, #1a140a, #000); color: var(--gold-main); border-color: var(--gold-main); box-shadow: inset -5px 0 0 var(--gold-main); }
-    .admin-content { flex: 1; background: #0c0a08; border: 1px solid #222; border-radius: 12px; padding: 25px; box-shadow: 0 0 20px rgba(0,0,0,0.5); overflow-x: auto; }
-    .tab-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+    
+    /* القائمة الجانبية للأدمن */
+    .admin-sidebar { width: 260px; background: #080705; border: 1px solid #111; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; height: fit-content; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+    .admin-sidebar h3 { color: #b59b4c; text-align: center; border-bottom: 1px dashed #222; padding-bottom: 15px; margin-top: 0; font-size: 18px; }
+    
+    .tab-btn { background: #000; color: #aaa; border: 1px solid #111; padding: 12px 15px; border-radius: 6px; cursor: pointer; text-align: right; font-weight: bold; transition: 0.2s; display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .tab-btn:hover { background: #111; color: #fff; border-color: #333; }
+    .tab-btn.active { background: #111; color: #b59b4c; border-color: #b59b4c; border-right: 4px solid #b59b4c; }
+    
+    /* المحتوى الرئيسي */
+    .admin-content { flex: 1; background: #080705; border: 1px solid #111; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
+    .tab-section { display: none; animation: fadeIn 0.4s; }
     .tab-section.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .section-header { color: var(--gold-main); font-size: 24px; border-bottom: 2px solid #332815; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-    .form-control { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 6px; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; }
-    .form-control:focus { border-color: var(--gold-main); box-shadow: 0 0 8px rgba(212,175,55,0.3); }
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-bottom: 10px; }
-    .btn-gold:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(212,175,55,0.4); }
-    .btn-danger { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; margin-bottom: 10px; }
-    .btn-danger:hover { background: #e74c3c; color: #fff; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .stat-card { background: #111; border: 1px solid #333; padding: 15px; border-radius: 8px; text-align: center; }
-    .stat-card h4 { color: #888; margin: 0 0 10px 0; font-size: 14px; }
-    .stat-card span { color: var(--gold-main); font-size: 24px; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; text-align: right; }
-    th, td { padding: 12px; border-bottom: 1px solid #222; }
-    th { background: #111; color: var(--gold-main); }
-    tr:hover { background: #1a1a1a; }
-    .spy-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-    .spy-room { background: #111; border: 1px solid #3498db; border-radius: 8px; padding: 15px; }
-    .spy-room h4 { color: #3498db; margin: 0 0 10px 0; border-bottom: 1px dashed #333; padding-bottom: 5px; }
-    .spy-player { display: flex; justify-content: space-between; background: #000; padding: 8px; border-radius: 4px; margin-bottom: 5px; border: 1px solid #222; }
-    @media (max-width: 768px) { .admin-layout { flex-direction: column; } .admin-sidebar { width: auto; border-left: none; border-bottom: 2px solid var(--gold-dark); flex-direction: row; flex-wrap: wrap; justify-content: center; } .tab-btn { flex: 1; min-width: 120px; justify-content: center; font-size: 12px; padding: 10px; } .admin-content { padding: 15px; } }
+    
+    /* البطاقات والإحصائيات */
+    .stats-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 25px; }
+    .stat-box { background: #000; border: 1px solid #222; padding: 20px; border-radius: 6px; text-align: center; }
+    .stat-box h2 { color: #fff; margin: 0 0 5px 0; font-size: 28px; }
+    .stat-box p { color: #777; margin: 0; font-size: 12px; font-weight: bold; }
+    
+    /* النماذج والجداول */
+    .control-card { background: #000; border: 1px solid #222; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+    .control-card h4 { color: #b59b4c; margin-top: 0; border-bottom: 1px dashed #222; padding-bottom: 10px; margin-bottom: 15px; font-size: 16px; }
+    
+    .form-input { width: 100%; padding: 12px; background: #0a0806; color: #fff; border: 1px solid #222; border-radius: 4px; margin-bottom: 15px; box-sizing: border-box; font-size: 13px; transition: 0.2s; }
+    .form-input:focus { border-color: #b59b4c; outline: none; }
+    
+    .btn-submit { background: #111; color: #b59b4c; border: 1px solid #222; padding: 12px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-block; text-align: center; }
+    .btn-submit:active { transform: scale(0.96); background: #000; border-color: #b59b4c; }
+    .btn-danger { color: #e74c3c; border-color: #e74c3c; background: rgba(231,76,60,0.05); }
+    .btn-danger:active { background: rgba(231,76,60,0.2); }
+    
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    th, td { padding: 12px 10px; border-bottom: 1px solid #222; text-align: right; }
+    th { background: #000; color: #b59b4c; font-weight: bold; }
+    tr:hover { background: #111; }
+    
+    /* توافق الهواتف */
+    @media (max-width: 768px) {
+        .admin-layout { flex-direction: column; }
+        .admin-sidebar { width: auto; flex-direction: row; flex-wrap: wrap; justify-content: center; }
+        .tab-btn { flex: 1; min-width: 120px; text-align: center; justify-content: center; }
+        .admin-sidebar h3 { display: none; }
+        table { display: block; overflow-x: auto; white-space: nowrap; }
+    }
 </style>
 
 <div class="admin-layout">
     <div class="admin-sidebar">
         <h3>👑 مركز القيادة</h3>
-        <button class="tab-btn active" onclick="openTab(event, 'tab_dashboard')">📊 الإحصائيات</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_general')">⚙️ الهيكل العام</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_players')">👥 سجل الرحالة</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_gates')" style="color: #d35400;">🚪 البوابات</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_f1')" style="color: #3498db;">🕵️ ساحة الاستنتاج (ط1)</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_f2')" style="color: #e74c3c;">🔥 الحرب الشاملة (ط2)</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_f3')" style="color: #f39c12;">⚖️ المحكمة (ط3)</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_f4')" style="color: #9b59b6;">⚔️ المعركة الأخيرة</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_traps')">🕸️ الكيانات والفخاخ</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_news')">📜 المراسيم والنقوش</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_altar')">🔮 مذبح الطلاسم</button>
-        <button class="tab-btn" onclick="openTab(event, 'tab_maintenance')">🛠️ نظام الصيانة</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab-general')"><span>⚙️</span> إعدادات المتاهة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-users')"><span>👥</span> سجل الرحالة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-gates')"><span>🚪</span> البوابات</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-floor1')"><span>🕵️</span> الطابق 1 (الاستنتاج)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-war')"><span>🔥</span> الطابق 2 (الحرب)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-floor3')"><span>⚖️</span> الطابق 3 (المحكمة)</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-final')"><span>👁️</span> المعركة الأخيرة</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-news')"><span>📜</span> المراسيم والألغاز</button>
+        <button class="tab-btn" onclick="openTab(event, 'tab-altar')"><span>🔮</span> المذبح والبونغليف</button>
     </div>
 
     <div class="admin-content">
-        
-        <div id="tab_dashboard" class="tab-section active">
-            <div class="section-header">📊 النظرة العامة</div>
-            <div class="stats-grid">
-                <div class="stat-card"><h4>إجمالي المسجلين</h4><span>{{ stats.total }}</span></div>
-                <div class="stat-card"><h4>أحياء يُرزقون</h4><span style="color:#2ecc71;">{{ stats.alive }}</span></div>
-                <div class="stat-card"><h4>جثث في المقبرة</h4><span style="color:#e74c3c;">{{ stats.dead }}</span></div>
-                <div class="stat-card"><h4>ميزانية المتاهة</h4><span style="color:#f1c40f;">{{ stats.points }} 🪙</span></div>
-            </div>
-            <div style="background: rgba(212,175,55,0.1); border: 1px solid var(--gold-main); padding: 20px; border-radius: 8px; text-align: center;">
-                <h3 style="color: var(--gold-main); margin-top: 0;">مرحباً بك يا إمبراطور</h3>
-                <p style="color: #ddd;">الإحصائيات الآن حية ومباشرة. تحكم في المتاهة من القائمة الجانبية.</p>
-            </div>
-        </div>
 
-        <div id="tab_general" class="tab-section">
-            <div class="section-header">⚙️ إعدادات هيكل المتاهة</div>
-            <form action="/admin" method="POST" enctype="multipart/form-data" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <input type="hidden" name="action" value="update_home_settings">
-                <label style="color:#aaa;">اسم المتاهة (الواجهة):</label>
-                <input type="text" name="home_title" value="{{ settings.home_title if settings else 'البوابة' }}" class="form-control">
-                
-                <label style="color:#aaa;">تفعيل النداء الإمبراطوري (إعلان للجميع):</label>
-                <select name="global_news_active" class="form-control">
-                    <option value="">معطل ❌</option>
-                    <option value="True" {% if settings and settings.global_news_active %}selected{% endif %}>مفعل 📢</option>
-                </select>
-                <input type="text" name="global_news_text" placeholder="نص الإعلان الإمبراطوري..." value="{{ settings.global_news_text if settings else '' }}" class="form-control">
-                
-                <label style="color:#aaa;">تغيير صورة البانر الرئيسي (وغلاف اللاعبين):</label>
-                <input type="file" name="banner_file" class="form-control" accept="image/*">
-                
-                <button type="submit" class="btn-gold">حفظ التعديلات العامة</button>
-            </form>
-        </div>
-
-        <div id="tab_players" class="tab-section">
-            <div class="section-header">👥 إدارة الرحالة</div>
-            <form action="/admin" method="GET" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                <input type="text" name="search_user" placeholder="ابحث بالاسم أو الـ ID..." class="form-control" style="margin: 0;" value="{{ search_query }}">
-                <button type="submit" class="btn-gold" style="width: auto; margin: 0;">بحث 🔍</button>
-            </form>
+        <div id="tab-general" class="tab-section active">
+            <h2 style="color:#b59b4c; margin-top:0;">الإعدادات العامة والصيانة</h2>
             
-            <form action="/admin" method="POST">
-                <input type="hidden" name="action" value="bulk_action">
-                <div style="display: flex; gap: 10px; margin-bottom: 15px; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; flex-wrap: wrap;">
-                    <select name="bulk_type" class="form-control" style="margin: 0; flex: 2; min-width: 200px;" required>
-                        <option value="" disabled selected>اختر الأمر الإمبراطوري الجماعي...</option>
-                        <option value="activate">✨ إحياء وشفاء كامل (100HP)</option>
-                        <option value="eliminate">💀 إعدام فوري للمقبرة</option>
-                        <option value="freeze">🧊 تجميد الحسابات</option>
-                        <option value="move_zone">🚶 نقل جماعي لطابق معين</option>
-                        <option value="hard_delete">🗑️ طمس الأثر (حذف نهائي)</option>
+            <div class="stats-container">
+                <div class="stat-box"><h2>{{ stats.total }}</h2><p>إجمالي الرحالة</p></div>
+                <div class="stat-box"><h2 style="color:#2ecc71;">{{ stats.alive }}</h2><p>الأحياء</p></div>
+                <div class="stat-box"><h2 style="color:#e74c3c;">{{ stats.dead }}</h2><p>الموتى</p></div>
+                <div class="stat-box"><h2 style="color:#f1c40f;">{{ stats.points }}</h2><p>الدنانير المتداولة</p></div>
+            </div>
+
+            <div class="control-card">
+                <h4>واجهة المتاهة وإعلان الساحة</h4>
+                <form action="/admin" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update_home_settings">
+                    <input type="text" name="home_title" class="form-input" placeholder="اسم المتاهة..." value="{{ settings.home_title }}">
+                    <label style="color:#aaa; font-size:13px; display:block; margin-bottom:10px;">
+                        <input type="checkbox" name="global_news_active" value="1" {% if settings.global_news_active %}checked{% endif %}> تفعيل الإعلان الثابت في الساحة
+                    </label>
+                    <textarea name="global_news_text" class="form-input" rows="3" placeholder="اكتب الإعلان هنا...">{{ settings.global_news_text }}</textarea>
+                    <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">تغيير صورة الغلاف (Banner):</label>
+                    <input type="file" name="banner_file" class="form-input" accept="image/*">
+                    <button type="submit" class="btn-submit">تحديث الواجهة</button>
+                </form>
+            </div>
+
+            <div class="control-card" style="border-color:#e74c3c;">
+                <h4 style="color:#e74c3c;">وضع الصيانة (تجميد المتاهة)</h4>
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="setup_maintenance">
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" name="m_duration" class="form-input" placeholder="مدة الصيانة بالدقائق (0 للإنهاء)" style="flex:1;">
+                        <button type="submit" class="btn-submit btn-danger">تنفيذ الأمر</button>
+                    </div>
+                    <label style="color:#aaa; font-size:13px; display:block; margin-bottom:10px;">اختر الصفحات المغلقة:</label>
+                    <select name="m_pages" class="form-input" multiple style="height:100px;">
+                        <option value="all">كل المتاهة (الجميع سيُطرد باستثنائك)</option>
+                        <option value="store">السوق المظلم</option>
+                        <option value="puzzles">النقوش والألغاز</option>
+                        <option value="altar">مذبح الطلاسم</option>
+                        <option value="f1_meeting_room">غرف اجتماعات الطابق الأول</option>
                     </select>
-                    <input type="text" name="bulk_zone" placeholder="اسم الطابق (في حال النقل)" class="form-control" style="margin: 0; flex: 1; min-width: 150px;">
-                    <button type="submit" class="btn-danger" style="margin: 0; flex: 1; min-width: 150px;" onclick="return confirm('تأكيد التنفيذ الجماعي على المحددين؟');">تنفيذ الأمر ⚡</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-users" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">سجل الرحالة</h2>
+            
+            <form method="GET" action="/admin" style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="hidden" name="tab" value="users">
+                <input type="text" name="search_user" class="form-input" placeholder="ابحث بالاسم أو الـ ID..." value="{{ search_query }}" style="margin:0;">
+                <button type="submit" class="btn-submit">بحث 🔍</button>
+                <a href="/admin" class="btn-submit" style="color:#aaa; border-color:#333; text-decoration:none;">إلغاء</a>
+            </form>
+
+            <form action="/admin" method="POST" id="bulkForm">
+                <input type="hidden" name="action" value="bulk_action">
+                
+                <div class="control-card">
+                    <h4>أوامر جماعية</h4>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <select name="bulk_type" class="form-input" style="flex:1; min-width:200px; margin:0;">
+                            <option value="" disabled selected>اختر الإجراء الجماعي...</option>
+                            <option value="activate">إحياء / تفعيل (100% HP)</option>
+                            <option value="eliminate">إعدام / قتل</option>
+                            <option value="freeze">تجميد الحساب</option>
+                            <option value="move_zone">نقل إلى طابق محدد</option>
+                            <option value="hard_delete">طمس أثر (حذف نهائي)</option>
+                        </select>
+                        <select name="bulk_zone" class="form-input" style="flex:1; min-width:200px; margin:0;">
+                            <option value="البوابات">البوابات</option>
+                            <option value="الطابق 1">الطابق 1</option>
+                            <option value="الطابق 2">الطابق 2</option>
+                            <option value="المعركة الأخيرة">المعركة الأخيرة</option>
+                        </select>
+                        <button type="submit" class="btn-submit btn-danger" onclick="return confirm('تأكيد تنفيذ الأمر الجماعي؟');">تنفيذ ⚡</button>
+                    </div>
                 </div>
 
-                <div style="overflow-x: auto; max-height: 500px; border: 1px solid #333; border-radius: 8px;">
+                <div style="overflow-x:auto;">
                     <table>
                         <tr>
-                            <th>تحديد</th><th>ID</th><th>الاسم</th><th>الحالة</th><th>دنانير</th><th>HP</th><th>الطابق</th><th>أدوات</th>
+                            <th style="width: 30px;"><input type="checkbox" onclick="toggleAll(this)"></th>
+                            <th>ID</th>
+                            <th>الاسم</th>
+                            <th>الحالة</th>
+                            <th>الطابق</th>
+                            <th>الروح (HP)</th>
+                            <th>الدنانير</th>
+                            <th>الذكاء</th>
+                            <th>أدوات</th>
                         </tr>
                         {% for u in users %}
                         <tr>
                             <td><input type="checkbox" name="selected_users" value="{{ u.id }}"></td>
-                            <td style="color:#f1c40f; font-weight:bold;">{{ u.hunter_id }}</td>
-                            <td>{{ u.username }}</td>
-                            <td style="color: {% if u.status=='active' %}#2ecc71{% elif u.status=='inactive' %}#f1c40f{% elif u.status=='dead_body' %}#e67e22{% else %}#e74c3c{% endif %};">
-                                {{ 'حي' if u.status=='active' else ('مراجعة' if u.status=='inactive' else ('جثة' if u.status=='dead_body' else 'ميت')) }}
-                            </td>
-                            <td>{{ u.points }}</td>
-                            <td><span style="background: rgba(231,76,60,0.2); padding: 2px 6px; border-radius: 4px;">{{ u.health }}</span></td>
-                            <td>{{ u.zone }}</td>
+                            <td style="font-family:monospace; color:#aaa;">{{ u.hunter_id }}</td>
+                            <td style="font-weight:bold; color: {% if u.is_cursed %}#e74c3c{% else %}#fff{% endif %};">{{ u.username }}</td>
                             <td>
-                                <a href="/hunter/{{ u.hunter_id }}" target="_blank" style="color:var(--gold-main); text-decoration:none; margin-left:10px;">ملفه 👁️</a>
+                                {% if u.status == 'active' %}<span style="color:#2ecc71;">حي</span>
+                                {% elif u.status == 'inactive' %}<span style="color:#f39c12;">مراجعة</span>
+                                {% else %}<span style="color:#e74c3c;">ميت</span>{% endif %}
+                            </td>
+                            <td>{{ u.zone }}</td>
+                            <td style="color:#e74c3c;">{{ u.health }}</td>
+                            <td style="color:#f1c40f;">{{ u.points }}</td>
+                            <td style="color:#3498db;">{{ u.intelligence_points }}</td>
+                            <td>
+                                <a href="/hunter/{{ u.hunter_id }}" class="btn-submit" style="padding:5px 10px; font-size:11px;">البروفايل</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -136,353 +183,308 @@
             </form>
         </div>
 
-        <div id="tab_gates" class="tab-section">
-            <div class="section-header" style="color: #d35400; border-bottom-color: #d35400;">🚪 إدارة البوابات (النظام الجديد)</div>
+        <div id="tab-gates" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">إدارة البوابات الثلاث</h2>
             
-            <div class="stats-grid">
-                <div class="stat-card" style="border-color: #d35400;"><h4>البوابة 1</h4><span style="color: #d35400;">{{ gate_counts[1] if gate_counts else 0 }} منتظر</span></div>
-                <div class="stat-card" style="border-color: #3498db;"><h4>البوابة 2</h4><span style="color: #3498db;">{{ gate_counts[2] if gate_counts else 0 }} منتظر</span></div>
-                <div class="stat-card" style="border-color: #9b59b6;"><h4>البوابة 3</h4><span style="color: #9b59b6;">{{ gate_counts[3] if gate_counts else 0 }} منتظر</span></div>
+            <div class="control-card">
+                <h4>إطلاق البوابات</h4>
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="toggle_gates">
+                    {% if settings.gates_mode_active %}
+                        <p style="color:#2ecc71;">البوابات مفتوحة حالياً! تنتهي في: {{ settings.gates_end_time.strftime('%Y-%m-%d %H:%M') if settings.gates_end_time else 'غير محدد' }}</p>
+                        <p style="color:#aaa;">الرحالة المختارون:</p>
+                        <ul style="color:#888; font-size:13px;">
+                            <li>البوابة 1: {{ gate_counts[1] }} رحالة</li>
+                            <li>البوابة 2: {{ gate_counts[2] }} رحالة</li>
+                            <li>البوابة 3: {{ gate_counts[3] }} رحالة</li>
+                        </ul>
+                        <button type="submit" class="btn-submit btn-danger">إغلاق البوابات وتصفير الاختيارات</button>
+                    {% else %}
+                        <div style="display:flex; gap:10px; margin-bottom:10px;">
+                            <input type="text" name="g1" class="form-input" placeholder="اسم البوابة 1" value="بوابة الدم" required style="margin:0;">
+                            <input type="text" name="g2" class="form-input" placeholder="اسم البوابة 2" value="بوابة النور" required style="margin:0;">
+                            <input type="text" name="g3" class="form-input" placeholder="اسم البوابة 3" value="بوابة الظلال" required style="margin:0;">
+                        </div>
+                        <textarea name="desc" class="form-input" rows="2" placeholder="وصف مرعب للرحالة..."></textarea>
+                        <input type="number" name="gates_hours" class="form-input" placeholder="وقت الاختيار بالساعات (سيُعدم من لا يختار)" required>
+                        <button type="submit" class="btn-submit">فتح البوابات للرحالة</button>
+                    {% endif %}
+                </form>
             </div>
 
-            <form action="/admin" method="POST" style="background: rgba(211, 84, 0, 0.1); padding: 20px; border-radius: 8px; border: 1px solid #d35400; margin-bottom: 20px;">
-                <h4 style="color:#d35400; margin-top:0;">⚡ تنفيذ الأقدار (اختر البوابة وحدد مصير منتظريها):</h4>
-                <input type="hidden" name="action" value="execute_gates_fate">
-                <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                    <select name="target_gate" class="form-control" style="margin:0; flex:1;" required>
-                        <option value="" disabled selected>اختر البوابة...</option>
-                        <option value="1">البوابة 1 ({{ gate_counts[1] }} منتظر)</option>
-                        <option value="2">البوابة 2 ({{ gate_counts[2] }} منتظر)</option>
-                        <option value="3">البوابة 3 ({{ gate_counts[3] }} منتظر)</option>
-                    </select>
-                    <select name="fate_decision" class="form-control" style="margin:0; flex:1;" required>
-                        <option value="" disabled selected>اختر المصير...</option>
-                        <option value="success">عبور آمن (نجاح للطابق 1)</option>
-                        <option value="death">فخ مميت (طرد للمقبرة)</option>
-                        <option value="test">غرفة الاختبار (تجميد للاستجواب)</option>
-                    </select>
-                    <button type="submit" class="btn-danger" style="background:#d35400; border-color:#d35400; margin:0; flex:1;" onclick="return confirm('هل أنت متأكد من إنزال هذا المصير على الجميع في هذه البوابة؟');">أنزل المصير ⚡</button>
-                </div>
-            </form>
-
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <h4 style="color:#aaa; margin-top:0;">إعدادات البوابات (فتح وإغلاق الاختيار):</h4>
-                <input type="hidden" name="action" value="toggle_gates">
-                <label style="color:#aaa;">وصف المرحلة للرحالة:</label>
-                <textarea name="desc" class="form-control" rows="2">{{ settings.gates_description if settings else '' }}</textarea>
-                
-                <div style="display:flex; gap:10px; margin-bottom:10px;">
-                    <input type="text" name="g1" value="{{ settings.gate_1_name if settings else 'بوابة 1' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 1">
-                    <input type="text" name="g2" value="{{ settings.gate_2_name if settings else 'بوابة 2' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 2">
-                    <input type="text" name="g3" value="{{ settings.gate_3_name if settings else 'بوابة 3' }}" class="form-control" style="margin:0; flex:1;" placeholder="اسم البوابة 3">
-                </div>
-                
-                <label style="color:#aaa;">مدة فتح البوابات للاختيار (بالساعات):</label>
-                <input type="number" name="gates_hours" placeholder="0 للإغلاق الفوري" class="form-control">
-                
-                {% if settings and settings.gates_mode_active %}
-                    <button type="submit" class="btn-danger">إغلاق التصويت/الاختيار 🛑</button>
-                    <p style="color: #f1c40f; font-size: 13px; text-align: center;">تنتهي في: {{ settings.gates_end_time }}</p>
-                {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #d35400, #e67e22);">فتح البوابات للاختيار ▶️</button>
-                {% endif %}
-            </form>
-        </div>
-
-        <div id="tab_f1" class="tab-section">
-            <div class="section-header" style="color: #3498db; border-bottom-color: #3498db;">🕵️ ساحة الاستنتاج (ط1)</div>
-            {% if settings and settings.floor1_mode_active %}
-            <div class="stats-grid">
-                <div class="stat-card" style="border-color: #3498db;"><h4>مجموعات نشطة</h4><span style="color:#3498db;">{{ (users.filter(group_id__gt=0).distinct('group_id')|length) if users else 0 }}</span></div>
-                <div class="stat-card" style="border-color: #e74c3c;"><h4>جثث في الساحة</h4><span style="color:#e74c3c;">{{ users.filter(status='dead_body').count() if users else 0 }}</span></div>
-            </div>
-            {% endif %}
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                <input type="hidden" name="action" value="toggle_floor1">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 120px;"><label style="color:#aaa;">حجم كل مجموعة:</label><input type="number" name="group_size" value="5" class="form-control" {% if settings and settings.floor1_mode_active %}disabled{% endif %}></div>
-                    <div style="flex:1; min-width: 120px;"><label style="color:#aaa;">تبريد التنقل (ثواني):</label><input type="number" name="move_cooldown" value="{{ settings.floor1_move_cooldown if settings else 30 }}" class="form-control"></div>
-                    <div style="flex:1; min-width: 120px;"><label style="color:#aaa;">تبريد القتل (ثواني):</label><input type="number" name="kill_cooldown" value="{{ settings.floor1_kill_cooldown if settings else 60 }}" class="form-control"></div>
-                </div>
-                {% if settings and settings.floor1_mode_active %}
-                    <button type="submit" class="btn-danger">إيقاف وتصفير الطابق الأول 🛑</button>
-                {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #2980b9, #3498db);">بدء الطابق وتوزيع اللعنات ▶️</button>
-                {% endif %}
-            </form>
-        </div>
-
-        <div id="tab_f2" class="tab-section">
-            <div class="section-header" style="color: #e74c3c; border-bottom-color: #e74c3c;">🔥 الحرب الشاملة (الطابق 2)</div>
-            
-            <div class="stats-grid">
-                <div class="stat-card" style="border-color: #e74c3c;"><h4>الضحايا حتى الآن</h4><span style="color:#e74c3c;">{{ settings.dead_count if settings else 0 }} / {{ settings.war_kill_target if settings else 15 }}</span></div>
-            </div>
-
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                <input type="hidden" name="action" value="toggle_war">
-                
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">عدد التضحيات اللازمة لإيقاف الحرب:</label>
-                        <input type="number" name="war_kill_target" value="{{ settings.war_kill_target if settings else 15 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
+            {% if settings.gates_mode_active %}
+            <div class="control-card" style="border-color:#e74c3c;">
+                <h4 style="color:#e74c3c;">تحديد المصير (أقدار البوابات)</h4>
+                <form action="/admin" method="POST" onsubmit="return confirm('تأكيد تنفيذ القدر؟ لا تراجع!');">
+                    <input type="hidden" name="action" value="execute_gates_fate">
+                    <div style="display:flex; gap:10px;">
+                        <select name="target_gate" class="form-input" style="margin:0;">
+                            <option value="1">البوابة 1 ({{ settings.gate_1_name }})</option>
+                            <option value="2">البوابة 2 ({{ settings.gate_2_name }})</option>
+                            <option value="3">البوابة 3 ({{ settings.gate_3_name }})</option>
+                        </select>
+                        <select name="fate_decision" class="form-input" style="margin:0;">
+                            <option value="success">نجاح (عبور للطابق الأول)</option>
+                            <option value="death">إعدام جماعي (نقل للمقبرة)</option>
+                            <option value="test">غرفة الاختبار</option>
+                        </select>
+                        <button type="submit" class="btn-submit btn-danger">تنفيذ القدر</button>
                     </div>
-                    <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">معدل النزيف (-HP في كل دورة):</label>
-                        <input type="number" name="bleed_amount" value="{{ settings.bleed_amount if settings else 1 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">مؤقت النزيف (كل كم دقيقة ينزف):</label>
-                        <input type="number" name="bleed_rate_minutes" value="{{ settings.bleed_rate_minutes if settings else 60 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
-                    </div>
-                    <div style="flex:1; min-width: 150px;">
-                        <label style="color:#aaa;">تبريد الهجوم (يمنع الهجوم المتتالي بالدقائق):</label>
-                        <input type="number" name="attack_cooldown_minutes" value="{{ settings.attack_cooldown_minutes if settings else 5 }}" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
-                    </div>
-                </div>
-
-                <label style="color:#aaa;">مدة الحرب الكلية (بالساعات):</label>
-                <input type="number" name="war_hours" class="form-control" {% if settings and settings.war_mode %}disabled{% endif %}>
-                
-                {% if settings and settings.war_mode %}
-                    <button type="submit" class="btn-danger">إيقاف الحرب فوراً 🛑</button>
-                {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #c0392b, #e74c3c); color:#fff;">إشعال الحرب بالنزيف الجديد ▶️</button>
-                {% endif %}
-            </form>
-        </div>
-
-        <div id="tab_f3" class="tab-section">
-            <div class="section-header" style="color: #f39c12; border-bottom-color: #f39c12;">⚖️ المحكمة الكبرى (الطابق 3)</div>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <input type="hidden" name="action" value="toggle_floor3">
-                <div style="display: flex; gap: 10px;">
-                    <div style="flex:1"><label style="color:#aaa;">مدة التصويت (ساعات):</label><input type="number" name="vote_hours" class="form-control" {% if settings and (settings.floor3_mode_active or settings.floor3_paused) %}disabled{% endif %}></div>
-                    <div style="flex:1"><label style="color:#aaa;">عدد المتأهلين للنهائي:</label><input type="number" name="top_n" value="{{ settings.vote_top_n if settings else 5 }}" class="form-control" {% if settings and (settings.floor3_mode_active or settings.floor3_paused) %}disabled{% endif %}></div>
-                </div>
-                
-                {% if settings and settings.floor3_mode_active %}
-                    <button type="submit" class="btn-danger" style="background: #f39c12; color:#000; border-color: #f39c12;">إيقاف مؤقت (تجميد الوقت) ⏸️</button>
-                {% elif settings and settings.floor3_paused %}
-                    <button type="submit" class="btn-gold" style="background: #2ecc71;">استئناف المحكمة ▶️</button>
-                {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #d35400, #f39c12);">بدء المحكمة الكبرى ▶️</button>
-                {% endif %}
-            </form>
-            {% if settings and (settings.floor3_mode_active or settings.floor3_paused or settings.floor3_results_active) %}
-            <form action="/admin" method="POST" style="margin-top: 10px;">
-                <input type="hidden" name="action" value="reset_floor3">
-                <button type="submit" class="btn-danger" onclick="return confirm('إيقاف المحكمة وإعادتها لنقطة الصفر بدون عرض أي نتائج؟');">إيقاف المحكمة فوراً (إلغاء تام بدون نتائج) 🛑</button>
-            </form>
-            {% endif %}
-        </div>
-
-        <div id="tab_f4" class="tab-section">
-            <div class="section-header" style="color: #9b59b6; border-bottom-color: #9b59b6;">⚔️ المعركة الأخيرة (ضد الإمبراطور)</div>
-            
-            {% if settings and settings.maze_winner_id > 0 %}
-            <div style="background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                <h3 style="color: #2ecc71; margin-top: 0;">👑 بطل المتاهة متوج حالياً (ID: {{ settings.maze_winner_id }})!</h3>
-                <p style="color: #ddd;">شاشة الفوز تظهر للجميع الآن والمتاهة معطلة.</p>
-                <form action="/admin" method="POST" style="margin: 0;">
-                    <input type="hidden" name="action" value="reset_maze_winner">
-                    <button type="submit" class="btn-gold" style="background: #2ecc71; color: #000; width: auto;" onclick="return confirm('هل أنت متأكد من تصفير الفوز وبدء عصر جديد في المتاهة؟');">تجريد البطل وبدء عصر جديد 🔄</button>
                 </form>
             </div>
             {% endif %}
-
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <input type="hidden" name="action" value="toggle_final_battle">
-                <label style="color:#aaa;">نقاط صحة الإمبراطور (HP):</label>
-                <input type="number" name="emperor_hp" value="{{ settings.emperor_max_hp if settings else 100000 }}" class="form-control" {% if settings and settings.final_battle_mode %}disabled{% endif %}>
-                
-                {% if settings and settings.final_battle_mode %}
-                    <button type="submit" class="btn-danger">إيقاف المعركة فوراً 🛑</button>
-                {% else %}
-                    <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #8e44ad, #9b59b6); color:#fff;">فتح باب المواجهة ▶️</button>
-                {% endif %}
-            </form>
         </div>
 
-        <div id="tab_traps" class="tab-section">
-            <div class="section-header">🕸️ الكيانات والفخاخ المظلمة</div>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                <input type="hidden" name="action" value="add_standalone_puzzle">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <select name="trap_category" id="trap_category" class="form-control" onchange="updateTrapForm()" style="flex:1; min-width: 150px;" required>
-                        <option value="" disabled selected>نوع الكيان...</option>
-                        <option value="link">🔗 رابط سري</option>
-                        <option value="ghost">👻 شبح (وهمي)</option>
-                    </select>
-                    <select name="trap_effect" id="trap_effect" class="form-control" onchange="updateTrapForm()" style="flex:1; min-width: 150px;" required>
-                        <option value="" disabled selected>تأثير الفخ...</option>
-                        <option value="give_points">يعطي دنانير 🪙</option>
-                        <option value="steal_points">يسرق دنانير 🩸</option>
-                        <option value="give_item">يمنح أداة 🎁</option>
-                        <option value="steal_item">يسرق أداة عشوائية 🪝</option>
-                        <option value="give_seal">يمنح ختماً 🔮</option>
-                        <option value="quicksand" id="opt_quicksand">فخ رمال (تجميد) ⏳</option>
-                    </select>
-                </div>
-                <input type="text" name="puzzle_answer" placeholder="إجابة الرابط، أو ID الشبح..." class="form-control" required>
-                <div id="fld_points" style="display:none;"><input type="number" name="reward_points" placeholder="مقدار الدنانير" class="form-control"></div>
-                <div id="fld_penalty" style="display:none;"><input type="number" name="trap_penalty" placeholder="المسروق" class="form-control"></div>
-                <div id="fld_item" style="display:none;"><input type="text" name="reward_item" placeholder="اسم الأداة أو الختم" class="form-control"></div>
-                <div id="fld_duration" style="display:none;"><input type="number" name="trap_duration" placeholder="مدة التجميد (دقائق)" class="form-control"></div>
-                <label style="color:#aaa;">كم شخصاً يمكنه الوقوع هنا؟</label>
-                <input type="number" name="max_winners" value="1" class="form-control">
-                <button type="submit" class="btn-danger" style="background: transparent; border-color: #8e44ad; color: #8e44ad;">زرع الكيان في المتاهة</button>
-            </form>
-            <script>
-                function updateTrapForm() {
-                    let cat = document.getElementById('trap_category').value;
-                    let eff = document.getElementById('trap_effect').value;
-                    if(cat === 'ghost' && eff === 'quicksand') { document.getElementById('trap_effect').value = ''; alert('الأشباح لا تستخدم فخ الرمال!'); }
-                    document.getElementById('fld_points').style.display = (eff==='give_points')?'block':'none';
-                    document.getElementById('fld_penalty').style.display = (eff==='steal_points')?'block':'none';
-                    document.getElementById('fld_item').style.display = (eff==='give_item'||eff==='give_seal')?'block':'none';
-                    document.getElementById('fld_duration').style.display = (eff==='quicksand')?'block':'none';
-                }
-            </script>
-        </div>
-
-        <div id="tab_news" class="tab-section">
-            <div class="section-header" style="color: #1abc9c; border-bottom-color: #1abc9c;">📜 المراسيم والنقوش السرية</div>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px dashed #f39c12; margin-bottom: 30px;">
-                <h4 style="color: #f39c12; margin-top:0;">🗿 نقش البونغليف (القصة المخفية)</h4>
-                <input type="hidden" name="action" value="update_poneglyph">
-                <textarea name="poneglyph_text" class="form-control" rows="5" placeholder="اكتب هنا سر المتاهة العظيم ليظهر في قاعة البونغليف..." style="font-family: monospace; color: #f39c12;">{{ settings.poneglyph_text if settings else '' }}</textarea>
-                <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #f39c12, #e67e22);">حفظ ونقش السر 🗿</button>
-            </form>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                <h4 style="color: #1abc9c; margin-top:0;">📜 إصدار مرسوم أو لغز جديد</h4>
-                <input type="hidden" name="action" value="add_news">
-                <input type="text" name="title" placeholder="عنوان المرسوم أو اللغز..." class="form-control" required>
-                <textarea name="content" placeholder="النص..." class="form-control" rows="4" required></textarea>
-                <select name="puzzle_type" class="form-control">
-                    <option value="none">مرسوم إخباري عادي (بدون لغز)</option>
-                    <option value="standard_puzzle">لغز قياسي (يحتاج إجابة من الرحالة)</option>
-                </select>
-                <input type="text" name="puzzle_answer" placeholder="إجابة اللغز (اتركه فارغاً للمرسوم العادي)" class="form-control">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 150px;"><input type="number" name="reward_points" placeholder="المكافأة (دنانير)" class="form-control"></div>
-                    <div style="flex:1; min-width: 150px;"><input type="number" name="max_winners" placeholder="عدد الفائزين المسموح" class="form-control" value="1"></div>
-                </div>
-                <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #16a085, #1abc9c);">إصدار في المتاهة 📜</button>
-            </form>
-            <form action="/admin" method="POST">
-                <input type="hidden" name="action" value="bulk_delete_news">
-                <div style="overflow-x: auto; border: 1px solid #333; border-radius: 8px; max-height: 400px;">
-                    <table>
-                        <tr><th>تحديد</th><th>النوع</th><th>العنوان</th><th>الكاتب</th><th>التاريخ</th></tr>
-                        {% if all_news %}
-                            {% for n in all_news %}
-                            <tr>
-                                <td><input type="checkbox" name="selected_news" value="{{ n.id }}"></td>
-                                <td style="color:{% if n.category=='puzzle' %}#1abc9c{% else %}#aaa{% endif %};">{{ 'لغز' if n.category=='puzzle' else ('تصريح' if n.category=='declaration' else 'مرسوم') }}</td>
-                                <td>{{ n.title }}</td>
-                                <td>{{ n.author }}</td>
-                                <td>{{ n.created_at.strftime('%Y-%m-%d') }}</td>
-                            </tr>
-                            {% endfor %}
-                        {% endif %}
-                    </table>
-                </div>
-                <button type="submit" class="btn-danger" style="width: auto; margin-top: 15px;" onclick="return confirm('هل أنت متأكد من الحذف؟');">حذف المحدد 🗑️</button>
-            </form>
-        </div>
-
-        <div id="tab_altar" class="tab-section">
-            <div class="section-header" style="color: #8e44ad; border-bottom-color: #8e44ad;">🔮 مذبح الطلاسم</div>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                <input type="hidden" name="action" value="add_spell">
-                <input type="text" name="spell_word" placeholder="الكلمة السحرية (بدون فراغات)..." class="form-control" required>
-                <select name="spell_type" class="form-control" required>
-                    <option value="" disabled selected>تأثير التعويذة...</option>
-                    <option value="hp_gain">شفاء الجراح (+HP)</option>
-                    <option value="hp_loss">ضريبة الدم (-HP)</option>
-                    <option value="points_gain">ثراء فاحش (+دنانير)</option>
-                    <option value="points_loss">فقر مدقع (-دنانير)</option>
-                    <option value="item_reward">استدعاء أداة / ختم</option>
-                    <option value="unlock_lore">كشف غرفة البونغليف</option>
-                    <option value="unlock_top">كشف قاعة الأساطير</option>
-                    <option value="kill_emperor" style="color: #e74c3c; font-weight: bold;">قتل الإمبراطور (التعويذة المحرمة)</option>
-                </select>
-                <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 150px;"><input type="number" name="effect_value" placeholder="قيمة التأثير" class="form-control"></div>
-                    <div style="flex:1; min-width: 150px;"><input type="text" name="item_name" placeholder="اسم الأداة (للاستدعاء)" class="form-control"></div>
-                </div>
-                <div style="display:flex; gap:10px; flex-wrap: wrap;">
-                    <div style="flex:1; min-width: 150px;"><label style="color:#aaa;">عدد الاستخدامات المسموحة:</label><input type="number" name="max_uses" value="1" class="form-control"></div>
-                    <div style="flex:1; min-width: 150px;"><label style="color:#aaa;">صلاحية (ساعات):</label><input type="number" name="spell_hours" placeholder="مثال: 24" class="form-control"></div>
-                </div>
-                <button type="submit" class="btn-gold" style="background: linear-gradient(45deg, #8e44ad, #9b59b6); color:#fff;">زرع التعويذة في المذبح 🔮</button>
-            </form>
-            <h4 style="color:var(--gold-main);">التعاويذ النشطة حالياً:</h4>
-            <div style="overflow-x: auto; border: 1px solid #333; border-radius: 8px;">
-                <table>
-                    <tr><th>الكلمة السحرية</th><th>التأثير</th><th>الاستخدامات</th><th>إبطال</th></tr>
-                    {% if spells %}
-                        {% for s in spells %}
-                        <tr>
-                            <td style="color:#f1c40f; font-weight:bold;">{{ s.spell_word }}</td>
-                            <td>{{ s.spell_type }}</td>
-                            <td>{{ s.used_by|length }}/{{ s.max_uses }}</td>
-                            <td>
-                                <form action="/admin" method="POST" style="margin:0;">
-                                    <input type="hidden" name="action" value="delete_spell">
-                                    <input type="hidden" name="spell_id" value="{{ s.id }}">
-                                    <button type="submit" class="btn-danger" style="padding: 5px 10px; width:auto; margin:0;" onclick="return confirm('إبطال التعويذة نهائياً؟');">✖</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
+        <div id="tab-floor1" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">إدارة الطابق 1 (لعبة الاستنتاج واللعنة)</h2>
+            
+            <div class="control-card">
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="toggle_floor1">
+                    {% if settings.floor1_mode_active %}
+                        <h4 style="color:#2ecc71;">الطابق نشط والمجموعات موزعة!</h4>
+                        <button type="submit" class="btn-submit btn-danger" onclick="return confirm('تأكيد إيقاف الطابق وتصفير المجموعات؟');">إنهاء الطابق وتصفير اللعنات</button>
+                    {% else %}
+                        <h4>إعدادات بدء الطابق</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <input type="number" name="group_size" class="form-input" placeholder="عدد أفراد كل مجموعة (مثال: 5)" value="5" required style="flex:1; min-width:150px; margin:0;">
+                            <input type="number" name="gems_target" class="form-input" placeholder="الأحجار المطلوبة لنجاح الأبرياء" value="10" required style="flex:1; min-width:150px; margin:0;">
+                            <input type="number" name="f1_cursed_win_percent" class="form-input" placeholder="نسبة فوز الملعون % (مثال: 50)" value="50" required style="flex:1; min-width:150px; margin:0;">
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                            <input type="number" name="move_cooldown" class="form-input" placeholder="تبريد التنقل (بالثواني)" value="30" required style="flex:1; min-width:150px; margin:0;">
+                            <input type="number" name="kill_cooldown" class="form-input" placeholder="تبريد القتل للملعون (ثواني)" value="60" required style="flex:1; min-width:150px; margin:0;">
+                        </div>
+                        <button type="submit" class="btn-submit">توزيع المجموعات واللعنات وبدء الطابق</button>
                     {% endif %}
-                </table>
+                </form>
+            </div>
+
+            {% if settings.floor1_mode_active %}
+            <div class="control-card">
+                <h4>إدارة الاجتماعات النشطة</h4>
+                {% if settings.f1_active_meetings %}
+                    {% for gid, minfo in settings.f1_active_meetings.items() %}
+                        <div style="background:#111; padding:10px; border:1px solid #333; border-radius:4px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                            <span style="color:#aaa;">مجموعة {{ gid }} - استدعاه: {{ minfo.called_by }}</span>
+                            <form action="/admin" method="POST" style="margin:0;">
+                                <input type="hidden" name="action" value="cancel_f1_meeting">
+                                <input type="hidden" name="group_id" value="{{ gid }}">
+                                <button type="submit" class="btn-submit btn-danger" style="padding:5px 10px;">إلغاء قسري</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color:#777; font-size:13px;">لا توجد اجتماعات نشطة حالياً.</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <div id="tab-war" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">الطابق 2 (الحرب الشاملة والنزيف)</h2>
+            
+            <div class="control-card">
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="toggle_war">
+                    {% if settings.war_mode %}
+                        <h4 style="color:#e74c3c;">🔥 الحرب مشتعلة! والنزيف التلقائي يعمل.</h4>
+                        <p style="color:#aaa; font-size:13px;">معدل النزيف: {{ settings.bleed_amount }} HP كل {{ settings.bleed_rate_minutes }} دقيقة.</p>
+                        <p style="color:#aaa; font-size:13px;">آخر تحديث للنزيف: {{ settings.last_global_bleed.strftime('%Y-%m-%d %H:%M:%S') if settings.last_global_bleed else 'الآن' }}</p>
+                        <button type="submit" class="btn-submit btn-danger" onclick="return confirm('سيتم إيقاف الحرب وإعادة صحة جميع الناجين إلى 100%. تأكيد؟');">إيقاف الحرب وإشفاء الناجين</button>
+                    {% else %}
+                        <h4>إعدادات إعلان الحرب</h4>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                            <input type="number" name="war_hours" class="form-input" placeholder="مدة الحرب (ساعات)" value="24" required style="flex:1; min-width:150px; margin:0;">
+                            <input type="number" name="attack_cooldown_minutes" class="form-input" placeholder="تبريد الهجوم (دقائق)" value="5" required style="flex:1; min-width:150px; margin:0;">
+                        </div>
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:15px;">
+                            <input type="number" name="bleed_rate_minutes" class="form-input" placeholder="تكرار النزيف (كل X دقيقة)" value="72" required style="flex:1; min-width:150px; margin:0;">
+                            <input type="number" name="bleed_amount" class="form-input" placeholder="مقدار النزيف (كم HP)" value="1" required style="flex:1; min-width:150px; margin:0;">
+                        </div>
+                        <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;">إعلان الحرب وبدء النزيف 🩸</button>
+                    {% endif %}
+                </form>
             </div>
         </div>
 
-        <div id="tab_maintenance" class="tab-section">
-            <div class="section-header" style="color: #f39c12; border-bottom-color: #f39c12;">🛠️ نظام الصيانة الشاملة</div>
-            <form action="/admin" method="POST" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #333;">
-                <input type="hidden" name="action" value="setup_maintenance">
-                <label style="color:#aaa;">مدة الصيانة بالدقائق (ضع 0 لإنهاء الصيانة فوراً):</label>
-                <input type="number" name="m_duration" placeholder="مثال: 60" class="form-control" required>
-                <label style="color:#aaa;">الأروقة المراد إغلاقها:</label>
-                <select name="m_pages" class="form-control" multiple style="height: 120px;">
-                    <option value="all" selected>إغلاق المتاهة بالكامل (الجميع سيُطرد باستثنائك)</option>
-                    <option value="store">إغلاق السوق المظلم فقط</option>
-                    <option value="puzzles">إغلاق النقوش والألغاز</option>
-                    <option value="altar">إغلاق مذبح الطلاسم</option>
-                    <option value="meeting">إغلاق غرف اجتماعات الطابق الأول</option>
-                </select>
-                <p style="color:#888; font-size:12px; margin-top:-10px; margin-bottom:15px;">* (للهاتف: بعض المتصفحات تختار خياراً واحداً. للحاسوب: استخدم CTRL لاختيار متعدد).</p>
-                <button type="submit" class="btn-danger" style="background: #e67e22; color: #000; border-color: #e67e22;">تفعيل حالة الصيانة 🛠️</button>
+        <div id="tab-floor3" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">الطابق 3 (المحكمة الكبرى)</h2>
+            <div class="control-card">
+                <form action="/admin" method="POST" style="display:inline-block; margin-bottom:10px;">
+                    <input type="hidden" name="action" value="toggle_floor3">
+                    {% if settings.floor3_mode_active %}
+                        <button type="submit" class="btn-submit btn-danger">إيقاف / تجميد المحكمة ⏸️</button>
+                    {% elif settings.floor3_paused %}
+                        <button type="submit" class="btn-submit" style="color:#2ecc71;">استئناف المحكمة ▶️</button>
+                    {% else %}
+                        <input type="number" name="vote_hours" class="form-input" placeholder="مدة التصويت (ساعات)" value="24" required>
+                        <input type="number" name="top_n" class="form-input" placeholder="عدد الناجين المتأهلين للعرش" value="5" required>
+                        <button type="submit" class="btn-submit">بدء المحكمة الكبرى</button>
+                    {% endif %}
+                </form>
+                
+                <form action="/admin" method="POST" style="display:inline-block;">
+                    <input type="hidden" name="action" value="reset_floor3">
+                    <button type="submit" class="btn-submit" style="color:#aaa; border-color:#333;" onclick="return confirm('سيتم تصفير جميع الأصوات! تأكيد؟');">تصفير المحكمة 🔄</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="tab-final" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">العرش (المعركة الأخيرة)</h2>
+            
+            <div class="control-card">
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="toggle_final_battle">
+                    {% if settings.final_battle_mode %}
+                        <h4 style="color:#e74c3c;">👁️ المعركة الأخيرة مشتعلة! الإمبراطور ظاهر للعلن.</h4>
+                        <button type="submit" class="btn-submit btn-danger">إغلاق المعركة وإخفاء الإمبراطور</button>
+                    {% else %}
+                        <h4>فتح العرش للمواجهة</h4>
+                        <input type="number" name="emperor_hp" class="form-input" placeholder="صحة الإمبراطور (HP) - مثال: 100000" value="{{ settings.emperor_max_hp }}" required>
+                        <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;">كشف الإمبراطور وبدء المعركة!</button>
+                    {% endif %}
+                </form>
+            </div>
+            
+            <div class="control-card">
+                <h4>إدارة الفائز بالمتاهة</h4>
+                {% if settings.maze_winner_id > 0 %}
+                    <p style="color:#2ecc71;">الفائز الحالي هو الرحالة رقم: {{ settings.maze_winner_id }}</p>
+                    <form action="/admin" method="POST">
+                        <input type="hidden" name="action" value="reset_maze_winner">
+                        <button type="submit" class="btn-submit btn-danger">تصفير الفائز وبدء عصر جديد</button>
+                    </form>
+                {% else %}
+                    <p style="color:#777; font-size:13px;">لم يفز أحد بعد.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div id="tab-news" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">كتابة المراسيم وصنع الألغاز</h2>
+            
+            <div class="control-card">
+                <form action="/admin" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="add_news">
+                    <input type="text" name="title" class="form-input" placeholder="عنوان المرسوم / اللغز" required>
+                    <textarea name="content" class="form-input" rows="4" placeholder="محتوى النص..."></textarea>
+                    
+                    <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">صورة مرفقة (اختياري):</label>
+                    <input type="file" name="news_image" class="form-input" accept="image/*">
+                    
+                    <select name="puzzle_type" class="form-input" id="puzzle_select" onchange="document.getElementById('puzzle_options').style.display = (this.value == 'none' ? 'none' : 'block');">
+                        <option value="none">مرسوم إخباري (نص فقط)</option>
+                        <option value="standard_puzzle">لغز قياسي (يحتاج إجابة من اللاعب)</option>
+                    </select>
+                    
+                    <div id="puzzle_options" style="display:none; background:#111; padding:15px; border-radius:6px; margin-bottom:15px;">
+                        <input type="text" name="puzzle_answer" class="form-input" placeholder="الإجابة الصحيحة للغز">
+                        <div style="display:flex; gap:10px;">
+                            <input type="number" name="reward_points" class="form-input" placeholder="المكافأة (دنانير)">
+                            <input type="number" name="max_winners" class="form-input" placeholder="أقصى عدد للفائزين" value="1">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">نشر</button>
+                </form>
+            </div>
+            
+            <form action="/admin" method="POST">
+                <input type="hidden" name="action" value="bulk_delete_news">
+                <button type="submit" class="btn-submit btn-danger" style="margin-bottom:10px;" onclick="return confirm('حذف المحدد؟');">حذف المحدد</button>
+                <div style="overflow-x:auto;">
+                    <table>
+                        <tr><th>تحديد</th><th>النوع</th><th>العنوان</th><th>التاريخ</th></tr>
+                        {% for n in all_news %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_news" value="{{ n.id }}"></td>
+                            <td>{{ 'لغز' if n.category == 'puzzle' else 'مرسوم' }}</td>
+                            <td>{{ n.title }}</td>
+                            <td>{{ n.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </form>
+        </div>
+
+        <div id="tab-altar" class="tab-section">
+            <h2 style="color:#b59b4c; margin-top:0;">إدارة المذبح السري</h2>
+            
+            <div class="control-card">
+                <h4>زرع تعويذة جديدة</h4>
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="add_spell">
+                    <input type="text" name="spell_word" class="form-input" placeholder="الكلمة السحرية (الطلاسم)" required>
+                    
+                    <select name="spell_type" class="form-input" required>
+                        <option value="points_gain">إعطاء دنانير</option>
+                        <option value="hp_gain">شفاء HP</option>
+                        <option value="item_reward">إعطاء أداة أو ختم</option>
+                        <option value="points_loss">فخ: سحب دنانير</option>
+                        <option value="hp_loss">فخ: سحب HP</option>
+                        <option value="unlock_lore">فتح غرفة البونغليف للاعب</option>
+                        <option value="unlock_top">فتح قاعة الأساطير للاعب</option>
+                        <option value="kill_emperor">تعويذة دمار الإمبراطور (للمعركة الأخيرة)</option>
+                    </select>
+                    
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" name="effect_value" class="form-input" placeholder="القيمة (رقم)">
+                        <input type="text" name="item_name" class="form-input" placeholder="اسم الأداة (إن وجد)">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="number" name="max_uses" class="form-input" placeholder="أقصى عدد للاستخدام (0 للامحدود)" value="1" required>
+                        <input type="number" name="spell_hours" class="form-input" placeholder="تنتهي بعد (ساعات)">
+                    </div>
+                    <button type="submit" class="btn-submit">زرع التعويذة في المذبح</button>
+                </form>
+            </div>
+            
+            <div class="control-card">
+                <h4>🗿 نقش البونغليف</h4>
+                <form action="/admin" method="POST">
+                    <input type="hidden" name="action" value="update_poneglyph">
+                    <textarea name="poneglyph_text" class="form-input" rows="6" placeholder="اكتب أسرار وتاريخ المتاهة هنا...">{{ settings.poneglyph_text }}</textarea>
+                    <button type="submit" class="btn-submit" style="color:#f39c12; border-color:#f39c12;">حفر النقش</button>
+                </form>
+            </div>
         </div>
 
     </div>
 </div>
 
 <script>
+    // تفعيل علامات التبويب (Tabs)
     function openTab(evt, tabName) {
         var i, tabcontent, tablinks;
         tabcontent = document.getElementsByClassName("tab-section");
         for (i = 0; i < tabcontent.length; i++) { 
-            tabcontent[i].style.display = "none"; 
             tabcontent[i].classList.remove("active"); 
         }
         tablinks = document.getElementsByClassName("tab-btn");
         for (i = 0; i < tablinks.length; i++) { 
             tablinks[i].classList.remove("active"); 
         }
-        document.getElementById(tabName).style.display = "block";
-        setTimeout(() => document.getElementById(tabName).classList.add("active"), 10);
+        document.getElementById(tabName).classList.add("active");
         evt.currentTarget.classList.add("active");
     }
+
+    // تحديد الكل في الجداول
+    function toggleAll(source) {
+        checkboxes = document.getElementsByName('selected_users');
+        for(var i=0, n=checkboxes.length; i<n; i++) {
+            checkboxes[i].checked = source.checked;
+        }
+    }
+    
+    // إبقاء التبويب مفتوحاً بعد البحث أو التحديث
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.get('tab') === 'users' || urlParams.get('search_user')) {
+        document.querySelector('.tab-btn[onclick*="tab-users"]').click();
+    }
 </script>
+
 {% endblock %}
 
