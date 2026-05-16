@@ -1,142 +1,92 @@
 {% extends 'base.html' %}
 {% block content %}
 
-{% set zone_color = '#d4af37' %} 
-{% if target_user.zone == 'البوابات' %}{% set zone_color = '#a67c00' %}
-{% elif target_user.zone == 'الطابق 1' %}{% set zone_color = '#2980b9' %}
-{% elif target_user.zone == 'الطابق 2' %}{% set zone_color = '#c0392b' %}
-{% elif target_user.zone == 'المعركة الأخيرة' %}{% set zone_color = '#8e44ad' %}
-{% endif %}
+{% set clean_zone = target_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
 
 <style>
-    .profile-wrap { background: rgba(5, 4, 3, 0.85); backdrop-filter: blur(4px); border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .profile-cover { height: 100px; background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(5,4,3,0.85)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
-    .profile-header { text-align: center; margin-top: -45px; padding-bottom: 15px; position: relative; z-index: 5; }
+    .profile-wrap { background: rgba(5, 4, 3, 0.85); border-radius: 12px; overflow: hidden; border: 1px solid #222; }
+    .profile-cover { height: 130px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(5,4,3,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
+    .profile-header { text-align: center; margin-top: -50px; padding-bottom: 15px; position: relative; z-index: 5; }
     
-    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
-    @keyframes smoothFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #111; background: #000; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+    .profile-name { color: #b59b4c; font-size: 24px; font-weight: 900; margin: 0; }
+    .profile-id { color: #666; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
     
-    .profile-name { color: #b59b4c; font-size: 22px; font-weight: 900; margin: 0; }
-    .profile-id { color: #555; font-family: monospace; font-size: 12px; margin-bottom: 10px; display: block; }
+    .badges-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;}
+    .badge { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #000; border: 1px solid #333; }
+
+    /* أزرار الإجراءات */
+    .action-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 0 20px 20px;}
+    .btn-action { background: #0a0806; color: #fff; border: 1px solid #333; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; flex: 1; min-width: 120px; text-align: center;}
+    .btn-action:active { transform: scale(0.95); background: #000; }
+
+    /* صندوق الدعم المنسق */
+    .support-box { background: #050403; border: 1px solid #222; border-radius: 8px; padding: 15px; margin: 0 20px 20px; display: none; animation: slideDown 0.3s; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .badges-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
-    .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.5); border: 1px solid #111; color: #888;}
-
-    .action-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 10px 15px 0;}
-    .btn-action { background: #000; color: #fff; border: 1px solid #222; padding: 8px 15px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; transition: 0.2s; }
-    .btn-action:active { transform: scale(0.95); background: #111;}
-
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
-    .stat-card { background: rgba(0,0,0,0.6); border: 1px solid #111; border-bottom: 2px solid {{ zone_color }}; padding: 15px 5px; border-radius: 6px; text-align: center; transition: 0.2s; position: relative; opacity: 0; animation: fadeUpCard 0.5s forwards; }
-    .stat-card:active { transform: scale(0.95); }
-    .stat-card:nth-child(1) { animation-delay: 0.1s; }
-    .stat-card:nth-child(2) { animation-delay: 0.2s; }
-    .stat-card:nth-child(3) { animation-delay: 0.3s; }
-    .stat-card:nth-child(4) { animation-delay: 0.4s; }
-    @keyframes fadeUpCard { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-    .stat-val { font-size: 20px; font-weight: 900; margin-bottom: 2px; color: #ddd; }
-    .stat-label { color: #666; font-size: 11px; font-weight: bold; }
-
-    .form-input { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #222; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px;}
-    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #222; padding: 10px; border-radius: 4px; font-weight: bold; width: 100%; transition: 0.2s; font-size: 13px;}
-    .btn-submit:active { transform: scale(0.95); }
-    
-    .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 14px; opacity: 0.5; cursor: pointer; }
+    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px;}
+    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #333; padding: 12px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
 </style>
 
 <div class="profile-wrap">
     <div class="profile-cover"></div>
     <div class="profile-header">
-        <img src="/avatar/{{ target_user.hunter_id }}" class="profile-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-        <h2 class="profile-name">
-            <span id="txt_name">{{ target_user.username }}</span>
-            {% if current_user.role == 'admin' %}<span class="edit-pen" style="position:static;" onclick="toggleEdit('name')">✏️</span>{% endif %}
-        </h2>
+        <img src="/avatar/{{ target_user.hunter_id }}" class="profile-avatar">
+        <h2 class="profile-name">{{ target_user.username }}</h2>
         <span class="profile-id">ID: {{ target_user.hunter_id }}</span>
         
         <div class="badges-row">
-            <span class="badge" style="color: #2ecc71;">{{ 'حي يُرزق' if target_user.status == 'active' else 'مقيد' }}</span>
-            <span class="badge" style="color: {{ zone_color }};">الطابق: {{ target_user.zone }}</span>
-            {% if target_user.special_rank %}<span class="badge" style="color: #b59b4c;">🏆 {{ target_user.special_rank }}</span>{% endif %}
+            <span class="badge" style="color: #2ecc71; border-color: #2ecc71;">{{ 'حي يُرزق' if target_user.status == 'active' else 'مقيد' }}</span>
+            <span class="badge" style="color: #f39c12; border-color: #f39c12;">الطابق: {{ clean_zone }}</span>
+            {% if target_user.special_rank %}<span class="badge" style="color: #b59b4c; border-color: #b59b4c;">🏆 {{ target_user.special_rank }}</span>{% endif %}
         </div>
+    </div>
 
-        {% if current_user and current_user.status == 'active' and target_user.hunter_id not in [1000, 1001] %}
-        <div class="action-buttons">
-            {% if target_user.hunter_id in current_user.friends %}
-                <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c;" onclick="return confirm('تأكيد قطع حبل التحالف؟');">إلغاء التحالف ❌</button></form>
-            {% elif current_user.hunter_id in target_user.friend_requests %}
-                <form action="/cancel_request" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" onclick="return confirm('سحب الطلب المعلق؟');">سحب الطلب ⏳</button></form>
-            {% elif target_user.hunter_id in current_user.friend_requests %}
-                <a href="/accept_friend/{{ target_user.hunter_id }}" class="btn-action" style="color:#3498db;">قبول التحالف ✅</a>
-            {% else %}
-                <form action="/add_friend" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#3498db;">طلب تحالف 🤝</button></form>
-            {% endif %}
-            
-            {% if settings and settings.war_mode and my_weapons %}
-                <button onclick="document.getElementById('attack_box').style.display='block'" class="btn-action" style="color:#e74c3c;">هجوم ⚔️</button>
-            {% endif %}
-        </div>
+    {% if current_user and current_user.status == 'active' and target_user.hunter_id not in [1000, 1001] %}
+    <div class="action-row">
+        {% if target_user.hunter_id in current_user.friends %}
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="flex:1; margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c; border-color:#e74c3c; width:100%;">قطع التحالف ❌</button></form>
+            <button onclick="toggleSupportBox()" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">إرسال دعم 🎁</button>
+        {% elif current_user.hunter_id in target_user.friend_requests %}
+            <form action="/cancel_request" method="POST" style="flex:1; margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="width:100%;">سحب الطلب ⏳</button></form>
+        {% elif target_user.hunter_id in current_user.friend_requests %}
+            <a href="/accept_friend/{{ target_user.hunter_id }}" class="btn-action" style="color:#2ecc71; border-color:#2ecc71;">قبول التحالف ✅</a>
+        {% else %}
+            <form action="/add_friend" method="POST" style="flex:1; margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#3498db; border-color:#3498db; width:100%;">طلب تحالف 🤝</button></form>
         {% endif %}
     </div>
 
-    <div id="attack_box" style="display:none; padding:15px; background: rgba(0,0,0,0.6); border-top: 1px solid #111;">
-        <h4 style="color:#e74c3c; margin-top:0; font-size:13px; text-align:right;">⚔️ تنفيذ ضربة</h4>
-        <form action="/use_item/{{ target_user.hunter_id }}" method="POST">
-            <select name="item_name" class="form-input" required>
-                <option value="" disabled selected>اختر السلاح...</option>
-                {% for w in my_weapons %}<option value="{{ w.name }}">{{ w.name }} (تأثير: {{ w.effect_amount }})</option>{% endfor %}
-                {% for h in my_heals %}<option value="{{ h.name }}">{{ h.name }} (شفاء: {{ h.effect_amount }})</option>{% endfor %}
+    <div class="support-box" id="supportBox">
+        <h4 style="color: #b59b4c; margin-top: 0; text-align: center;">إرسال إمدادات إلى حليفك</h4>
+        <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
+            <select name="transfer_type" class="form-input" onchange="document.getElementById('tr_pts').style.display=(this.value=='points'?'block':'none'); document.getElementById('tr_itm').style.display=(this.value=='item'?'block':'none');">
+                <option value="points">🪙 إرسال دنانير</option>
+                <option value="item">📦 إرسال غرض من حقيبتي</option>
             </select>
-            <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="return confirm('تأكيد تنفيذ الضربة؟ لا تراجع!');">تنفيذ الأكشن</button>
-            <button type="button" onclick="document.getElementById('attack_box').style.display='none'" class="btn-submit" style="color:#555; border-color:#222; background:transparent;">تراجع</button>
+            <input type="number" name="amount" id="tr_pts" class="form-input" placeholder="العدد..." min="1" max="{{ current_user.points }}">
+            <select name="item_name" id="tr_itm" class="form-input" style="display:none;">
+                {% if current_user.inventory %}{% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}{% else %}<option disabled selected>حقيبتك فارغة!</option>{% endif %}
+            </select>
+            <button type="submit" class="btn-submit">تأكيد الإرسال</button>
         </form>
     </div>
-
-    {% if current_user.role == 'admin' %}
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-val" style="color: #f1c40f;"><span id="txt_points">{{ target_user.points }}</span></div>
-            <div class="stat-label">دنانير (سري) 🪙</div>
-            <span class="edit-pen" onclick="toggleEdit('points')">✏️</span>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val" style="color: #3498db;"><span id="txt_loyal">{{ target_user.loyalty_points }}</span></div>
-            <div class="stat-label">وفاء (سري) 🤝</div>
-            <span class="edit-pen" onclick="toggleEdit('loyal')">✏️</span>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val" style="color: #e74c3c;"><span id="txt_hp">{{ target_user.health }}</span>%</div>
-            <div class="stat-label">الروح ❤️</div>
-            <span class="edit-pen" onclick="toggleEdit('hp')">✏️</span>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val" style="color: #1abc9c;"><span id="txt_iq">{{ target_user.intelligence_points }}</span></div>
-            <div class="stat-label">ذكاء (سري) 🧠</div>
-            <span class="edit-pen" onclick="toggleEdit('iq')">✏️</span>
-        </div>
-    </div>
-    {% else %}
-        <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
-            <p>🔒 إحصائيات الرحالة (دنانير، وفاء، ذكاء) مشفرة ولا تظهر للعامة.</p>
-        </div>
     {% endif %}
 
     {% if current_user.role == 'admin' %}
-    <div id="admin_forms" style="display:none;">
-        <form id="form_name" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_name"><input type="text" name="new_val" id="in_name"></form>
-        <form id="form_points" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_points"><input type="number" name="new_val" id="in_points"></form>
-        <form id="form_hp" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_hp"><input type="number" name="new_val" id="in_hp"></form>
-        <form id="form_loyal" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_loyalty"><input type="number" name="new_val" id="in_loyal"></form>
-        <form id="form_iq" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_iq"><input type="number" name="new_val" id="in_iq"></form>
-    </div>
+        <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
+            <p>كأدمن، يمكنك رؤية بياناته وتعديلها من لوحة التحكم.</p>
+        </div>
+    {% else %}
+        <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
+            <p>🔒 إحصائيات الرحالة (دنانير، ذكاء، روح) مشفرة ولا تظهر للعامة.</p>
+        </div>
     {% endif %}
 </div>
 
 <script>
-    function toggleEdit(field) {
-        let val = prompt("القيمة لـ " + field);
-        if (val !== null && val !== "") { document.getElementById('in_' + field).value = val; document.getElementById('form_' + field).submit(); }
+    function toggleSupportBox() {
+        var box = document.getElementById('supportBox');
+        box.style.display = (box.style.display === 'block') ? 'none' : 'block';
     }
 </script>
 {% endblock %}
