@@ -9,48 +9,43 @@
 {% endif %}
 
 <style>
-    /* الحاوية شفافة لتظهر الرمال خلفها */
-    .profile-wrap { max-width: 100%; margin: 0 auto; background: rgba(10, 8, 6, 0.85); border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-    
-    /* غلاف صغير مخصص للهاتف */
-    .profile-cover { height: 100px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(10,8,6,0.85)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 2px solid {{ zone_color }}; }
-    
+    /* الزجاج الداكن لكي تظهر الرمال من خلفه */
+    .profile-wrap { background: rgba(5, 4, 3, 0.85); backdrop-filter: blur(4px); border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .profile-cover { height: 100px; background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(5,4,3,0.85)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     .profile-header { text-align: center; margin-top: -45px; padding-bottom: 15px; position: relative; z-index: 5; }
     
-    /* صورة بروفايل بدون إطار تطفو بنعومة */
-    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.8); margin-bottom: 5px; animation: floatMobile 3s infinite ease-in-out; }
+    /* صورة طافية بلطف وبدون إطار */
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; }
+    @keyframes smoothFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
     
-    @keyframes floatMobile {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-5px); }
-        100% { transform: translateY(0px); }
-    }
+    .profile-name { color: #b59b4c; font-size: 22px; font-weight: 900; margin: 0; }
+    .profile-id { color: #555; font-family: monospace; font-size: 12px; margin-bottom: 10px; display: block; }
+    
+    .badges-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+    .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.5); border: 1px solid #111; color: #888;}
 
-    .profile-name { color: var(--gold-main); font-size: 22px; font-weight: 900; margin: 0; }
-    .profile-id { color: #888; font-family: monospace; font-size: 13px; margin-bottom: 10px; display: block; }
-    
-    .badges-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
-    .badge { padding: 4px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #000; }
-    
-    /* الخانات المربعة للهاتف */
+    /* الظهور المتتالي للمربعات */
     .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
-    .stat-card { background: rgba(5, 4, 3, 0.9); border: 1px solid #1a150c; padding: 15px 5px; border-radius: 8px; text-align: center; position: relative; transition: 0.2s; }
-    .stat-card:active { border-color: {{ zone_color }}; transform: scale(0.98); }
-    .stat-val { font-size: 20px; font-weight: 900; margin-bottom: 2px; color: #fff; }
-    .stat-label { color: #888; font-size: 11px; font-weight: bold; }
+    .stat-card { background: rgba(0,0,0,0.6); border: 1px solid #111; border-bottom: 2px solid {{ zone_color }}; padding: 15px 5px; border-radius: 6px; text-align: center; transition: 0.2s; position: relative; opacity: 0; animation: fadeUpCard 0.5s forwards; }
+    .stat-card:active { transform: scale(0.95); }
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    @keyframes fadeUpCard { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-    .inventory-box { background: rgba(5, 4, 3, 0.9); border: 1px solid #1a150c; margin: 0 15px 15px; padding: 15px; border-radius: 8px; text-align: center; }
-    .item-tag { display: inline-block; background: #000; border: 1px solid #332815; padding: 4px 12px; border-radius: 20px; margin: 3px; color: var(--gold-dark); font-size: 12px; }
+    .stat-val { font-size: 20px; font-weight: 900; margin-bottom: 2px; color: #ddd; }
+    .stat-label { color: #666; font-size: 11px; font-weight: bold; }
 
-    .settings-section { background: rgba(5, 4, 3, 0.9); border-top: 1px solid #1a150c; padding: 20px 15px; }
-    .form-input { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; }
-    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid var(--gold-main); padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; transition: 0.2s; }
-    .btn-submit:active { background: var(--gold-main); color: #000; }
+    .inventory-box, .settings-section { background: rgba(0,0,0,0.6); border: 1px solid #111; margin: 0 15px 15px; padding: 15px; border-radius: 6px; }
+    .item-tag { display: inline-block; background: #000; border: 1px solid #222; padding: 4px 10px; border-radius: 4px; margin: 3px; color: #aaa; font-size: 11px; }
+
+    .form-input { width: 100%; padding: 10px; background: #000; color: #fff; border: 1px solid #222; border-radius: 4px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px;}
+    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #222; padding: 10px; border-radius: 4px; font-weight: bold; width: 100%; transition: 0.2s; font-size: 13px;}
+    .btn-submit:active { background: #222; transform: scale(0.95); }
     
-    /* أيقونات التعديل السريع للإدارة */
     .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 14px; opacity: 0.5; cursor: pointer; }
-    .edit-pen:active { opacity: 1; transform: scale(1.1); }
-    .inline-input { background: #000; color: #fff; border: 1px solid var(--gold-main); text-align: center; width: 50px; border-radius: 4px; padding: 2px; }
+    .inline-input { background: #000; color: #fff; border: 1px solid #444; text-align: center; width: 50px; border-radius: 4px; padding: 2px; }
 </style>
 
 <div class="profile-wrap">
@@ -62,11 +57,10 @@
             {% if current_user.role == 'admin' %}<span class="edit-pen" style="position:static;" onclick="toggleEdit('name')">✏️</span>{% endif %}
         </h2>
         <span class="profile-id">ID: {{ user.hunter_id }}</span>
-        
         <div class="badges-row">
-            <span class="badge" style="border: 1px solid #2ecc71; color: #2ecc71;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد' }}</span>
-            <span class="badge" style="border: 1px solid {{ zone_color }}; color: {{ zone_color }};">الطابق: {{ user.zone }}</span>
-            {% if user.special_rank %}<span class="badge" style="background: {{ zone_color }}; color: #000;">🏆 {{ user.special_rank }}</span>{% endif %}
+            <span class="badge" style="color: #2ecc71;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد' }}</span>
+            <span class="badge" style="color: {{ zone_color }};">الطابق: {{ user.zone }}</span>
+            {% if user.special_rank %}<span class="badge" style="color: #b59b4c;">🏆 {{ user.special_rank }}</span>{% endif %}
         </div>
     </div>
 
@@ -81,13 +75,11 @@
             <div class="stat-label">وفاء 🤝</div>
             {% if current_user.role == 'admin' %}<span class="edit-pen" onclick="toggleEdit('loyal')">✏️</span>{% endif %}
         </div>
-        {% if settings and (settings.war_mode or settings.final_battle_mode) %}
         <div class="stat-card">
             <div class="stat-val" style="color: #e74c3c;"><span id="txt_hp">{{ user.health }}</span>%</div>
             <div class="stat-label">الروح ❤️</div>
             {% if current_user.role == 'admin' %}<span class="edit-pen" onclick="toggleEdit('hp')">✏️</span>{% endif %}
         </div>
-        {% endif %}
         <div class="stat-card">
             <div class="stat-val" style="color: #1abc9c;"><span id="txt_iq">{{ user.intelligence_points }}</span></div>
             <div class="stat-label">ذكاء 🧠</div>
@@ -96,52 +88,28 @@
     </div>
 
     <div class="inventory-box">
-        <h4 style="color: var(--gold-main); margin: 0 0 10px 0; font-size: 13px;">🎒 حقيبة النجاة</h4>
-        {% for item in user.inventory %}
-            <span class="item-tag">{{ item }}</span>
-        {% else %}
-            <span style="color: #444; font-size:12px;">الحقيبة فارغة...</span>
-        {% endfor %}
+        <h4 style="color: #b59b4c; margin: 0 0 10px 0; font-size: 12px;">🎒 حقيبة النجاة</h4>
+        {% for item in user.inventory %}<span class="item-tag">{{ item }}</span>{% else %}<span style="color: #444; font-size:11px;">فارغة...</span>{% endfor %}
     </div>
 
     <div class="settings-section">
-        <h3 style="color: var(--gold-main); font-size: 15px; margin-top: 0; margin-bottom: 15px;">🏆 الألقاب والإنجازات</h3>
+        <h4 style="color: #b59b4c; margin: 0 0 10px 0; font-size: 12px;">🏆 الألقاب</h4>
         {% if user.achievements %}
-            <form action="/set_title" method="POST" style="display: flex; gap: 10px;">
-                <select name="title" class="form-input" style="margin: 0;">
+            <form action="/set_title" method="POST">
+                <select name="title" class="form-input">
                     <option value="">(إخفاء اللقب)</option>
-                    {% for ach in user.achievements %}
-                        <option value="{{ ach }}" {% if user.special_rank == ach %}selected{% endif %}>{{ ach }}</option>
-                    {% endfor %}
+                    {% for ach in user.achievements %}<option value="{{ ach }}" {% if user.special_rank == ach %}selected{% endif %}>{{ ach }}</option>{% endfor %}
                 </select>
-                <button type="submit" class="btn-submit" style="width: auto; padding: 10px;">تثبيت</button>
+                <button type="submit" class="btn-submit">تثبيت</button>
             </form>
-        {% else %}
-            <p style="color: #555; font-size: 12px; margin: 0;">لا توجد ألقاب بعد.</p>
-        {% endif %}
+        {% else %}<p style="color: #555; font-size: 11px;">لا توجد ألقاب بعد.</p>{% endif %}
 
-        <h3 style="color: var(--gold-main); font-size: 15px; margin: 25px 0 15px 0;">⚙️ تحديث الهوية</h3>
-        <form action="/settings" method="POST" enctype="multipart/form-data" style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="hidden" name="action" value="change_avatar">
-            <input type="file" name="avatar_file" class="form-input" accept="image/*" style="margin:0; padding:8px;">
-            <button type="submit" class="btn-submit" style="width: auto; padding: 10px;">رفع</button>
-        </form>
-        <form action="/settings" method="POST" style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="hidden" name="action" value="change_name">
-            <input type="text" name="new_name" placeholder="الاسم الجديد..." class="form-input" value="{{ user.username }}" required style="margin:0;">
-            <button type="submit" class="btn-submit" style="width: auto; padding: 10px;">تغيير</button>
-        </form>
-        <form action="/settings" method="POST">
-            <input type="hidden" name="action" value="change_password">
-            <input type="password" name="old_password" placeholder="الختم الحالي" class="form-input" required>
-            <div style="display: flex; gap: 10px;">
-                <input type="password" name="new_password" placeholder="جديد" class="form-input" required>
-                <input type="password" name="confirm_password" placeholder="تأكيد" class="form-input" required>
-            </div>
-            <button type="submit" class="btn-submit">تحديث الختم</button>
-        </form>
+        <h4 style="color: #b59b4c; margin: 25px 0 10px 0; font-size: 12px;">⚙️ الهوية</h4>
+        <form action="/settings" method="POST" enctype="multipart/form-data"><input type="hidden" name="action" value="change_avatar"><input type="file" name="avatar_file" class="form-input" accept="image/*"><button type="submit" class="btn-submit">رفع صورة</button></form>
+        <form action="/settings" method="POST" style="margin-top:10px;"><input type="hidden" name="action" value="change_name"><input type="text" name="new_name" class="form-input" value="{{ user.username }}" required><button type="submit" class="btn-submit">تغيير الاسم</button></form>
     </div>
 
+    {% if current_user.role == 'admin' %}
     <div id="admin_forms" style="display:none;">
         <form id="form_name" action="/admin_update_profile/{{ user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_name"><input type="text" name="new_val" id="in_name"></form>
         <form id="form_points" action="/admin_update_profile/{{ user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_points"><input type="number" name="new_val" id="in_points"></form>
@@ -149,15 +117,13 @@
         <form id="form_loyal" action="/admin_update_profile/{{ user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_loyalty"><input type="number" name="new_val" id="in_loyal"></form>
         <form id="form_iq" action="/admin_update_profile/{{ user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_iq"><input type="number" name="new_val" id="in_iq"></form>
     </div>
+    {% endif %}
 </div>
 
 <script>
     function toggleEdit(field) {
-        let val = prompt("أدخل القيمة الجديدة لـ " + field);
-        if (val !== null && val !== "") {
-            document.getElementById('in_' + field).value = val;
-            document.getElementById('form_' + field).submit();
-        }
+        let val = prompt("القيمة الجديدة لـ " + field);
+        if (val !== null && val !== "") { document.getElementById('in_' + field).value = val; document.getElementById('form_' + field).submit(); }
     }
 </script>
 {% endblock %}
