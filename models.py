@@ -68,6 +68,10 @@ class User(db.Document):
     f1_has_voted = db.BooleanField(default=False)
     f1_votes_received = db.IntField(default=0)
     f1_tasks = db.ListField(db.DictField(), default=list)
+    
+    # === الحقول الجديدة التي كانت تسبب الخطأ ===
+    f1_last_move = db.DateTimeField()
+    f1_will = db.StringField(default="")
 
 class News(db.Document):
     meta = {'strict': False}
@@ -106,7 +110,7 @@ class StoreItem(db.Document):
 class GlobalSettings(db.Document):
     meta = {'strict': False}
     setting_name = db.StringField(unique=True, default='main_config')
-    home_title = db.StringField(default='البوابة')
+    home_title = db.StringField(default='برج صيد')
     banner_url = db.StringField(default='')
     global_news_active = db.BooleanField(default=False)
     global_news_text = db.StringField(default='')
@@ -121,6 +125,7 @@ class GlobalSettings(db.Document):
     bleed_amount = db.IntField(default=1)
     attack_cooldown_minutes = db.IntField(default=5)
     safe_time_minutes = db.IntField(default=120)
+    last_global_bleed = db.DateTimeField() 
     
     final_battle_mode = db.BooleanField(default=False)
     emperor_max_hp = db.IntField(default=100000)
@@ -153,8 +158,8 @@ class GlobalSettings(db.Document):
     floor1_darkness_until = db.DateTimeField()
     floor1_locked_room = db.StringField(default='')
     floor1_locked_until = db.DateTimeField()
+    f1_cursed_win_percent = db.IntField(default=50)
     
-    # 🏆 الحقل الجديد لتسجيل الفائز بالمتاهة
     maze_winner_id = db.IntField(default=0)
 
 class SpellConfig(db.Document):
@@ -209,6 +214,7 @@ def migrate_database():
         if not hasattr(user, 'group_id'): updates['group_id'] = 0
         if not hasattr(user, 'current_room'): updates['current_room'] = 'الساحة'
         if not hasattr(user, 'f1_tasks'): updates['f1_tasks'] = []
+        if not hasattr(user, 'f1_will'): updates['f1_will'] = ""
         if updates:
             user.update(**updates)
             updated_count += 1
@@ -218,4 +224,3 @@ try:
     migrate_database()
 except Exception as e:
     pass
-
