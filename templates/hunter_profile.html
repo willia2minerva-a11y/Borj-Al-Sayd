@@ -13,7 +13,7 @@
     .profile-cover { height: 100px; background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(5,4,3,0.85)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     .profile-header { text-align: center; margin-top: -45px; padding-bottom: 15px; position: relative; z-index: 5; }
     
-    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
     @keyframes smoothFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
     
     .profile-name { color: #b59b4c; font-size: 22px; font-weight: 900; margin: 0; }
@@ -22,7 +22,6 @@
     .badges-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
     .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.5); border: 1px solid #111; color: #888;}
 
-    /* الأزرار بنبض عند اللمس */
     .action-buttons { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; padding: 10px 15px 0;}
     .btn-action { background: #000; color: #fff; border: 1px solid #222; padding: 8px 15px; border-radius: 4px; font-size: 12px; font-weight: bold; text-decoration: none; transition: 0.2s; }
     .btn-action:active { transform: scale(0.95); background: #111;}
@@ -65,15 +64,15 @@
         {% if current_user and current_user.status == 'active' and target_user.hunter_id not in [1000, 1001] %}
         <div class="action-buttons">
             {% if target_user.hunter_id in current_user.friends %}
-                <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c;">إلغاء التحالف ❌</button></form>
-                <button onclick="document.getElementById('transfer_box').style.display='block'" class="btn-action" style="color:#b59b4c;">إرسال دعم 🎁</button>
+                <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c;" onclick="return confirm('تأكيد قطع حبل التحالف؟');">إلغاء التحالف ❌</button></form>
             {% elif current_user.hunter_id in target_user.friend_requests %}
-                <form action="/cancel_request" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action">سحب الطلب ⏳</button></form>
+                <form action="/cancel_request" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" onclick="return confirm('سحب الطلب المعلق؟');">سحب الطلب ⏳</button></form>
             {% elif target_user.hunter_id in current_user.friend_requests %}
                 <a href="/accept_friend/{{ target_user.hunter_id }}" class="btn-action" style="color:#3498db;">قبول التحالف ✅</a>
             {% else %}
                 <form action="/add_friend" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#3498db;">طلب تحالف 🤝</button></form>
             {% endif %}
+            
             {% if settings and settings.war_mode and my_weapons %}
                 <button onclick="document.getElementById('attack_box').style.display='block'" class="btn-action" style="color:#e74c3c;">هجوم ⚔️</button>
             {% endif %}
@@ -81,12 +80,16 @@
         {% endif %}
     </div>
 
-    <div id="transfer_box" style="display:none; padding:15px; background: rgba(0,0,0,0.6); border-top: 1px solid #111;">
-        <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
-            <select name="transfer_type" class="form-input" onchange="document.getElementById('tr_pts').style.display=(this.value=='points'?'block':'none'); document.getElementById('tr_itm').style.display=(this.value=='item'?'block':'none');"><option value="points">🪙 إرسال دنانير</option><option value="item">📦 إرسال غرض</option></select>
-            <input type="number" name="amount" id="tr_pts" class="form-input" placeholder="العدد..." min="1" max="{{ current_user.points }}">
-            <select name="item_name" id="tr_itm" class="form-input" style="display:none;">{% if current_user.inventory %}{% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}{% else %}<option disabled>فارغة!</option>{% endif %}</select>
-            <button type="submit" class="btn-submit">تأكيد</button>
+    <div id="attack_box" style="display:none; padding:15px; background: rgba(0,0,0,0.6); border-top: 1px solid #111;">
+        <h4 style="color:#e74c3c; margin-top:0; font-size:13px; text-align:right;">⚔️ تنفيذ ضربة</h4>
+        <form action="/use_item/{{ target_user.hunter_id }}" method="POST">
+            <select name="item_name" class="form-input" required>
+                <option value="" disabled selected>اختر السلاح...</option>
+                {% for w in my_weapons %}<option value="{{ w.name }}">{{ w.name }} (تأثير: {{ w.effect_amount }})</option>{% endfor %}
+                {% for h in my_heals %}<option value="{{ h.name }}">{{ h.name }} (شفاء: {{ h.effect_amount }})</option>{% endfor %}
+            </select>
+            <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="return confirm('تأكيد تنفيذ الضربة؟ لا تراجع!');">تنفيذ الأكشن</button>
+            <button type="button" onclick="document.getElementById('attack_box').style.display='none'" class="btn-submit" style="color:#555; border-color:#222; background:transparent;">تراجع</button>
         </form>
     </div>
 
@@ -115,7 +118,7 @@
     </div>
     {% else %}
         <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
-            <p>🔒 إحصائيات الرحالة مشفرة ولا تظهر للعامة.</p>
+            <p>🔒 إحصائيات الرحالة (دنانير، وفاء، ذكاء) مشفرة ولا تظهر للعامة.</p>
         </div>
     {% endif %}
 
@@ -137,4 +140,3 @@
     }
 </script>
 {% endblock %}
-
