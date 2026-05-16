@@ -4,57 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Reem+Kufi:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --gold-main: #d4af37; --bg-dark: #030202; }
         body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
 
-        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; }
-        .particle { position: absolute; background: rgba(212,175,55,0.4); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 5px rgba(212,175,55,0.2); }
-        @keyframes floatUp { 0% { transform: translateY(100vh) scale(0.5); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-10vh) scale(1.2); opacity: 0; } }
-
+        /* الهيدر الزجاجي المظلم */
         .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(3, 2, 2, 0.95); border-bottom: 1px solid #111; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
-        
         .logo-container { flex: 2; text-align: center; }
-        .logo-text { 
-            font-family: 'Reem Kufi', sans-serif; font-size: 26px; font-weight: 900; text-decoration: none; 
-            background: linear-gradient(to right, #d4af37 20%, #fffdea 50%, #d4af37 80%);
-            background-size: 200% auto; -webkit-background-clip: text; color: transparent; 
-            animation: textShimmer 4s linear infinite; filter: drop-shadow(0 2px 4px #000);
-        }
-        @keyframes textShimmer { to { background-position: 200% center; } }
-
+        .logo-text { font-size: 26px; font-weight: 900; color: #b59b4c; text-decoration: none; text-shadow: 0 0 10px rgba(212,175,55,0.2); }
         .header-side { flex: 1; }
         #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid #222; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.2s; }
         #menu-btn:active { background: #111; transform: scale(0.9); }
-        .crown-icon { font-size: 24px; text-decoration: none; display: inline-block; transition: 0.2s; animation: crownPulse 2s infinite alternate ease-in-out;}
-        @keyframes crownPulse { 0% { filter: drop-shadow(0 0 2px var(--gold-main)); transform: scale(1); } 100% { filter: drop-shadow(0 0 10px var(--gold-main)); transform: scale(1.1); } }
 
-        #sidebar { position: fixed; top: 0; right: -300px; width: 260px; height: 100%; background: #030202; transition: right 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 2000; border-left: 1px solid #111; overflow-y: auto; }
-        #sidebar.active { right: 0; box-shadow: -5px 0 25px rgba(0,0,0,0.95); }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; z-index: 1500; opacity: 0; transition: 0.3s; }
+        /* القائمة الجانبية (تم تحسين النعومة والحيوية) */
+        #sidebar { position: fixed; top: 0; right: -300px; width: 260px; height: 100%; background: rgba(5, 4, 3, 0.98); backdrop-filter: blur(10px); transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 2000; border-left: 1px solid #222; overflow-y: auto; }
+        #sidebar.active { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.9); }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; opacity: 0; transition: opacity 0.4s ease; backdrop-filter: blur(2px); }
         .overlay.active { display: block; opacity: 1; }
 
-        .sidebar-header { padding: 30px 20px 15px; text-align: center; border-bottom: 1px solid #0a0806; background: #000; }
-        .sidebar-avatar { width: 75px; height: 75px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; }
+        .sidebar-header { padding: 30px 20px 15px; text-align: center; border-bottom: 1px solid #111; background: transparent; }
+        .sidebar-avatar { width: 75px; height: 75px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; border: 2px solid #b59b4c; padding: 2px; }
         
-        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 15px 20px; color: #aaa; text-decoration: none; border-bottom: 1px solid #0a0806; font-weight: bold; font-size: 15px; transition: 0.2s; }
-        .sidebar-link:active { color: var(--gold-main); background: #0a0806; }
+        /* تأثير حيوي لروابط القائمة */
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 15px 20px; color: #ccc; text-decoration: none; border-bottom: 1px solid #111; font-weight: bold; font-size: 15px; transition: all 0.3s ease; transform: translateX(0); }
+        .sidebar-link:hover, .sidebar-link:active { color: var(--gold-main); background: rgba(212,175,55,0.05); transform: translateX(-5px); }
 
         .container { padding: 15px; max-width: 1100px; margin: auto; position: relative; z-index: 10; animation: fadeUp 0.4s ease-out forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid #222; box-shadow: 0 5px 20px #000; font-size: 13px; text-align: center; width: 85%; }
     </style>
 </head>
 <body>
-    <div class="particles" id="particles"></div>
     <div class="overlay" id="overlay"></div>
 
     <nav id="sidebar">
         <div class="sidebar-header">
-            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-            <h3 style="color: #b59b4c; margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'الملاح المجهول' }}</h3>
+            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar">
+            <h3 style="color: #b59b4c; margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'مجهول' }}</h3>
         </div>
         <a href="/" class="sidebar-link"><span>🗡️</span> الساحة</a>
         {% if current_user %}
@@ -62,19 +51,23 @@
             <a href="/friends" class="sidebar-link"><span>🤝</span> التحالفات</a>
             <a href="/news" class="sidebar-link"><span>📜</span> المراسيم</a>
             <a href="/puzzles" class="sidebar-link"><span>🧩</span> النقوش</a>
-            <a href="/store" class="sidebar-link"><span>🐪</span> السوق</a>
+            <a href="/store" class="sidebar-link"><span>🐪</span> السوق المظلم</a>
             <a href="/declarations" class="sidebar-link"><span>📢</span> التصريحات</a>
             <a href="/altar" class="sidebar-link"><span>🔮</span> المذبح</a>
-            <a href="/graveyard" class="sidebar-link"><span>💀</span> المقبرة</a>
             
             {% if current_user.unlocked_lore_room or current_user.role == 'admin' %}
                 <a href="/poneglyph" class="sidebar-link" style="color: #f39c12;"><span>🗿</span> البونغليف</a>
             {% endif %}
+            {% if current_user.unlocked_top_room or current_user.role == 'admin' %}
+                <a href="/top_room" class="sidebar-link" style="color: #3498db;"><span>🏆</span> قاعة الأساطير</a>
+            {% endif %}
+            
+            <a href="/graveyard" class="sidebar-link" style="color: #e74c3c;"><span>💀</span> المقبرة</a>
             
             {% if current_user.role == 'admin' %}
-                <a href="/admin" class="sidebar-link" style="color: #c0392b;"><span>👑</span> القيادة</a>
+                <a href="/admin" class="sidebar-link" style="color: #e74c3c; border-top: 1px dashed #333;"><span>👑</span> القيادة</a>
             {% endif %}
-            <a href="/logout" class="sidebar-link" style="color: #555; border-top: 1px dashed #111;"><span>🚪</span> مغادرة</a>
+            <a href="/logout" class="sidebar-link" style="color: #777;"><span>🚪</span> مغادرة</a>
         {% else %}
             <a href="/login" class="sidebar-link"><span>🔑</span> دخول</a>
             <a href="/register" class="sidebar-link"><span>📝</span> تسجيل</a>
@@ -84,9 +77,7 @@
     <div class="top-bar">
         <div class="header-side" style="text-align: right;"><button id="menu-btn">☰</button></div>
         <div class="logo-container"><a href="/" class="logo-text">{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</a></div>
-        <div class="header-side" style="text-align: left;">
-            {% if current_user and current_user.role == 'admin' %}<a href="/admin" class="crown-icon">👑</a>{% endif %}
-        </div>
+        <div class="header-side"></div>
     </div>
 
     <div class="container">
@@ -104,27 +95,12 @@
     </div>
 
     <script>
-        const fbAvatar = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==";
-        document.addEventListener("error", function(e) { if (e.target.tagName.toLowerCase() === 'img') { e.target.src = fbAvatar; } }, true);
-
         const menuBtn = document.getElementById('menu-btn');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');
         menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
         overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
-        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 3000);
-
-        const pContainer = document.getElementById('particles');
-        for(let i=0; i<20; i++) {
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.style.left = Math.random() * 100 + 'vw';
-            p.style.width = Math.random() * 3 + 1 + 'px';
-            p.style.height = p.style.width;
-            p.style.animationDuration = Math.random() * 8 + 6 + 's'; 
-            p.style.animationDelay = Math.random() * 5 + 's';
-            pContainer.appendChild(p);
-        }
+        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 3500);
     </script>
 </body>
 </html>
