@@ -9,13 +9,11 @@
 {% endif %}
 
 <style>
-    /* الزجاج الداكن لكي تظهر الرمال من خلفه */
     .profile-wrap { background: rgba(5, 4, 3, 0.85); backdrop-filter: blur(4px); border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .profile-cover { height: 100px; background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(5,4,3,0.85)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     .profile-header { text-align: center; margin-top: -45px; padding-bottom: 15px; position: relative; z-index: 5; }
     
-    /* صورة طافية بلطف وبدون إطار */
-    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: none; background: #000; object-fit: cover; margin-bottom: 5px; animation: smoothFloat 4s infinite ease-in-out; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
     @keyframes smoothFloat { 0% { transform: translateY(0px); } 50% { transform: translateY(-6px); } 100% { transform: translateY(0px); } }
     
     .profile-name { color: #b59b4c; font-size: 22px; font-weight: 900; margin: 0; }
@@ -24,7 +22,6 @@
     .badges-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
     .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: rgba(0,0,0,0.5); border: 1px solid #111; color: #888;}
 
-    /* الظهور المتتالي للمربعات */
     .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px; }
     .stat-card { background: rgba(0,0,0,0.6); border: 1px solid #111; border-bottom: 2px solid {{ zone_color }}; padding: 15px 5px; border-radius: 6px; text-align: center; transition: 0.2s; position: relative; opacity: 0; animation: fadeUpCard 0.5s forwards; }
     .stat-card:active { transform: scale(0.95); }
@@ -45,7 +42,6 @@
     .btn-submit:active { background: #222; transform: scale(0.95); }
     
     .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 14px; opacity: 0.5; cursor: pointer; }
-    .inline-input { background: #000; color: #fff; border: 1px solid #444; text-align: center; width: 50px; border-radius: 4px; padding: 2px; }
 </style>
 
 <div class="profile-wrap">
@@ -75,11 +71,13 @@
             <div class="stat-label">وفاء 🤝</div>
             {% if current_user.role == 'admin' %}<span class="edit-pen" onclick="toggleEdit('loyal')">✏️</span>{% endif %}
         </div>
+        {% if settings and (settings.war_mode or settings.final_battle_mode) %}
         <div class="stat-card">
             <div class="stat-val" style="color: #e74c3c;"><span id="txt_hp">{{ user.health }}</span>%</div>
             <div class="stat-label">الروح ❤️</div>
             {% if current_user.role == 'admin' %}<span class="edit-pen" onclick="toggleEdit('hp')">✏️</span>{% endif %}
         </div>
+        {% endif %}
         <div class="stat-card">
             <div class="stat-val" style="color: #1abc9c;"><span id="txt_iq">{{ user.intelligence_points }}</span></div>
             <div class="stat-label">ذكاء 🧠</div>
@@ -88,8 +86,32 @@
     </div>
 
     <div class="inventory-box">
-        <h4 style="color: #b59b4c; margin: 0 0 10px 0; font-size: 12px;">🎒 حقيبة النجاة</h4>
-        {% for item in user.inventory %}<span class="item-tag">{{ item }}</span>{% else %}<span style="color: #444; font-size:11px;">فارغة...</span>{% endfor %}
+        <h4 style="color: #b59b4c; margin: 0 0 10px 0; font-size: 13px;">🎒 حقيبة النجاة (إرسال دعم)</h4>
+        
+        <div style="margin-bottom: 15px;">
+            {% for item in user.inventory %}
+                <span class="item-tag">{{ item }}</span>
+            {% else %}
+                <span style="color: #e74c3c; font-size:12px;">حقيبتك فارغة من الأدوات، لا تملك سوى الدنانير.</span>
+            {% endfor %}
+        </div>
+
+        <form action="/transfer/{{ user.hunter_id }}" method="POST" style="border-top: 1px dashed #333; padding-top: 15px;">
+            <select name="transfer_type" class="form-input" onchange="document.getElementById('tr_pts_self').style.display=(this.value=='points'?'block':'none'); document.getElementById('tr_itm_self').style.display=(this.value=='item'?'block':'none');">
+                <option value="points">🪙 إرسال دنانير</option>
+                <option value="item">📦 إرسال غرض</option>
+            </select>
+            <input type="number" name="amount" id="tr_pts_self" class="form-input" placeholder="العدد..." min="1" max="{{ user.points }}">
+            <select name="item_name" id="tr_itm_self" class="form-input" style="display:none;">
+                {% if user.inventory %}
+                    {% for item in user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
+                {% else %}
+                    <option disabled>فارغة!</option>
+                {% endif %}
+            </select>
+            <input type="text" name="target_hunter_id" class="form-input" placeholder="اكتب ID الحليف المستقبل..." required>
+            <button type="submit" class="btn-submit" onclick="return confirm('تأكيد الإرسال؟ (يجب أن يكون حليفاً)');">إرسال الدعم</button>
+        </form>
     </div>
 
     <div class="settings-section">
@@ -106,7 +128,7 @@
 
         <h4 style="color: #b59b4c; margin: 25px 0 10px 0; font-size: 12px;">⚙️ الهوية</h4>
         <form action="/settings" method="POST" enctype="multipart/form-data"><input type="hidden" name="action" value="change_avatar"><input type="file" name="avatar_file" class="form-input" accept="image/*"><button type="submit" class="btn-submit">رفع صورة</button></form>
-        <form action="/settings" method="POST" style="margin-top:10px;"><input type="hidden" name="action" value="change_name"><input type="text" name="new_name" class="form-input" value="{{ user.username }}" required><button type="submit" class="btn-submit">تغيير الاسم</button></form>
+        <form action="/settings" method="POST" style="margin-top:10px;"><input type="hidden" name="action" value="change_name"><input type="text" name="new_name" class="form-input" value="{{ user.username }}" required><button type="submit" class="btn-submit" onclick="return confirm('تأكيد تغيير الاسم؟');">تغيير الاسم</button></form>
     </div>
 
     {% if current_user.role == 'admin' %}
