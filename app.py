@@ -549,8 +549,8 @@ def update_settings():
 
         elif action == 'change_name':
             new_name = request.form.get('new_name')
-            if getattr(user, 'last_name_change', None) and (now - user.last_name_change).days < 15: 
-                flash('تغيير الاسم متاح مرة كل 15 يوم!', 'error')
+            if getattr(user, 'last_name_change', None) and (now - user.last_name_change).days < 7: 
+                flash('تغيير الاسم متاح مرة كل 7 ايام!', 'error')
             elif User.objects(username=new_name).first(): 
                 flash('الاسم مستخدم مسبقاً!', 'error')
             else: 
