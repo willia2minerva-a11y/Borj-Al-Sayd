@@ -4,28 +4,34 @@
 {% set clean_zone = target_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
 
 <style>
-    .profile-wrap { background: rgba(5, 4, 3, 0.85); border-radius: 12px; overflow: hidden; border: 1px solid #222; }
+    .profile-wrap { background: rgba(5, 4, 3, 0.85); border-radius: 12px; overflow: hidden; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.8);}
     .profile-cover { height: 130px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(5,4,3,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     .profile-header { text-align: center; margin-top: -50px; padding-bottom: 15px; position: relative; z-index: 5; }
     
-    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #111; background: #000; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 2px solid #b59b4c; object-fit: cover; margin-bottom: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
     .profile-name { color: #b59b4c; font-size: 24px; font-weight: 900; margin: 0; }
     .profile-id { color: #666; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
     
     .badges-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;}
     .badge { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #000; border: 1px solid #333; }
 
-    /* أزرار الإجراءات */
     .action-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 0 20px 20px;}
     .btn-action { background: #0a0806; color: #fff; border: 1px solid #333; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; flex: 1; min-width: 120px; text-align: center;}
     .btn-action:active { transform: scale(0.95); background: #000; }
 
-    /* صندوق الدعم المنسق */
     .support-box { background: #050403; border: 1px solid #222; border-radius: 8px; padding: 15px; margin: 0 20px 20px; display: none; animation: slideDown 0.3s; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px;}
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 20px; }
+    .stat-card { background: #0a0806; border: 1px solid #222; padding: 15px; border-radius: 8px; text-align: center; position: relative;}
+    .stat-val { font-size: 24px; font-weight: 900; margin-bottom: 5px; }
+    .stat-label { color: #777; font-size: 12px; font-weight: bold; }
+    
+    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #222; border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px; outline:none;}
+    .form-input:focus { border-color: #b59b4c; }
     .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #333; padding: 12px; border-radius: 6px; font-weight: bold; width: 100%; cursor: pointer; }
+    .edit-pen { position: absolute; top: 10px; left: 10px; font-size: 16px; cursor: pointer; background: #111; padding: 5px; border-radius: 50%; border: 1px solid #333; transition: 0.2s;}
+    .edit-pen:active { transform: scale(0.8); }
 </style>
 
 <div class="profile-wrap">
@@ -63,7 +69,7 @@
                 <option value="points">🪙 إرسال دنانير</option>
                 <option value="item">📦 إرسال غرض من حقيبتي</option>
             </select>
-            <input type="number" name="amount" id="tr_pts" class="form-input" placeholder="العدد..." min="1" max="{{ current_user.points }}">
+            <input type="number" name="amount" id="tr_pts" class="form-input" placeholder="اكتب عدد الدنانير..." min="1" max="{{ current_user.points }}">
             <select name="item_name" id="tr_itm" class="form-input" style="display:none;">
                 {% if current_user.inventory %}{% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}{% else %}<option disabled selected>حقيبتك فارغة!</option>{% endif %}
             </select>
@@ -73,12 +79,34 @@
     {% endif %}
 
     {% if current_user.role == 'admin' %}
-        <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
-            <p>كأدمن، يمكنك رؤية بياناته وتعديلها من لوحة التحكم.</p>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-val" style="color: #f1c40f;">{{ target_user.points }}</div><div class="stat-label">دنانير 🪙</div>
+            <span class="edit-pen" onclick="toggleEdit('points')">✏️</span>
         </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #3498db;">{{ target_user.loyalty_points }}</div><div class="stat-label">وفاء 🤝</div>
+            <span class="edit-pen" onclick="toggleEdit('loyalty')">✏️</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #e74c3c;">{{ target_user.health }}%</div><div class="stat-label">الروح ❤️</div>
+            <span class="edit-pen" onclick="toggleEdit('hp')">✏️</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #1abc9c;">{{ target_user.intelligence_points }}</div><div class="stat-label">ذكاء 🧠</div>
+            <span class="edit-pen" onclick="toggleEdit('iq')">✏️</span>
+        </div>
+    </div>
+    
+    <div id="admin_forms" style="display:none;">
+        <form id="form_points" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_points"><input type="number" name="new_val" id="in_points"></form>
+        <form id="form_hp" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_hp"><input type="number" name="new_val" id="in_hp"></form>
+        <form id="form_loyalty" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_loyalty"><input type="number" name="new_val" id="in_loyalty"></form>
+        <form id="form_iq" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST"><input type="hidden" name="action" value="edit_iq"><input type="number" name="new_val" id="in_iq"></form>
+    </div>
     {% else %}
         <div style="padding: 20px; text-align: center; color: #666; font-size: 13px; background: rgba(0,0,0,0.4); border-top: 1px solid #111;">
-            <p>🔒 إحصائيات الرحالة (دنانير، ذكاء، روح) مشفرة ولا تظهر للعامة.</p>
+            <p>🔒 إحصائيات الرحالة مشفرة ولا تظهر للعامة.</p>
         </div>
     {% endif %}
 </div>
@@ -88,5 +116,15 @@
         var box = document.getElementById('supportBox');
         box.style.display = (box.style.display === 'block') ? 'none' : 'block';
     }
+    {% if current_user.role == 'admin' %}
+    function toggleEdit(field) {
+        let val = prompt("أدخل القيمة الجديدة:");
+        if (val !== null && val !== "") { 
+            document.getElementById('in_' + field).value = val; 
+            document.getElementById('form_' + field).submit(); 
+        }
+    }
+    {% endif %}
 </script>
 {% endblock %}
+
