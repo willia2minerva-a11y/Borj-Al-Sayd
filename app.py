@@ -572,7 +572,7 @@ def update_settings():
 def hunter_profile(target_id):
     # حماية بروفايل الإمبراطور ومساعده من الوصول المباشر
     if target_id in [1000, 1001] and g.user.hunter_id not in [1000, 1001]:
-        return render_template('locked.html', message='هذا الحساب محجوب في طيات الظلام... لا تقترب من العرش! 👁️')
+        return f"<div style='background:#030202; color:#e74c3c; height:100vh; display:flex; align-items:center; justify-content:center; flex-direction:column; font-family:Courier New; text-align:center; padding:20px; box-shadow: inset 0 0 100px #000;'><h1 style='font-size:50px; margin:0; text-shadow: 0 0 20px #ff0000;'>👁️</h1><h2 style='text-shadow: 0 0 10px #e74c3c;'>هذا الحساب محجوب في طيات الظلام...</h2><p style='color:#aaa; font-size:18px;'>لا تقترب من العرش الإمبراطوري!</p><a href='/' style='color:#b59b4c; margin-top:30px; border:1px solid #b59b4c; padding:10px 30px; text-decoration:none; border-radius:5px;'>العودة للساحة</a></div>", 403
         
     target_user = User.objects(hunter_id=target_id).first()
     if not target_user or getattr(target_user, 'role', '') in ['ghost', 'cursed_ghost']: 
