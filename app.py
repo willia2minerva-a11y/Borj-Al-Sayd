@@ -604,10 +604,17 @@ def hunter_profile(target_id):
 def friends():
     search_query = request.args.get('search')
     search_result = None
+    
     if search_query: 
-        if search_query.isdigit() and int(search_query) not in [1000, 1001]: 
+        # إذا بحث عن الإمبراطور أو مساعده (بالرقم أو الاسم)
+        if search_query in ['1000', '1001', 'الإمبراطور', 'مساعد الإمبراطور']:
+            flash('👁️ الفضول قد يقتل صاحبه... لا تبحث عن الظلال.', 'error')
+            search_result = None
+        # إذا بحث برقم ID صالح
+        elif search_query.isdigit(): 
             search_result = User.objects(hunter_id=int(search_query)).first()
-        elif search_query not in ['الإمبراطور', 'مساعد الإمبراطور']: 
+        # إذا بحث باسم رحالة عادي
+        else: 
             search_result = User.objects(username__icontains=search_query, hunter_id__nin=[1000, 1001]).first()
     
     exclude_roles = ['ghost', 'cursed_ghost', 'admin']
