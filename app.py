@@ -967,7 +967,7 @@ def declarations():
             author=user.username, 
             status='approved' if user.role == 'admin' else 'pending'
         ).save()
-        flash('تم النشر! سيظهر بعد مراجعته (إلا إذا كنت الإمبراطور).', 'success')
+        flash('تم النشر! وهو بصدد موافقة عليه. ', 'success')
         return redirect(url_for('declarations'))
         
     user.update(set__last_seen_decs=datetime.utcnow())
