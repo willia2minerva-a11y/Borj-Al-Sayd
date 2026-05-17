@@ -2,37 +2,59 @@
 {% block content %}
 <style>
     .stone-wall { 
-        background-color: #1a1a1a; 
-        background-image: radial-gradient(circle, #2a2a2a 0%, #050505 100%);
-        border: 4px solid #333; 
-        border-radius: 15px; 
+        background-color: #050403; 
+        background-image: radial-gradient(circle, #1a140a 0%, #000 100%);
+        border: 2px solid #b59b4c; 
+        border-radius: 12px; 
         padding: 50px 30px; 
-        min-height: 50vh; 
+        min-height: 60vh; 
         text-align: center; 
-        box-shadow: inset 0 0 50px #000, 0 10px 30px rgba(0,0,0,0.8); 
+        box-shadow: inset 0 0 100px #000, 0 10px 40px rgba(212,175,55,0.2); 
         position: relative;
+        overflow: hidden;
     }
     .stone-text { 
         color: #f39c12; 
-        font-size: 22px; 
-        line-height: 2; 
+        font-size: 26px; 
+        line-height: 2.2; 
         font-family: 'Courier New', Courier, monospace; 
-        text-shadow: 0 0 10px rgba(243, 156, 18, 0.8), 0 0 20px rgba(243, 156, 18, 0.4); 
+        text-shadow: 0 0 15px #f39c12, 0 0 30px #e67e22; 
         white-space: pre-wrap;
-        font-weight: bold;
+        font-weight: 900;
+        min-height: 100px;
     }
+    .glowing-rune { position: absolute; font-size: 100px; color: rgba(212,175,55,0.05); z-index: 0; pointer-events: none; animation: slowPulse 4s infinite alternate;}
+    @keyframes slowPulse { from { opacity: 0.2; } to { opacity: 0.8; } }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
-    <h2 style="color: #f39c12; margin: 0; font-size: 32px; text-shadow: 0 0 15px rgba(243, 156, 18, 0.5);">🗿 بونغليف سيفار 🗿</h2>
-    <p style="color: #888;">من يقرأ هذه الكلمات، فقد فك الختم واقترب من الحقيقة.</p>
+    <h2 style="color: #f39c12; margin: 0; font-size: 35px; text-shadow: 0 0 20px #e67e22;">🗿 أسرار سيفار 🗿</h2>
+    <p style="color: #666; font-size: 16px;">النقوش تستيقظ لمن يمتلك البصيرة...</p>
 </div>
 
 <div class="stone-wall">
-    {% if settings and settings.poneglyph_text and settings.poneglyph_text != '' %}
-        <div class="stone-text">{{ settings.poneglyph_text }}</div>
-    {% else %}
-        <div class="stone-text" style="color: #555; text-shadow: none;">النقوش ممسوحة... الجدار صامت.</div>
-    {% endif %}
+    <div class="glowing-rune" style="top: -20px; left: -20px;">𓜲</div>
+    <div class="glowing-rune" style="bottom: -20px; right: -20px;">𓀀</div>
+    
+    <div class="stone-text" id="typewriter" style="position: relative; z-index: 5;"></div>
 </div>
+
+<div id="hiddenText" style="display:none;">{{ settings.poneglyph_text if settings and settings.poneglyph_text else 'النقوش ممسوحة... الجدار صامت.' }}</div>
+
+<script>
+    // تأثير الآلة الكاتبة (الطباعة البطيئة)
+    const text = document.getElementById("hiddenText").innerText;
+    let index = 0;
+    const speed = 50; // سرعة الطباعة بالملي ثانية
+    
+    function typeWriter() {
+        if (index < text.length) {
+            document.getElementById("typewriter").innerHTML += text.charAt(index);
+            index++;
+            setTimeout(typeWriter, speed);
+        }
+    }
+    // تشغيل التأثير بعد ثانية من فتح الصفحة
+    setTimeout(typeWriter, 1000);
+</script>
 {% endblock %}
