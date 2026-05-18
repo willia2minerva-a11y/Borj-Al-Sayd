@@ -1,268 +1,132 @@
-{% extends 'base.html' %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold-main: #d4af37; --bg-dark: #030202; }
+        body { font-family: 'Cairo', sans-serif; background-color: var(--bg-dark); color: #fff; margin: 0; padding: 0; overflow-x: hidden; }
 
-<style>
-    .arena-container { background: #0c0a08; border: 1px solid var(--gold-dark); border-radius: 12px; padding: 25px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); text-align: center; }
-    .arena-title { color: var(--gold-main); margin-top: 0; font-size: 28px; text-shadow: 0 0 10px rgba(212,175,55,0.5); border-bottom: 1px dashed #333; padding-bottom: 15px;}
-    
-    .timer-box { font-family: monospace; font-size: 24px; color: #e74c3c; font-weight: bold; background: #111; display: inline-block; padding: 10px 20px; border-radius: 8px; border: 1px solid #e74c3c; margin-bottom: 20px; box-shadow: 0 0 15px rgba(231,76,60,0.3);}
-    .btn-epic { background: #111; color: #fff; border: 1px solid #332815; padding: 15px 30px; border-radius: 8px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; text-decoration: none; display: inline-block; margin-bottom: 10px;}
-    .btn-epic:active { transform: scale(0.96); background: #000; border-color: var(--gold-main); color: var(--gold-main);}
-    
-    .health-bar-bg { width: 100%; background: #222; border-radius: 10px; border: 1px solid #444; height: 25px; overflow: hidden; margin-bottom: 10px;}
-    .health-bar-fill { height: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.5s; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: bold; font-size: 13px;}
-    
-    /* أزرار الساحة الأساسية */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }
-    .gold-card { background: #080705; border: 1px solid #332815; border-radius: 8px; padding: 20px 10px; text-align: center; text-decoration: none; transition: 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px;}
-    .gold-card:active { transform: scale(0.95); border-color: var(--gold-main); background: #000; }
-    .card-icon { font-size: 30px; display: block; margin-bottom: 10px; }
-    .card-title { color: #ccc; margin: 0; font-size: 14px; font-weight: bold; }
-    
-    /* تصميم بطاقة هوية الرحالة (بديل الفيسبوك) */
-    .rpg-card { background: #0a0806; border: 1px solid #332815; border-radius: 8px; overflow: hidden; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
-    .rpg-banner { height: 80px; background-size: cover; background-position: center; border-bottom: 1px solid #111; background-color: #111;}
-    .rpg-content { display: flex; align-items: center; padding: 15px; gap: 15px; margin-top: -30px;}
-    .rpg-avatar { width: 80px; height: 80px; border-radius: 8px; border: 2px solid var(--gold-dark); object-fit: cover; background: #000; box-shadow: 0 5px 15px #000;}
-    .rpg-details { flex: 1; text-align: right; margin-top: 20px;}
-    .rpg-name { color: var(--gold-main); font-size: 20px; font-weight: 900; margin: 0 0 2px 0; }
-    .rpg-id { color: #666; font-family: monospace; font-size: 12px; margin: 0 0 10px 0; display: block;}
-    .rpg-badges { display: flex; gap: 5px; flex-wrap: wrap; }
-    .rpg-badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #000; border: 1px solid #222; }
+        /* حبات الرمال */
+        .particles { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; overflow: hidden; }
+        .particle { position: absolute; background: rgba(212,175,55,0.4); border-radius: 50%; animation: floatUp linear infinite; box-shadow: 0 0 5px rgba(212,175,55,0.2); }
+        @keyframes floatUp { 0% { transform: translateY(100vh) scale(0.5); opacity: 0; } 20% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(-10vh) scale(1.2); opacity: 0; } }
 
-    /* خريطة الطابق الأول */
-    .map-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; margin-bottom: 20px;}
-    .map-room { background: #0a0806; border: 1px solid #222; border-radius: 6px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s;}
-    .map-room:active { transform: scale(0.95); border-color: var(--gold-main);}
-    .map-room.current { border-color: #2ecc71; background: rgba(46,204,113,0.05); }
-    .room-name { color: #aaa; font-size: 12px; font-weight: bold; }
-    
-    .mystic-door { background: #080705; border: 1px solid #332815; border-radius: 8px; padding: 30px 15px; color: #fff; font-weight: 900; font-size: 18px; cursor: pointer; transition: 0.2s; text-align: center; width: 100%;}
-    .mystic-door:active { transform: scale(0.95); border-color: #f1c40f; color: #f1c40f; background: #000;}
+        /* الهيدر */
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(3, 2, 2, 0.95); border-bottom: 1px solid #111; position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px); }
+        .logo-container { flex: 2; text-align: center; }
+        .logo-text { font-size: 26px; font-weight: 900; color: #b59b4c; text-decoration: none; text-shadow: 0 0 10px rgba(212,175,55,0.2); }
+        
+        .header-side { flex: 1; display: flex; align-items: center; }
+        #menu-btn { background: transparent; color: var(--gold-main); border: 1px solid #222; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 22px; transition: 0.2s; }
+        #menu-btn:active { background: #111; transform: scale(0.9); }
+        
+        .crown-icon { font-size: 24px; text-decoration: none; display: inline-block; transition: 0.2s; text-shadow: 0 0 10px #f1c40f; }
+        .crown-icon:active { transform: scale(0.9); }
 
-    /* المعركة الأخيرة */
-    .boss-fight-box { background: radial-gradient(circle, #2a0808 0%, #000 100%); border: 2px solid #e74c3c; border-radius: 12px; padding: 30px 20px; text-align: center; box-shadow: 0 0 30px rgba(231,76,60,0.2); }
-</style>
+        /* القائمة الجانبية السلسة */
+        #sidebar { position: fixed; top: 0; right: -300px; width: 260px; height: 100%; background: rgba(5, 4, 3, 0.98); backdrop-filter: blur(10px); transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 2000; border-left: 1px solid #222; overflow-y: auto; }
+        #sidebar.active { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.9); }
+        
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; z-index: 1500; opacity: 0; transition: opacity 0.4s ease; backdrop-filter: blur(2px); }
+        .overlay.active { display: block; opacity: 1; }
 
-<script>
-    function startTimer(endTimeStr, elementId) {
-        if (!endTimeStr) return;
-        var countDownDate = new Date(endTimeStr).getTime();
-        var x = setInterval(function() {
-            var now = new Date().getTime();
-            var distance = countDownDate - now;
-            if (distance < 0) {
-                clearInterval(x);
-                document.getElementById(elementId).innerHTML = "انتهى الوقت!";
-                setTimeout(() => location.reload(), 2000);
-            } else {
-                var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                document.getElementById(elementId).innerHTML = hours + "س " + minutes + "د " + seconds + "ث";
-            }
-        }, 1000);
-    }
-</script>
+        .sidebar-header { padding: 30px 20px 15px; text-align: center; border-bottom: 1px solid #111; background: transparent; }
+        .sidebar-avatar { width: 75px; height: 75px; border-radius: 8px; margin-bottom: 10px; object-fit: cover; border: 1px solid #332815; }
+        
+        .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 15px 20px; color: #ccc; text-decoration: none; border-bottom: 1px solid #111; font-weight: bold; font-size: 15px; transition: all 0.3s ease; }
+        .sidebar-link:active { color: var(--gold-main); background: rgba(212,175,55,0.05); transform: translateX(-5px); }
 
-{% if settings and settings.global_news_active %}
-<div class="arena-container" style="border-color: var(--gold-dark); padding: 15px; background: rgba(212,175,55,0.05);">
-    <h3 style="color: var(--gold-main); margin:0 0 10px 0; font-size:16px;">📢 نداء إمبراطوري</h3>
-    <p style="margin:0; font-size: 14px; color:#ccc;">{{ settings.global_news_text }}</p>
-</div>
-{% endif %}
+        .container { padding: 15px; max-width: 1100px; margin: auto; position: relative; z-index: 10; animation: fadeUp 0.4s ease-out forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-{% if winner_user %}
-    <div class="arena-container" style="border-color: var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.2);">
-        <h1 style="color: #fff; font-size: 32px; margin-bottom: 10px;">👑 لقد تم قهر المتاهة 👑</h1>
-        <p style="color: var(--gold-main); font-size: 16px; font-weight: bold;">البطل: {{ winner_user.username }}</p>
-        <p style="color: #aaa; font-size: 14px;">تم سحق جميع الرحالة الآخرين... بانتظار العصر الجديد.</p>
-    </div>
-{% else %}
-    {% if not current_user %}
-        <div class="arena-container">
-            <h2 style="color: var(--gold-main);">بوابة المتاهة</h2>
-            <p style="color: #aaa; font-size: 14px;">سجل دخولك لتعبر البوابة.</p>
-            <a href="/login" class="btn-epic" style="border-color: var(--gold-main); color: var(--gold-main);">دخول ➔</a>
+        .flash { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); padding: 12px 25px; border-radius: 6px; z-index: 3000; font-weight: bold; background: #000; border: 1px solid #222; box-shadow: 0 5px 20px #000; font-size: 13px; text-align: center; width: 85%; }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="overlay" id="overlay"></div>
+
+    <nav id="sidebar">
+        <div class="sidebar-header">
+            <img src="/avatar/{{ current_user.hunter_id if current_user else 0 }}" class="sidebar-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
+            <h3 style="color: #b59b4c; margin: 0; font-size: 16px;">{{ current_user.username if current_user else 'مجهول' }}</h3>
         </div>
-    {% else %}
-
-        {% if current_user.status != 'active' and current_user.role != 'admin' %}
-            <div class="arena-container" style="border-color: #e74c3c; padding: 15px;">
-                <h3 style="color: #e74c3c; margin:0 0 10px 0;">👻 مقيد ومراقب 👻</h3>
-                <p style="color: #aaa; margin:0; font-size: 13px;">حسابك مقيد ({{ current_user.freeze_reason }}). يمكنك المشاهدة فقط.</p>
-            </div>
-        {% endif %}
-
-        {% if settings and settings.final_battle_mode and emperor %}
-            <div class="boss-fight-box">
-                <h2 style="color: #e74c3c; margin-top: 0; font-size: 26px;">👁️ العرش الإمبراطوري 👁️</h2>
-                
-                {% set max_hp = settings.emperor_max_hp if settings.emperor_max_hp and settings.emperor_max_hp > 0 else 100000 %}
-                {% set percent = (emperor.health / max_hp) * 100 %}
-                {% set percent = percent if percent > 0 else 0 %}
-                {% set percent = 100 if percent > 100 else percent %}
-                
-                <div style="background: #000; padding: 15px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px;">
-                    <h3 style="color: #fff; font-size: 20px; margin:0 0 10px 0;">👑 {{ emperor.username }} 👑</h3>
-                    <p style="font-weight: bold; font-size: 14px; margin-bottom:5px; color:#aaa;">الصحة: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
-                    <div class="health-bar-bg"><div class="health-bar-fill" style="width: {{ percent }}%;"></div></div>
-                </div>
-
-                {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
-                <div style="background: #050403; padding: 15px; border-radius: 8px; border: 1px solid #222;">
-                    <form action="/use_item/1000" method="POST" style="display: flex; gap: 10px;">
-                        <select name="item_name" style="padding: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 4px; flex: 2;" required>
-                            <option value="" disabled selected>اختر سلاحك...</option>
-                            {% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
-                        </select>
-                        <button type="submit" class="btn-epic" style="flex: 1; margin:0; border-color:#e74c3c; color:#e74c3c;">هجوم ⚔️</button>
-                    </form>
-                </div>
-                {% endif %}
-            </div>
-
-        {% elif settings and settings.floor3_results_active %}
-            <div class="arena-container" style="border-color: #2ecc71;">
-                <h2 style="color: #2ecc71; margin-top:0;">📜 نتائج المحكمة 📜</h2>
-                <a href="/f3/results" class="btn-epic" style="border-color: #2ecc71; color: #2ecc71;">رؤية الناجين 👁️</a>
-            </div>
-
-        {% elif settings and (settings.floor3_mode_active or settings.floor3_paused) %}
-            <div class="arena-container" style="border-color: #f39c12;">
-                <h2 class="arena-title" style="color: #f39c12; border-bottom-color: #f39c12;">⚖️ المحكمة الكبرى ⚖️</h2>
-                
-                {% if settings.floor3_paused %}
-                    <div class="timer-box" style="color: #f39c12; border-color: #f39c12;">المحكمة مجمدة ⏸️</div>
-                {% else %}
-                    <div id="f3_timer" class="timer-box">يتم حساب الوقت...</div>
-                    <script>startTimer("{{ settings.vote_end_time.isoformat() if settings.vote_end_time else '' }}Z", "f3_timer");</script>
-                {% endif %}
-
-                {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
-                    {% if not current_user.has_voted %}
-                        <p style="color: #aaa; font-size:13px;">وزع 100 صوت نجاة.</p>
-                        <form action="/submit_floor3_votes" method="POST">
-                            {% for i in range(1, 6) %}
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <select name="target_{{ i }}" style="flex: 2; padding: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 4px;" required>
-                                    <option value="" disabled selected>اختر رحالة...</option>
-                                    {% for h in active_hunters %}<option value="{{ h.hunter_id }}">{{ h.username }}</option>{% endfor %}
-                                </select>
-                                <input type="number" name="amount_{{ i }}" placeholder="الأصوات" required min="1" max="96" style="flex: 1; padding: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 4px;">
-                            </div>
-                            {% endfor %}
-                            <button type="submit" class="btn-epic" style="border-color: #f39c12; color: #f39c12;">تثبيت الحكم ⚖️</button>
-                        </form>
-                    {% else %}
-                        <p style="color: #2ecc71;">تم تسليم أصواتك بنجاح.</p>
-                    {% endif %}
-                {% endif %}
-            </div>
-
-        {% elif settings and settings.war_mode %}
-            <div class="arena-container" style="border-color: #e74c3c;">
-                <h2 class="arena-title" style="color: #e74c3c; border-bottom-color: #e74c3c;">🔥 الحرب الشاملة 🔥</h2>
-                <div id="war_timer" class="timer-box">يتم حساب الوقت...</div>
-                <script>startTimer("{{ settings.war_end_time.isoformat() if settings.war_end_time else '' }}Z", "war_timer");</script>
-
-                <p style="color: #e74c3c; font-size: 14px; font-weight: bold;">الضحايا: {{ settings.dead_count }} من {{ settings.war_kill_target }}</p>
-
-                {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
-                    <div style="background: #000; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 20px;">
-                        <h4 style="color: #fff; margin: 0 0 10px 0;">صحتك الحالية</h4>
-                        <div class="health-bar-bg"><div class="health-bar-fill" style="width: {{ current_user.health }}%;">{{ current_user.health }}%</div></div>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <a href="/friends" class="btn-epic" style="flex: 1; border-color: #3498db; color: #3498db;">الساحة 🎯</a>
-                        <a href="/store" class="btn-epic" style="flex: 1; border-color: var(--gold-main); color: var(--gold-main);">المتجر 🛒</a>
-                    </div>
-                {% endif %}
-            </div>
-
-        {% elif settings and settings.floor1_mode_active and current_user.group_id > 0 %}
-            <div class="arena-container" style="border-color: #3498db;">
-                <h2 class="arena-title" style="color: #3498db; border-bottom-color: #3498db;">🕵️ ساحة الاستنتاج</h2>
-                
-                <div class="map-grid">
-                    {% for room, neighbors in f1_map.items() %}
-                        <form action="/f1/move" method="POST" style="margin:0;">
-                            <input type="hidden" name="room" value="{{ room }}">
-                            <button type="submit" class="map-room {% if current_user.current_room == room %}current{% endif %}">
-                                <span class="room-name">{{ room }}</span>
-                            </button>
-                        </form>
-                    {% endfor %}
-                </div>
-
-                {% if not has_meeting %}
-                    {% if not current_user.emergency_used %}
-                    <form action="/f1/emergency_meeting" method="POST" style="margin-bottom: 10px;">
-                        <button type="submit" class="btn-epic" style="border-color:#e74c3c; color:#e74c3c;">🚨 طوارئ</button>
-                    </form>
-                    {% endif %}
-                    {% if current_user.is_cursed and not current_user.used_vent %}
-                    <form action="/f1/vent" method="POST">
-                        <button type="submit" class="btn-epic" style="border-color:#9b59b6; color:#9b59b6;">🕳️ نفق سري</button>
-                    </form>
-                    {% endif %}
-                {% else %}
-                    <a href="/f1/meeting_room" class="btn-epic" style="border-color:#f39c12; color:#f39c12;">⚖️ قاعة الاجتماع</a>
-                {% endif %}
-            </div>
-
-        {% elif settings and settings.gates_mode_active %}
-            <div class="arena-container">
-                <h2 class="arena-title">🚪 بوابات القدر 🚪</h2>
-                <div id="gates_timer" class="timer-box">يتم حساب الوقت...</div>
-                <script>startTimer("{{ settings.gates_end_time.isoformat() if settings.gates_end_time else '' }}Z", "gates_timer");</script>
-
-                {% if current_user.status == 'active' and current_user.chosen_gate == 0 and current_user.hunter_id != 1000 %}
-                    <div style="display: flex; gap: 10px; flex-direction: column;">
-                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="1"><button type="submit" class="mystic-door">{{ settings.gate_1_name }}</button></form>
-                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="2"><button type="submit" class="mystic-door">{{ settings.gate_2_name }}</button></form>
-                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="3"><button type="submit" class="mystic-door">{{ settings.gate_3_name }}</button></form>
-                    </div>
-                {% elif current_user.chosen_gate > 0 %}
-                    <p style="color: #2ecc71;">أنت تنتظر في البوابة {{ current_user.chosen_gate }}.</p>
-                {% endif %}
-            </div>
-
+        <a href="/" class="sidebar-link"><span>🗡️</span> الساحة</a>
+        {% if current_user %}
+            <a href="/profile" class="sidebar-link"><span>👤</span> هويتي</a>
+            <a href="/friends" class="sidebar-link"><span>🤝</span> التحالفات</a>
+            <a href="/news" class="sidebar-link"><span>📜</span> المراسيم</a>
+            <a href="/puzzles" class="sidebar-link"><span>🧩</span> النقوش</a>
+            <a href="/store" class="sidebar-link"><span>🐪</span> السوق المظلم</a>
+            <a href="/declarations" class="sidebar-link"><span>📢</span> التصريحات</a>
+            <a href="/altar" class="sidebar-link"><span>🔮</span> المذبح</a>
+            
+            {% if current_user.unlocked_lore_room or current_user.role == 'admin' %}
+                <a href="/poneglyph" class="sidebar-link" style="color: #f39c12;"><span>🗿</span> البونغليف</a>
+            {% endif %}
+            {% if current_user.unlocked_top_room or current_user.role == 'admin' %}
+                <a href="/top_room" class="sidebar-link" style="color: #3498db;"><span>🏆</span> قاعة الأساطير</a>
+            {% endif %}
+            
+            <a href="/graveyard" class="sidebar-link" style="color: #e74c3c;"><span>💀</span> المقبرة</a>
+            
+            {% if current_user.role == 'admin' %}
+                <a href="/admin" class="sidebar-link" style="color: #c0392b; border-top: 1px dashed #333;"><span>👑</span> القيادة</a>
+            {% endif %}
+            <a href="/logout" class="sidebar-link" style="color: #777;"><span>🚪</span> مغادرة</a>
         {% else %}
-            {% set clean_zone = current_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
-            
-            <div class="rpg-card">
-                <div class="rpg-banner" style="{% if settings and settings.banner_url %}background-image: url('{{ settings.banner_url }}');{% endif %}"></div>
-                <div class="rpg-content">
-                    <img src="/avatar/{{ current_user.hunter_id }}" class="rpg-avatar">
-                    <div class="rpg-details">
-                        <h2 class="rpg-name">{{ current_user.username }} {% if current_user.hunter_id == 1000 %}👑{% endif %}</h2>
-                        <span class="rpg-id">ID: {{ current_user.hunter_id }}</span>
-                        <div class="rpg-badges">
-                            <span class="rpg-badge" style="color:var(--gold-main); border-color:var(--gold-dark);">{{ clean_zone }}</span>
-                            {% if current_user.status == 'active' %}
-                                <span class="rpg-badge" style="color:#2ecc71; border-color:#27ae60;">حي</span>
-                            {% else %}
-                                <span class="rpg-badge" style="color:#e74c3c; border-color:#c0392b;">مقيد</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="dashboard-grid">
-                <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">النقوش</h3></a>
-                <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">المراسيم</h3></a>
-                <a href="/friends" class="gold-card"><span class="card-icon">🤝</span><h3 class="card-title">التحالفات</h3></a>
-                <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">التصريحات</h3></a>
-                <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">السوق</h3></a>
-                <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">المذبح</h3></a>
-            </div>
-            
-            <a href="/graveyard" class="gold-card" style="margin-bottom: 30px; background: #110000; border-color: #440000; min-height: 70px; padding: 10px;">
-                <span class="card-icon" style="font-size: 20px;">💀</span><h3 class="card-title" style="color: #e74c3c;">المقبرة</h3>
-            </a>
+            <a href="/login" class="sidebar-link"><span>🔑</span> دخول</a>
+            <a href="/register" class="sidebar-link"><span>📝</span> تسجيل</a>
         {% endif %}
-    {% endif %}
-{% endblock %}
+    </nav>
+
+    <div class="top-bar">
+        <div class="header-side" style="justify-content: flex-start;">
+            {% if current_user and current_user.role == 'admin' %}<a href="/admin" class="crown-icon">👑</a>{% endif %}
+        </div>
+        <div class="logo-container"><a href="/" class="logo-text">{{ settings.home_title if settings and settings.home_title else 'برج صيد' }}</a></div>
+        <div class="header-side" style="justify-content: flex-end;">
+            <button id="menu-btn">☰</button>
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash" style="color: {{ '#2ecc71' if category == 'success' else '#e74c3c' }};">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <script>
+        const menuBtn = document.getElementById('menu-btn');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        menuBtn.onclick = () => { sidebar.classList.add('active'); overlay.classList.add('active'); }
+        overlay.onclick = () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); }
+        setTimeout(() => { document.querySelectorAll('.flash').forEach(f => f.style.display = 'none'); }, 3500);
+
+        const pContainer = document.getElementById('particles');
+        for(let i=0; i<30; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + 'vw';
+            p.style.width = Math.random() * 3 + 1 + 'px';
+            p.style.height = p.style.width;
+            p.style.animationDuration = Math.random() * 8 + 6 + 's'; 
+            p.style.animationDelay = Math.random() * 5 + 's';
+            pContainer.appendChild(p);
+        }
+    </script>
+</body>
+</html>
 
