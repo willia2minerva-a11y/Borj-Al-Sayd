@@ -4,6 +4,8 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
+    meta = {'strict': False} # هذا السطر يتجاهل الحقول القديمة المحذوفة
+    
     hunter_id = db.IntField(unique=True, required=True)
     username = db.StringField(max_length=50, unique=True, required=True)
     password_hash = db.StringField(required=True)
@@ -71,7 +73,10 @@ class User(db.Document):
     stats_items_bought = db.IntField(default=0)
     stats_ghosts_caught = db.IntField(default=0)
 
+
 class GlobalSettings(db.Document):
+    meta = {'strict': False} # هذا السطر السحري يحل المشكلة
+    
     setting_name = db.StringField(default='main_config', unique=True)
     home_title = db.StringField(default='برج صيد')
     banner_url = db.StringField(default='')
@@ -84,8 +89,8 @@ class GlobalSettings(db.Document):
     # Sleep Mode (إدارة السبات وتجميد الزمن)
     sleep_mode_active = db.BooleanField(default=False)
     sleep_start_time = db.DateTimeField()
-    scheduled_sleep_start = db.StringField(default='') # e.g. "00:00"
-    scheduled_sleep_end = db.StringField(default='')   # e.g. "08:00"
+    scheduled_sleep_start = db.StringField(default='') 
+    scheduled_sleep_end = db.StringField(default='')   
 
     # Maintenance
     maintenance_mode = db.BooleanField(default=False)
@@ -134,18 +139,19 @@ class GlobalSettings(db.Document):
     final_battle_mode = db.BooleanField(default=False)
     emperor_max_hp = db.IntField(default=100000)
 
+
 class News(db.Document):
+    meta = {'strict': False}
     title = db.StringField(required=True)
     content = db.StringField(required=True)
-    category = db.StringField(default='news') # news, puzzle, hidden, declaration
+    category = db.StringField(default='news') 
     author = db.StringField(default='الإمبراطور')
     image_data = db.StringField(default='')
     created_at = db.DateTimeField(default=datetime.utcnow)
-    status = db.StringField(default='approved') # approved, pending
+    status = db.StringField(default='approved') 
     likes = db.ListField(db.StringField(), default=list)
     laughs = db.ListField(db.StringField(), default=list)
 
-    # Puzzle/Trap fields
     puzzle_type = db.StringField(default='none') 
     puzzle_answer = db.StringField(default='')
     reward_points = db.IntField(default=0)
@@ -153,16 +159,17 @@ class News(db.Document):
     current_winners = db.IntField(default=0)
     winners_list = db.ListField(db.StringField(), default=list)
     
-    # Traps specifics
     trap_penalty_points = db.IntField(default=0)
     reward_item = db.StringField(default='')
     trap_duration_minutes = db.IntField(default=0)
 
+
 class StoreItem(db.Document):
+    meta = {'strict': False}
     name = db.StringField(required=True, unique=True)
     description = db.StringField(default='')
     price = db.IntField(required=True)
-    item_type = db.StringField(default='weapon') # weapon, heal, spy, steal, seal, box
+    item_type = db.StringField(default='weapon') 
     effect_amount = db.IntField(default=0)
     
     is_mirage = db.BooleanField(default=False)
@@ -171,9 +178,11 @@ class StoreItem(db.Document):
     luck_min = db.IntField(default=0)
     luck_max = db.IntField(default=0)
 
+
 class SpellConfig(db.Document):
+    meta = {'strict': False}
     spell_word = db.StringField(required=True, unique=True)
-    spell_type = db.StringField(required=True) # hp_gain, hp_loss, points_gain, points_loss, item_reward, unlock_lore, unlock_top, kill_emperor
+    spell_type = db.StringField(required=True) 
     effect_value = db.IntField(default=0)
     is_percentage = db.BooleanField(default=False)
     item_name = db.StringField(default='')
@@ -182,17 +191,20 @@ class SpellConfig(db.Document):
     created_at = db.DateTimeField(default=datetime.utcnow)
     expires_at = db.DateTimeField()
 
+
 class Notification(db.Document):
+    meta = {'strict': False}
     target_hunter_id = db.IntField(required=True)
     message = db.StringField(required=True)
-    notif_type = db.StringField(default='info') # info, success, danger
+    notif_type = db.StringField(default='info') 
     created_at = db.DateTimeField(default=datetime.utcnow)
     is_read = db.BooleanField(default=False)
 
+
 class GroupMessage(db.Document):
+    meta = {'strict': False}
     group_id = db.IntField(required=True)
     sender_name = db.StringField(required=True)
     message = db.StringField(required=True)
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
-
