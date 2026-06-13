@@ -4,7 +4,7 @@ from datetime import datetime
 db = MongoEngine()
 
 class User(db.Document):
-    meta = {'strict': False} # هذا السطر يتجاهل الحقول القديمة المحذوفة
+    meta = {'strict': False} # لتجاهل أي إعدادات قديمة ومنع تعطل السيرفر
     
     hunter_id = db.IntField(unique=True, required=True)
     username = db.StringField(max_length=50, unique=True, required=True)
@@ -40,29 +40,32 @@ class User(db.Document):
     tajis_eye_until = db.DateTimeField()
     has_shield = db.BooleanField(default=False)
 
-    # Floor 1 (Among Us)
+    # Floor 1 (ملحمة الملعون)
     group_id = db.IntField(default=0)
     is_cursed = db.BooleanField(default=False)
-    current_room = db.StringField(default='الساحة')
+    current_room = db.StringField(default='ساحة التجمع') # الغرفة الافتراضية الجديدة
     f1_tasks = db.ListField(db.DictField(), default=list)
     f1_has_voted = db.BooleanField(default=False)
     f1_votes_received = db.IntField(default=0)
     f1_last_move = db.DateTimeField()
     f1_last_kill = db.DateTimeField()
-    used_vent = db.BooleanField(default=False)
-    emergency_used = db.BooleanField(default=False)
-    gems_collected = db.IntField(default=0)
+    gems_collected = db.IntField(default=0) # عدد الأحجار/الشظايا المجمعة
     f1_will = db.StringField(max_length=150, default='')
+    
+    # مهارات الملعون (تستخدم مرة واحدة)
+    used_vent = db.BooleanField(default=False) # الأنفاق
+    used_lights = db.BooleanField(default=False) # إطفاء النور
+    used_doors = db.BooleanField(default=False) # غلق الأبواب
 
-    # Floor 3 (Court)
+    # Floor 3 (محكمة التصويت)
     has_voted = db.BooleanField(default=False)
     survival_votes = db.FloatField(default=0.0)
     f3_votes_cast = db.DictField(default=dict)
     f3_vote_target = db.IntField(default=0)
 
-    # Gates
+    # Gates (بوابات القدر)
     chosen_gate = db.IntField(default=0)
-    gate_status = db.StringField(default='') # waiting, passed, testing
+    gate_status = db.StringField(default='') # waiting, passed, testing, hidden_...
     gate_test_answer = db.StringField(default='')
 
     # Lore Rooms
@@ -75,7 +78,7 @@ class User(db.Document):
 
 
 class GlobalSettings(db.Document):
-    meta = {'strict': False} # هذا السطر السحري يحل المشكلة
+    meta = {'strict': False} 
     
     setting_name = db.StringField(default='main_config', unique=True)
     home_title = db.StringField(default='برج صيد')
@@ -86,7 +89,7 @@ class GlobalSettings(db.Document):
     dead_count = db.IntField(default=0)
     poneglyph_text = db.StringField(default='النقوش ممسوحة...')
 
-    # Sleep Mode (إدارة السبات وتجميد الزمن)
+    # Sleep Mode (إدارة السبات)
     sleep_mode_active = db.BooleanField(default=False)
     sleep_start_time = db.DateTimeField()
     scheduled_sleep_start = db.StringField(default='') 
@@ -97,7 +100,7 @@ class GlobalSettings(db.Document):
     maintenance_until = db.DateTimeField()
     maintenance_pages = db.ListField(db.StringField(), default=list)
 
-    # War (Floor 2)
+    # War (Floor 2 - الحرب الشاملة والتوتم)
     war_mode = db.BooleanField(default=False)
     war_end_time = db.DateTimeField()
     war_kill_target = db.IntField(default=15)
@@ -117,15 +120,18 @@ class GlobalSettings(db.Document):
     gates_test_question = db.StringField(default='ما هو سر المتاهة؟')
     gates_test_answer = db.StringField(default='سيفار')
 
-    # Floor 1
+    # Floor 1 (إعدادات الاستنتاج المتطورة)
     floor1_mode_active = db.BooleanField(default=False)
-    floor1_gems_target = db.IntField(default=10)
+    floor1_individual_gems_target = db.IntField(default=3) # عدد الأحجار المطلوبة للفرد الواحد
     floor1_move_cooldown = db.IntField(default=30)
     floor1_kill_cooldown = db.IntField(default=60)
-    f1_cursed_win_percent = db.IntField(default=50)
+    f1_cursed_win_percent = db.IntField(default=50) # النسبة المطلوبة لفوز الملعون
     f1_active_meetings = db.DictField(default=dict)
-    floor1_darkness_until = db.DateTimeField()
-    floor1_locked_room = db.StringField(default='')
+    
+    # حالات مهارات الملعون المؤقتة
+    floor1_darkness_until = db.DateTimeField() # الظلام الدامس
+    floor1_locked_room = db.StringField(default='') # اسم الغرفة المغلقة
+    floor1_locked_until = db.DateTimeField() # متى تفتح الغرفة المغلقة
 
     # Floor 3
     floor3_mode_active = db.BooleanField(default=False)
@@ -208,3 +214,5 @@ class GroupMessage(db.Document):
     message = db.StringField(required=True)
     is_system_msg = db.BooleanField(default=False)
     created_at = db.DateTimeField(default=datetime.utcnow)
+
+
