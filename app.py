@@ -812,7 +812,7 @@ def declarations():
     avatars = {u.username: u.hunter_id for u in User.objects(username__in=set([d.author for d in News.objects(category='declaration')]))}
     return render_template('declarations.html', approved_decs=News.objects(category='declaration', status='approved').order_by('-created_at'), pending_decs=News.objects(category='declaration', status='pending') if user.role == 'admin' else [], my_pending_decs=News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at'), current_user=user, avatars=avatars)
 
-==================
+#==================
 # 🛒 السوق، المقبرة، البوابات، والمذبح
 # ==========================================
 @app.route('/store')
