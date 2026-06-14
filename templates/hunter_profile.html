@@ -17,11 +17,9 @@
     .edit-icon-inline { font-size: 16px; cursor: pointer; color: #888; background: #111; padding: 5px; border-radius: 50%; border: 1px solid #333;}
     .profile-id { color: #777; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
     
-    /* التنسيق الجديد للشارات (صغيرة ومتراصة بجمال) */
     .badges-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 15px;}
     .badge { padding: 5px 12px; border-radius: 4px; font-size: 12px; background: #0a0806; border: 1px solid #222; font-weight: bold;}
 
-    /* التنسيق الجديد لأزرار التفاعل (شبكة متساوية) */
     .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px;}
     .btn-action { background: #050403; color: #fff; border: 1px solid #332815; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box;}
     .btn-action:active { transform: scale(0.95); background: #000; border-color: var(--gold-main);}
@@ -69,9 +67,9 @@
 
     {% if target_user.status in ['eliminated', 'dead_body'] and settings and settings.war_mode and my_totems %}
         <div style="padding: 0 20px 20px;">
-            <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
+            <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد نفخ الروح في هذا الجسد بنصف طاقته؟');">
                 <input type="hidden" name="item_name" value="{{ my_totems[0].name }}">
-                <button type="submit" class="btn-action" style="grid-column: span 2; color:#f1c40f; border-color:#f1c40f; font-size:15px; padding:15px; box-shadow: 0 0 15px rgba(241,196,15,0.2);" onclick="return confirm('تأكيد نفخ الروح في هذا الجسد بنصف طاقته؟');">🌟 تفعيل توتم الحياة 🌟</button>
+                <button type="submit" class="btn-action" style="grid-column: span 2; color:#f1c40f; border-color:#f1c40f; font-size:15px; padding:15px; box-shadow: 0 0 15px rgba(241,196,15,0.2);">🌟 تفعيل توتم الحياة 🌟</button>
             </form>
         </div>
     {% endif %}
@@ -79,7 +77,7 @@
     {% if current_user and current_user.status == 'active' and target_user.hunter_id not in [1000, 1001] and target_user.status == 'active' %}
     <div class="action-row">
         {% if target_user.hunter_id in current_user.friends %}
-            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c; border-color:#78281f;" onclick="return confirm('هل تريد قطع التحالف؟');">قطع التحالف ❌</button></form>
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;" onsubmit="return confirm('هل تريد قطع التحالف؟');"><button type="submit" class="btn-action" style="color:#e74c3c; border-color:#78281f;">قطع التحالف ❌</button></form>
             <button onclick="toggleSupportBox()" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">إرسال دعم 🎁</button>
         {% elif current_user.hunter_id in target_user.friend_requests %}
             <form action="/cancel_request" method="POST" style="margin:0; grid-column: span 2;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#888;">سحب الطلب ⏳</button></form>
@@ -93,7 +91,7 @@
 
     <div class="support-box" id="supportBox">
         <h4 style="color: #b59b4c; margin-top: 0; text-align: center; border-bottom: 1px dashed #222; padding-bottom: 10px; font-size:14px;">إرسال إمدادات للرحالة</h4>
-        <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
+        <form action="/transfer/{{ target_user.hunter_id }}" method="POST" onsubmit="return confirm('تأكيد الإرسال؟ لا يمكن التراجع!');">
             <select name="transfer_type" class="form-input" onchange="document.getElementById('tr_pts').style.display=(this.value=='points'?'block':'none'); document.getElementById('tr_itm').style.display=(this.value=='item'?'block':'none');">
                 <option value="points">🪙 إرسال دنانير</option>
                 <option value="item">📦 إرسال غرض من حقيبتي</option>
@@ -102,7 +100,7 @@
             <select name="item_name" id="tr_itm" class="form-input" style="display:none;">
                 {% if current_user.inventory %}{% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}{% else %}<option disabled selected>حقيبتك فارغة!</option>{% endif %}
             </select>
-            <button type="submit" class="btn-submit" onclick="return confirm('تأكيد الإرسال؟ لا يمكن التراجع!');">تأكيد الإرسال ➔</button>
+            <button type="submit" class="btn-submit">تأكيد الإرسال ➔</button>
         </form>
     </div>
     {% endif %}
@@ -111,19 +109,19 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-val" style="color: #f1c40f;">{{ target_user.points }}</div><div class="stat-label">دنانير 🪙</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل الدنانير')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #3498db;">{{ target_user.loyalty_points }}</div><div class="stat-label">وفاء 🤝</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل الوفاء')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #e74c3c;">{{ target_user.health }}%</div><div class="stat-label">الروح ❤️</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل الروح')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #1abc9c;">{{ target_user.intelligence_points }}</div><div class="stat-label">ذكاء 🧠</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل الذكاء')">✏️</span>
         </div>
     </div>
     
@@ -134,10 +132,10 @@
             {% for item in target_user.inventory %}
             <span style="background:#111; color:#ccc; font-size:12px; padding:6px 10px; border-radius:6px; border:1px solid #333; display:flex; align-items:center; gap:8px;">
                 {{ item }}
-                <form action="/admin_delete_item" method="POST" style="margin:0;">
+                <form action="/admin_delete_item" method="POST" style="margin:0;" onsubmit="return confirm('سحب هذه الأداة؟');">
                     <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
                     <input type="hidden" name="item_name" value="{{ item }}">
-                    <button type="submit" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" onclick="return confirm('سحب هذه الأداة؟');">❌</button>
+                    <button type="submit" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;">❌</button>
                 </form>
             </span>
             {% endfor %}
@@ -154,15 +152,15 @@
 </div>
 
 {% if current_user.role == 'admin' %}
-<div class="modal-overlay" id="adminEditModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; display:none; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
-    <div style="background:#050403; border:1px solid #b59b4c; width:90%; max-width:320px; border-radius:12px; padding:25px; text-align:center;">
-        <h3 id="adminEditTitle" style="color:#b59b4c; margin:0 0 15px 0;">تعديل</h3>
+<div class="modal-overlay" id="adminEditModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.93); z-index:9999; display:none; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div style="background:#050403; border:1px solid #e74c3c; width:90%; max-width:320px; border-radius:12px; padding:25px; text-align:center; box-shadow: 0 0 40px rgba(231,76,60,0.2);">
+        <h3 id="adminEditTitle" style="color:#e74c3c; margin:0 0 15px 0;">تعديل إمبراطوري</h3>
         <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
             <input type="hidden" name="action" id="adminEditAction">
             <input type="text" name="new_val" class="form-input" placeholder="أدخل القيمة الجديدة..." required style="margin-bottom:20px;">
             <div style="display:flex; gap:10px;">
-                <button type="button" class="btn-action" style="background:#222; border-color:#333; color:#aaa;" onclick="document.getElementById('adminEditModal').style.display='none'">إلغاء</button>
-                <button type="submit" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">تأكيد ⚡</button>
+                <button type="button" class="btn-action" style="background:#111; border-color:#333; color:#aaa;" onclick="document.getElementById('adminEditModal').style.display='none'">إلغاء</button>
+                <button type="submit" class="btn-action" style="color:#e74c3c; border-color:#e74c3c;">تنفيذ ⚡</button>
             </div>
         </form>
     </div>
