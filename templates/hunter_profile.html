@@ -4,54 +4,44 @@
 {% set clean_zone = target_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
 
 <style>
-    .profile-wrap { background: rgba(8, 6, 5, 0.9); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 40px rgba(0,0,0,0.9);}
-    .profile-cover { height: 140px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
+    .profile-wrap { background: rgba(8, 6, 5, 0.9); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 40px rgba(0,0,0,0.9); width: 100%; max-width: 600px; margin: 0 auto;}
+    .profile-cover { height: 130px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     
-    .profile-header { text-align: center; margin-top: -55px; padding-bottom: 15px; position: relative; z-index: 5; }
+    .profile-header { text-align: center; margin-top: -50px; padding-bottom: 15px; position: relative; z-index: 5; }
     
     .avatar-container { position: relative; display: inline-block; }
-    .profile-avatar { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.9); background: #000; animation: floatAvatar 4s ease-in-out infinite;}
-    .avatar-delete-btn { position: absolute; top: 0; left: 0; background: rgba(231,76,60,0.9); color: white; border: 2px solid #000; border-radius: 50%; width: 32px; height: 32px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 14px; transition: 0.2s; padding: 0;}
-    .avatar-delete-btn:hover { transform: scale(1.1); background: #c0392b; }
-
-    .profile-name { color: var(--gold-main); font-size: 26px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2); display: flex; align-items: center; justify-content: center; gap: 10px;}
-    .edit-icon-inline { font-size: 18px; cursor: pointer; color: #888; transition: 0.2s; background: #111; padding: 5px; border-radius: 50%; border: 1px solid #333; display: flex;}
-    .edit-icon-inline:hover { color: var(--gold-main); border-color: var(--gold-main); transform: scale(1.1);}
-
-    .profile-id { color: #777; font-family: monospace; font-size: 14px; margin-bottom: 15px; display: block; }
+    .profile-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 10px; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.9); animation: floatAvatar 4s ease-in-out infinite;}
+    .avatar-delete-btn { position: absolute; top: 0; left: 0; background: rgba(231,76,60,0.9); color: white; border: 2px solid #000; border-radius: 50%; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 12px; transition: 0.2s; padding: 0;}
     
-    /* تنسيق الشارات في سطر واحد وعدم التكسر */
-    .badges-row { display: flex; justify-content: center; gap: 8px; flex-wrap: nowrap; margin-bottom: 20px; white-space: nowrap; overflow-x: auto; padding: 0 10px;}
-    .badge { padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; background: #050403; border: 1px solid #222; }
+    .profile-name { color: var(--gold-main); font-size: 24px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2); display: flex; align-items: center; justify-content: center; gap: 10px;}
+    .edit-icon-inline { font-size: 16px; cursor: pointer; color: #888; background: #111; padding: 5px; border-radius: 50%; border: 1px solid #333;}
+    .profile-id { color: #777; font-family: monospace; font-size: 13px; margin-bottom: 15px; display: block; }
+    
+    /* التنسيق الجديد للشارات (صغيرة ومتراصة بجمال) */
+    .badges-row { display: flex; justify-content: center; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; padding: 0 15px;}
+    .badge { padding: 5px 12px; border-radius: 4px; font-size: 12px; background: #0a0806; border: 1px solid #222; font-weight: bold;}
 
-    .action-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 0 20px 20px;}
-    .btn-action { background: #050403; color: #fff; border: 1px solid #332815; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; flex: 1; min-width: 130px; text-align: center;}
+    /* التنسيق الجديد لأزرار التفاعل (شبكة متساوية) */
+    .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px;}
+    .btn-action { background: #050403; color: #fff; border: 1px solid #332815; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box;}
     .btn-action:active { transform: scale(0.95); background: #000; border-color: var(--gold-main);}
 
     .support-box { background: #000; border: 1px solid #222; border-radius: 8px; padding: 20px; margin: 0 20px 20px; display: none; animation: slideDown 0.3s; }
     @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 20px; }
-    .stat-card { background: #050403; border: 1px solid #1a150e; padding: 15px; border-radius: 8px; text-align: center; position: relative; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
-    .stat-val { font-size: 26px; font-weight: 900; margin-bottom: 5px; }
-    .stat-label { color: #888; font-size: 13px; font-weight: bold; }
-    
-    .edit-pen { position: absolute; top: 10px; left: 10px; font-size: 14px; cursor: pointer; background: #111; border: 1px solid #333; border-radius: 6px; padding: 4px 8px; transition: 0.2s; color: #ccc;}
-    .edit-pen:hover { color: var(--gold-main); border-color: var(--gold-main);}
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 20px 20px; }
+    .stat-card { background: #050403; border: 1px solid #1a150e; padding: 12px; border-radius: 8px; text-align: center; position: relative;}
+    .stat-val { font-size: 22px; font-weight: 900; margin-bottom: 3px; }
+    .stat-label { color: #888; font-size: 12px; font-weight: bold; }
+    .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 12px; cursor: pointer; background: #111; border: 1px solid #333; border-radius: 4px; padding: 2px 6px;}
 
-    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 14px; outline:none;}
-    .form-input:focus { border-color: var(--gold-main); }
-    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #332815; padding: 14px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer; transition: 0.2s;}
-    
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);}
-    .modal-overlay.active { display: flex; }
-    .modal-box { background: #080705; border: 1px solid #222; width: 90%; max-width: 350px; border-radius: 12px; padding: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.9); }
+    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; font-size: 13px; outline:none;}
+    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #332815; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;}
 </style>
 
 <div class="profile-wrap">
     <div class="profile-cover"></div>
     <div class="profile-header">
-        
         <div class="avatar-container">
             <img src="/avatar/{{ target_user.hunter_id }}" class="profile-avatar">
             {% if current_user.role == 'admin' %}
@@ -65,7 +55,7 @@
         <h2 class="profile-name">
             {{ target_user.username }}
             {% if current_user.role == 'admin' %}
-                <span class="edit-icon-inline" onclick="openAdminEdit('edit_name', 'تعديل اسم اللاعب')" title="تعديل الاسم">✏️</span>
+                <span class="edit-icon-inline" onclick="openAdminEdit('edit_name', 'تعديل اسم اللاعب')">✏️</span>
             {% endif %}
         </h2>
         <span class="profile-id">ID: {{ target_user.hunter_id }}</span>
@@ -81,7 +71,7 @@
         <div style="padding: 0 20px 20px;">
             <form action="/use_item/{{ target_user.hunter_id }}" method="POST" style="margin:0;">
                 <input type="hidden" name="item_name" value="{{ my_totems[0].name }}">
-                <button type="submit" class="btn-action" style="width:100%; color:#f1c40f; border-color:#f1c40f; font-size:16px; padding:15px; box-shadow: 0 0 15px rgba(241,196,15,0.2);" onclick="return confirm('تأكيد نفخ الروح في هذا الجسد وإعادته للحياة بنصف طاقته؟');">🌟 تفعيل توتم الحياة 🌟</button>
+                <button type="submit" class="btn-action" style="grid-column: span 2; color:#f1c40f; border-color:#f1c40f; font-size:15px; padding:15px; box-shadow: 0 0 15px rgba(241,196,15,0.2);" onclick="return confirm('تأكيد نفخ الروح في هذا الجسد بنصف طاقته؟');">🌟 تفعيل توتم الحياة 🌟</button>
             </form>
         </div>
     {% endif %}
@@ -89,23 +79,20 @@
     {% if current_user and current_user.status == 'active' and target_user.hunter_id not in [1000, 1001] and target_user.status == 'active' %}
     <div class="action-row">
         {% if target_user.hunter_id in current_user.friends %}
-            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="flex:1; margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c; border-color:#78281f; width:100%;" onclick="return confirm('هل تريد قطع يمين التحالف؟');">قطع التحالف ❌</button></form>
+            <form action="/cancel_friend/{{ target_user.hunter_id }}" method="POST" style="margin:0;"><button type="submit" class="btn-action" style="color:#e74c3c; border-color:#78281f;" onclick="return confirm('هل تريد قطع التحالف؟');">قطع التحالف ❌</button></form>
             <button onclick="toggleSupportBox()" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">إرسال دعم 🎁</button>
         {% elif current_user.hunter_id in target_user.friend_requests %}
-            <form action="/cancel_request" method="POST" style="flex:1; margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="width:100%; color:#888;">سحب الطلب ⏳</button></form>
+            <form action="/cancel_request" method="POST" style="margin:0; grid-column: span 2;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#888;">سحب الطلب ⏳</button></form>
         {% elif target_user.hunter_id in current_user.friend_requests %}
-            <a href="/accept_friend/{{ target_user.hunter_id }}" class="btn-action" style="color:#2ecc71; border-color:#145a32;">قبول التحالف ✅</a>
+            <a href="/accept_friend/{{ target_user.hunter_id }}" class="btn-action" style="color:#2ecc71; border-color:#145a32; grid-column: span 2;">قبول التحالف ✅</a>
         {% else %}
-            <form action="/add_friend" method="POST" style="flex:1; margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#3498db; border-color:#1b4f72; width:100%;">طلب تحالف 🤝</button></form>
-        {% endif %}
-        
-        {% if target_user.hunter_id not in current_user.friends %}
+            <form action="/add_friend" method="POST" style="margin:0;"><input type="hidden" name="target_id" value="{{ target_user.hunter_id }}"><button type="submit" class="btn-action" style="color:#3498db; border-color:#1b4f72;">طلب تحالف 🤝</button></form>
             <button onclick="toggleSupportBox()" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">إرسال إمداد 🎁</button>
         {% endif %}
     </div>
 
     <div class="support-box" id="supportBox">
-        <h4 style="color: #b59b4c; margin-top: 0; text-align: center; border-bottom: 1px dashed #222; padding-bottom: 10px;">إرسال إمدادات للرحالة</h4>
+        <h4 style="color: #b59b4c; margin-top: 0; text-align: center; border-bottom: 1px dashed #222; padding-bottom: 10px; font-size:14px;">إرسال إمدادات للرحالة</h4>
         <form action="/transfer/{{ target_user.hunter_id }}" method="POST">
             <select name="transfer_type" class="form-input" onchange="document.getElementById('tr_pts').style.display=(this.value=='points'?'block':'none'); document.getElementById('tr_itm').style.display=(this.value=='item'?'block':'none');">
                 <option value="points">🪙 إرسال دنانير</option>
@@ -124,61 +111,69 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-val" style="color: #f1c40f;">{{ target_user.points }}</div><div class="stat-label">دنانير 🪙</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل الدنانير')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #3498db;">{{ target_user.loyalty_points }}</div><div class="stat-label">وفاء 🤝</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل نقاط الوفاء')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #e74c3c;">{{ target_user.health }}%</div><div class="stat-label">الروح ❤️</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل الروح (HP)')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل')">✏️</span>
         </div>
         <div class="stat-card">
             <div class="stat-val" style="color: #1abc9c;">{{ target_user.intelligence_points }}</div><div class="stat-label">ذكاء 🧠</div>
-            <span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل الذكاء')">✏️</span>
+            <span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل')">✏️</span>
         </div>
     </div>
     
     <div style="padding: 0 20px 20px;">
-        <h4 style="color:#b59b4c; border-bottom:1px dashed #222; padding-bottom:10px;">🎒 حقيبة اللاعب (إدارة)</h4>
+        <h4 style="color:#b59b4c; border-bottom:1px dashed #222; padding-bottom:10px; font-size:14px;">🎒 حقيبة اللاعب (إدارة)</h4>
         {% if target_user.inventory %}
+            <div style="display:flex; flex-wrap:wrap; gap:5px;">
             {% for item in target_user.inventory %}
-            <span style="display:inline-block; background:#111; color:#ccc; font-size:13px; padding:8px 12px; border-radius:6px; margin:4px; border:1px solid #333;">
+            <span style="background:#111; color:#ccc; font-size:12px; padding:6px 10px; border-radius:6px; border:1px solid #333; display:flex; align-items:center; gap:8px;">
                 {{ item }}
-                <form action="/admin_delete_item" method="POST" style="display:inline; margin-right:8px;">
+                <form action="/admin_delete_item" method="POST" style="margin:0;">
                     <input type="hidden" name="target_id" value="{{ target_user.hunter_id }}">
                     <input type="hidden" name="item_name" value="{{ item }}">
-                    <button type="submit" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:14px; padding:0;" onclick="return confirm('سحب هذه الأداة من حقيبته؟');" title="سحب الأداة">❌</button>
+                    <button type="submit" style="background:transparent; border:none; color:#e74c3c; cursor:pointer; font-size:12px; padding:0;" onclick="return confirm('سحب هذه الأداة؟');">❌</button>
                 </form>
             </span>
             {% endfor %}
+            </div>
         {% else %}
-            <p style="color:#666; font-size:13px;">الحقيبة فارغة.</p>
+            <p style="color:#666; font-size:13px; margin:0;">الحقيبة فارغة.</p>
         {% endif %}
     </div>
-
     {% else %}
-        <div style="padding: 25px; text-align: center; color: #666; font-size: 14px; background: rgba(0,0,0,0.6); border-top: 1px solid #111;">
+        <div style="padding: 20px; text-align: center; color: #777; font-size: 13px; background: rgba(0,0,0,0.6); border-top: 1px solid #111;">
             <p style="margin:0;">🔒 الرحالة يتكتم على أسراره... لم يُصرح بشيء.</p>
         </div>
     {% endif %}
 </div>
 
 {% if current_user.role == 'admin' %}
-<div class="modal-overlay" id="adminEditModal">
-    <div class="modal-box">
-        <h3 id="adminEditTitle" style="color: #b59b4c; margin: 0 0 15px 0; border-bottom: 1px dashed #222; padding-bottom: 10px;">تعديل</h3>
-        <form id="adminEditForm" action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
+<div class="modal-overlay" id="adminEditModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; display:none; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div style="background:#050403; border:1px solid #b59b4c; width:90%; max-width:320px; border-radius:12px; padding:25px; text-align:center;">
+        <h3 id="adminEditTitle" style="color:#b59b4c; margin:0 0 15px 0;">تعديل</h3>
+        <form action="/admin_update_profile/{{ target_user.hunter_id }}" method="POST">
             <input type="hidden" name="action" id="adminEditAction">
-            <input type="text" name="new_val" class="form-input" placeholder="أدخل القيمة الجديدة هنا..." required>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn-action" style="background:#222;" onclick="document.getElementById('adminEditModal').classList.remove('active')">إلغاء</button>
-                <button type="submit" class="btn-submit" style="margin:0;">تأكيد الأمر ⚡</button>
+            <input type="text" name="new_val" class="form-input" placeholder="أدخل القيمة الجديدة..." required style="margin-bottom:20px;">
+            <div style="display:flex; gap:10px;">
+                <button type="button" class="btn-action" style="background:#222; border-color:#333; color:#aaa;" onclick="document.getElementById('adminEditModal').style.display='none'">إلغاء</button>
+                <button type="submit" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">تأكيد ⚡</button>
             </div>
         </form>
     </div>
 </div>
+<script>
+    function openAdminEdit(actionName, titleStr) {
+        document.getElementById('adminEditAction').value = actionName;
+        document.getElementById('adminEditTitle').innerText = titleStr;
+        document.getElementById('adminEditModal').style.display = 'flex';
+    }
+</script>
 {% endif %}
 
 <script>
@@ -186,13 +181,5 @@
         var box = document.getElementById('supportBox');
         box.style.display = (box.style.display === 'block') ? 'none' : 'block';
     }
-    {% if current_user.role == 'admin' %}
-    function openAdminEdit(actionName, titleStr) {
-        document.getElementById('adminEditAction').value = actionName;
-        document.getElementById('adminEditTitle').innerText = titleStr;
-        document.getElementById('adminEditModal').classList.add('active');
-    }
-    {% endif %}
 </script>
 {% endblock %}
-
