@@ -79,7 +79,7 @@
     .gem-bar-bg { width: 100%; background: #090705; height: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #222; margin-top: 8px; }
     .gem-bar-fill { height: 100%; background: linear-gradient(90deg, #2980b9, #27ae60); transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); width: 0%; }
     
-    /* خريطة أمونغ أس البصرية المتقدمة المدمجة بالـ CSS */
+    /* خريطة أمونغ أس البصرية المتقدمة */
     .visual-map-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #040302; border: 2px solid var(--border-color); border-radius: 12px; margin: 20px auto; overflow: hidden; box-shadow: inset 0 0 40px #000; }
     .map-room { position: absolute; background: rgba(212,175,55,0.02); border: 2px solid #261f14; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #777; transition: all 0.3s ease; padding: 4px; text-align: center; box-sizing: border-box; }
     .map-room.current { border-color: var(--gold-main); background: rgba(212,175,55,0.08); color: #fff; box-shadow: 0 0 12px rgba(212,175,55,0.2); z-index: 10; }
@@ -88,13 +88,13 @@
     .map-room.locked { border-color: #222; background: rgba(0,0,0,0.6); color: #444; pointer-events: none; }
     
     /* إحداثيات الغرف على شبكة سيفار البصرية */
-    .room-center { top: 38%; left: 35%; width: 30%; height: 26%; border-radius: 10px; } /* ساحة التجمع */
-    .room-top-left { top: 6%; left: 6%; width: 26%; height: 24%; } /* مرصد الظلال */
-    .room-top-right { top: 6%; right: 6%; width: 26%; height: 24%; } /* مستوصف الأرواح */
-    .room-bottom-left { bottom: 6%; left: 6%; width: 26%; height: 24%; } /* قاعة النور الأزلي */
-    .room-bottom-right { bottom: 6%; right: 6%; width: 26%; height: 24%; } /* ترسانة الأسلحة القديمة */
-    .room-mid-left { top: 39%; left: 6%; width: 22%; height: 22%; } /* منبع الأنفاس */
-    .room-mid-right { top: 39%; right: 6%; width: 22%; height: 22%; } /* غرفة المراقبة */
+    .room-center { top: 38%; left: 35%; width: 30%; height: 26%; border-radius: 10px; } 
+    .room-top-left { top: 6%; left: 6%; width: 26%; height: 24%; } 
+    .room-top-right { top: 6%; right: 6%; width: 26%; height: 24%; } 
+    .room-bottom-left { bottom: 6%; left: 6%; width: 26%; height: 24%; } 
+    .room-bottom-right { bottom: 6%; right: 6%; width: 26%; height: 24%; } 
+    .room-mid-left { top: 39%; left: 6%; width: 22%; height: 22%; } 
+    .room-mid-right { top: 39%; right: 6%; width: 22%; height: 22%; } 
 
     .player-dot { width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; display: inline-block; margin-top: 3px; box-shadow: 0 0 6px #e74c3c; }
     .player-name-map { font-size: 8.5px; color: #fff; background: #000; padding: 1px 4px; border-radius: 4px; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -362,13 +362,12 @@
             {% endif %}
 
             <script>
-                let holdTimer; 
-                let holdProgress = 0;
+                let holdTimer; let holdProgress = 0;
                 function startHoldTask(taskName, btn) {
                     let fillBar = btn.querySelector('.hold-progress');
                     holdProgress = 0;
                     holdTimer = setInterval(() => {
-                        holdProgress += 4; // يمتلئ في غضون ثانيتين ونصف لمنع السرعة العشوائية
+                        holdProgress += 4; 
                         fillBar.style.width = holdProgress + '%';
                         if(holdProgress >= 100) { 
                             clearInterval(holdTimer); 
@@ -376,7 +375,6 @@
                         }
                     }, 100);
                 }
-                 TarHoldTask = () => {};
                 function stopHoldTask(btn) { 
                     clearInterval(holdTimer); 
                     let fillBar = btn.querySelector('.hold-progress');
@@ -387,6 +385,7 @@
 
         {% else %}
             
+            {% set clean_zone = current_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
             <div class="rpg-card">
                 <div class="rpg-banner" style="{% if settings and settings.banner_url %}background-image: url('{{ settings.banner_url }}');{% endif %}"></div>
                 <div class="rpg-content">
@@ -421,17 +420,6 @@
         {% endif %}
     {% endif %}
 {% endif %}
-
-<script>
-    document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]').forEach(element => {
-        element.addEventListener('keyup', function(e) {
-            if(e.target.value.includes("1000")) {
-                document.body.classList.add("shake-screen");
-                setTimeout(() => { document.body.classList.remove("shake-screen"); }, 4000);
-            }
-        });
-    });
-</script>
 
 {% endblock %}
 
