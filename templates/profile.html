@@ -4,132 +4,117 @@
 {% set clean_zone = user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
 
 <style>
-    .profile-wrap { background: rgba(8, 6, 5, 0.9); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.9);}
-    .profile-cover { height: 140px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
+    .profile-wrap { background: rgba(8, 6, 5, 0.9); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 40px rgba(0,0,0,0.9); max-width: 500px; margin: 0 auto; padding-bottom: 20px;}
+    .profile-cover { height: 120px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     
-    /* زر الإعدادات المنسق أعلى اليسار */
-    .settings-btn { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.7); color: #b59b4c; border: 1px solid #b59b4c; border-radius: 8px; padding: 8px 15px; font-size: 14px; font-weight: bold; cursor: pointer; backdrop-filter: blur(5px); z-index: 10; transition: 0.2s;}
-    .settings-btn:active { transform: scale(0.95); background: #b59b4c; color: #000; }
-
-    .profile-header { text-align: center; margin-top: -55px; padding-bottom: 20px; position: relative; z-index: 5; }
-    .profile-avatar { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.9); background: #000; animation: floatAvatar 4s ease-in-out infinite;}
-    .profile-name { color: var(--gold-main); font-size: 26px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2);}
-    .profile-id { color: #777; font-family: monospace; font-size: 14px; margin-bottom: 15px; display: block; }
+    .profile-header { text-align: center; margin-top: -50px; padding-bottom: 10px; position: relative; z-index: 5; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 10px; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.9);}
     
-    .badges-row { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;}
-    .badge { padding: 6px 15px; border-radius: 6px; font-size: 13px; font-weight: bold; background: #050403; border: 1px solid #222; }
-
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 0 20px 20px; }
-    .stat-card { background: #050403; border: 1px solid #1a150e; padding: 15px; border-radius: 8px; text-align: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);}
-    .stat-val { font-size: 26px; font-weight: 900; margin-bottom: 5px; }
-    .stat-label { color: #888; font-size: 13px; font-weight: bold; }
-
-    /* الأختام الأربعة */
-    .seals-container { padding: 20px; border-top: 1px dashed #1a150e; }
-    .seal-box { background: #000; border: 1px solid #222; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
-    .seal-name { color: #fff; font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 10px;}
-    .btn-shatter { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;}
-    .btn-shatter:active { transform: scale(0.9); background: #e74c3c; color: #fff;}
-
-    /* النافذة المنبثقة (Modal) الفخمة */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 3000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); opacity: 0; transition: 0.3s;}
-    .modal-overlay.active { display: flex; opacity: 1; }
-    .modal-box { background: #080705; border: 1px solid #222; width: 90%; max-width: 400px; border-radius: 12px; padding: 25px; transform: translateY(20px); transition: 0.3s; box-shadow: 0 15px 50px rgba(0,0,0,0.9); max-height: 85vh; overflow-y: auto;}
-    .modal-overlay.active .modal-box { transform: translateY(0); }
+    .profile-name { color: var(--gold-main); font-size: 24px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2);}
+    .profile-id { color: #777; font-family: monospace; font-size: 13px; display: block; margin-bottom: 15px;}
     
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed #222; padding-bottom: 15px; margin-bottom: 20px;}
-    .modal-header h3 { color: var(--gold-main); margin: 0; font-size: 20px;}
-    .close-btn { background: transparent; border: none; color: #e74c3c; font-size: 26px; cursor: pointer; transition: 0.2s;}
-    .close-btn:active { transform: scale(0.8); }
+    /* الخانات الأنيقة المصغرة المتراصة */
+    .badges-row { display: inline-flex; justify-content: center; gap: 8px; flex-wrap: wrap; background: #000; padding: 8px 15px; border-radius: 8px; border: 1px solid #111;}
+    .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #0a0806; border: 1px solid #222; }
 
-    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 14px; transition: 0.2s;}
-    .form-input:focus { border-color: var(--gold-main); outline: none; }
-    .btn-submit { background: #050403; color: var(--gold-main); border: 1px solid #332815; padding: 14px; border-radius: 8px; font-weight: bold; width: 100%; transition: 0.2s; cursor: pointer; margin-bottom: 15px; font-size: 15px;}
-    .btn-submit:active { background: #000; border-color: var(--gold-main); }
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px 20px; }
+    .stat-card { background: #050403; border: 1px solid #1a150e; padding: 12px; border-radius: 8px; text-align: center; position: relative;}
+    .stat-val { font-size: 20px; font-weight: 900; margin-bottom: 3px; color: #fff;}
+    .stat-label { color: #888; font-size: 11px; font-weight: bold; }
+    
+    .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 11px; cursor: pointer; background: #111; border: 1px solid #333; border-radius: 4px; padding: 2px 6px; color:#ccc;}
+
+    .btn-action { background: #050403; color: #fff; border: 1px solid #332815; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; display: inline-block; width: 100%; box-sizing: border-box;}
+    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 10px; font-size: 13px; outline:none;}
+    
+    /* النافذة الإمبراطورية المخصصة */
+    .custom-confirm { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .custom-confirm.active { display: flex; }
+    .confirm-box { background: #050403; border: 1px solid #e74c3c; width: 90%; max-width: 320px; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 10px 40px rgba(231,76,60,0.2); }
 </style>
 
+<div class="custom-confirm" id="confirmModal">
+    <div class="confirm-box">
+        <h3 style="color:#e74c3c; margin:0 0 15px 0;">⚠️ تأكيد الأمر</h3>
+        <p id="confirmMessage" style="color:#ccc; font-size:13px; margin-bottom:20px;">هل أنت متأكد؟</p>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-action" style="background:#111; border-color:#333; color:#aaa;" onclick="closeConfirm()">تراجع</button>
+            <button class="btn-action" style="color:#e74c3c; border-color:#78281f;" id="confirmYesBtn">تنفيذ ⚡</button>
+        </div>
+    </div>
+</div>
+
 <div class="profile-wrap">
-    <div class="settings-btn" onclick="document.getElementById('settingsModal').classList.add('active')">⚙️ الإعدادات</div>
-    
     <div class="profile-cover"></div>
     <div class="profile-header">
         <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar">
-        <h2 class="profile-name">{{ user.username }} {% if user.hunter_id == 1000 %}👑{% endif %}</h2>
+        <h2 class="profile-name">{{ user.username }}</h2>
         <span class="profile-id">ID: {{ user.hunter_id }}</span>
         
         <div class="badges-row">
-            <span class="badge" style="color: #2ecc71; border-color: #145a32;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد' }}</span>
-            <span class="badge" style="color: #f39c12; border-color: #7d6608;">الطابق: {{ clean_zone }}</span>
+            <span class="badge" style="color: #2ecc71; border-color: #145a32;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد/ميت' }}</span>
+            <span class="badge" style="color: #f39c12; border-color: #7d6608;">{{ clean_zone }}</span>
             {% if user.special_rank %}<span class="badge" style="color: #b59b4c; border-color: #7e5109;">🏆 {{ user.special_rank }}</span>{% endif %}
         </div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" style="color: #f1c40f;">{{ user.points }}</div><div class="stat-label">دنانير 🪙</div></div>
-        <div class="stat-card"><div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">وفاء 🤝</div></div>
-        <div class="stat-card"><div class="stat-val" style="color: #e74c3c;">{{ user.health }}%</div><div class="stat-label">الروح ❤️</div></div>
-        <div class="stat-card"><div class="stat-val" style="color: #1abc9c;">{{ user.intelligence_points }}</div><div class="stat-label">ذكاء 🧠</div></div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #f1c40f;">{{ user.points }}</div><div class="stat-label">دنانير</div>
+            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل الدنانير')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">وفاء</div>
+            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل الوفاء')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #e74c3c;">{{ user.health }}%</div><div class="stat-label">الروح</div>
+            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل الروح')">✏️</span>{% endif %}
+        </div>
+        <div class="stat-card">
+            <div class="stat-val" style="color: #1abc9c;">{{ user.intelligence_points }}</div><div class="stat-label">ذكاء</div>
+            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل الذكاء')">✏️</span>{% endif %}
+        </div>
     </div>
 
-    {% if my_seals %}
-    <div class="seals-container">
-        <h3 style="color: #b59b4c; margin: 0 0 15px 0;">🔮 أختام الحقيقة</h3>
-        {% for seal in my_seals %}
-        <div class="seal-box">
-            <span class="seal-name">
-                {% if 'الأسرار' in seal.name %}🔵{% elif 'الشجع' in seal.name %}🟡{% elif 'الأرواح' in seal.name %}🟣{% else %}🟢{% endif %}
-                {{ seal.name }}
-            </span>
-            <form action="/shatter_seal" method="POST" style="margin: 0;" onsubmit="return confirm('تحطيم الختم لا رجعة فيه! هل أنت متأكد؟');">
-                <input type="hidden" name="seal_name" value="{{ seal.name }}">
-                <button type="submit" class="btn-shatter">🔨 تحطيم الختم</button>
-            </form>
-        </div>
-        {% endfor %}
+    <div style="padding: 0 20px;">
+        <button class="btn-action" style="margin-bottom:10px; color:#b59b4c; border-color:#b59b4c;" onclick="document.getElementById('settingsBox').style.display='block'">إعدادات الهوية ⚙️</button>
     </div>
+</div>
+
+{% if user.role == 'admin' %}
+<div class="custom-confirm" id="adminEditModal">
+    <div class="confirm-box">
+        <h3 id="adminEditTitle" style="color: #b59b4c; margin: 0 0 15px 0;">تعديل</h3>
+        <form action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
+            <input type="hidden" name="action" id="adminEditAction">
+            <input type="text" name="new_val" class="form-input" placeholder="القيمة الجديدة..." required>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-action" style="background:#111; border-color:#333; color:#aaa;" onclick="document.getElementById('adminEditModal').classList.remove('active')">إلغاء</button>
+                <button type="submit" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">تأكيد ⚡</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    let formToSubmit = null;
+    function requireConfirm(event, message) {
+        event.preventDefault();
+        formToSubmit = event.target.closest('form');
+        document.getElementById('confirmMessage').innerText = message;
+        document.getElementById('confirmModal').classList.add('active');
+    }
+    function closeConfirm() { document.getElementById('confirmModal').classList.remove('active'); formToSubmit = null; }
+    document.getElementById('confirmYesBtn').onclick = function() { if(formToSubmit) formToSubmit.submit(); };
+    
+    {% if user.role == 'admin' %}
+    function openAdminEdit(act, title) {
+        document.getElementById('adminEditAction').value = act;
+        document.getElementById('adminEditTitle').innerText = title;
+        document.getElementById('adminEditModal').classList.add('active');
+    }
     {% endif %}
-</div>
-
-<div class="modal-overlay" id="settingsModal">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3>⚙️ إعدادات الهوية</h3>
-            <button class="close-btn" onclick="document.getElementById('settingsModal').classList.remove('active')">✖</button>
-        </div>
-        
-        <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom: 5px;">
-            <input type="hidden" name="action" value="change_avatar">
-            <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">تغيير النقش (الصورة):</label>
-            <input type="file" name="avatar_file" class="form-input" accept="image/*" required>
-            <button type="submit" class="btn-submit">تحديث الصورة</button>
-        </form>
-
-        <form action="/settings" method="POST" style="border-top: 1px dashed #222; padding-top: 15px; margin-bottom: 5px;">
-            <input type="hidden" name="action" value="change_name">
-            <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">تغيير الاسم (متاح كل 7 أيام):</label>
-            <input type="text" name="new_name" class="form-input" value="{{ user.username }}" required>
-            <button type="submit" class="btn-submit" onclick="return confirm('تأكيد تغيير الاسم؟');">حفظ الاسم</button>
-        </form>
-        
-        <form action="/settings" method="POST" style="border-top: 1px dashed #222; padding-top: 15px; margin-bottom: 5px;">
-            <input type="hidden" name="action" value="change_password">
-            <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">تغيير الختم הסري (كلمة المرور):</label>
-            <input type="password" name="old_password" class="form-input" placeholder="كلمة المرور القديمة" required>
-            <input type="password" name="new_password" class="form-input" placeholder="كلمة المرور الجديدة" required>
-            <input type="password" name="confirm_password" class="form-input" placeholder="تأكيد الكلمة الجديدة" required>
-            <button type="submit" class="btn-submit">تحديث الختم הסري</button>
-        </form>
-
-        {% if user.achievements %}
-        <form action="/set_title" method="POST" style="border-top: 1px dashed #222; padding-top: 15px;">
-            <label style="color:#aaa; font-size:13px; display:block; margin-bottom:5px;">اللقب المعروض:</label>
-            <select name="title" class="form-input">
-                <option value="">(بدون لقب)</option>
-                {% for ach in user.achievements %}<option value="{{ ach }}" {% if user.special_rank == ach %}selected{% endif %}>{{ ach }}</option>{% endfor %}
-            </select>
-            <button type="submit" class="btn-submit">تثبيت اللقب</button>
-        </form>
-        {% endif %}
-    </div>
-</div>
+</script>
 {% endblock %}
