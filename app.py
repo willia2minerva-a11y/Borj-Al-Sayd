@@ -764,7 +764,6 @@ def f1_sabotage():
 @app.route('/news')
 @login_required
 def news(): 
-    g.user.update(set__last_seen_news=datetime.utcnow())
     return render_template('news.html', news_list=News.objects(category='news', status='approved').order_by('-created_at'))
 
 @app.route('/puzzles', methods=['GET', 'POST'])
@@ -809,17 +808,16 @@ def declarations():
         News(title=f"تصريح من {user.username}", content=request.form.get('content', '').strip(), image_data=img, category='declaration', author=user.username, status='approved' if user.role == 'admin' else 'pending').save()
         flash('تم النشر بنجاح!', 'success')
         return redirect(url_for('declarations'))
-    user.update(set__last_seen_decs=datetime.utcnow())
+    
     avatars = {u.username: u.hunter_id for u in User.objects(username__in=set([d.author for d in News.objects(category='declaration')]))}
     return render_template('declarations.html', approved_decs=News.objects(category='declaration', status='approved').order_by('-created_at'), pending_decs=News.objects(category='declaration', status='pending') if user.role == 'admin' else [], my_pending_decs=News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at'), current_user=user, avatars=avatars)
 
-# ==========================================
+==================
 # 🛒 السوق، المقبرة، البوابات، والمذبح
 # ==========================================
 @app.route('/store')
 @login_required
 def store(): 
-    g.user.update(set__last_seen_store=datetime.utcnow())
     return render_template('store.html', items=StoreItem.objects())
 
 @app.route('/buy/<item_id>', methods=['POST'])
