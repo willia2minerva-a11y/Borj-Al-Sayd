@@ -2,109 +2,51 @@
 {% block content %}
 
 <style>
-    /* التنسيق الإمبراطوري المتوهج للحاويات */
-    .arena-container { 
-        background: linear-gradient(145deg, #0d0b08, #050403); 
-        border: 1px solid var(--border-color); 
-        border-radius: 14px; 
-        padding: 25px; 
-        margin-bottom: 25px; 
-        box-shadow: 0 12px 45px rgba(0,0,0,0.9), inset 0 0 20px rgba(212,175,55,0.02); 
-        text-align: center; 
-        width: 100%;
-        box-sizing: border-box;
-    }
-    .arena-title { color: var(--gold-main); margin-top: 0; font-size: 24px; font-weight: 900; text-shadow: 0 0 15px rgba(212,175,55,0.3); border-bottom: 1px dashed #1f1810; padding-bottom: 12px; margin-bottom: 20px; }
+    /* تصميم الهوية في الساحة (مطابق للبروفايل) */
+    .profile-wrap { background: rgba(8, 6, 5, 0.95); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 30px rgba(0,0,0,0.8); width: 100%; margin-bottom: 25px; }
+    .profile-cover { height: 110px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
+    .profile-header { text-align: center; margin-top: -45px; padding-bottom: 15px; position: relative; z-index: 5; }
+    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 8px; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.9); }
+    .profile-name { color: var(--gold-main); font-size: 22px; font-weight: 900; margin: 0 0 5px 0; text-shadow: 0 0 10px rgba(212,175,55,0.2); }
+    .profile-id { color: #777; font-family: monospace; font-size: 12px; margin-bottom: 12px; display: block; }
     
-    .timer-box { font-family: monospace; font-size: 22px; color: #e74c3c; font-weight: bold; background: #000; display: inline-block; padding: 10px 25px; border-radius: 8px; border: 1px solid #c0392b; margin-bottom: 20px; box-shadow: 0 0 15px rgba(231,76,60,0.15); }
-    
-    .btn-epic { 
-        background: #090705; 
-        color: #fff; 
-        border: 1px solid #332815; 
-        padding: 16px 20px; 
-        border-radius: 10px; 
-        font-weight: 900; 
-        font-size: 14px; 
-        cursor: pointer; 
-        transition: all 0.2s ease; 
-        width: 100%; 
-        box-sizing: border-box; 
-        text-decoration: none; 
-        display: inline-block; 
-        margin-bottom: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-    }
-    .btn-epic:active { transform: scale(0.97); background: #000; border-color: var(--gold-main); color: var(--gold-main); }
-    
-    /* بطاقة هويتك التكتيكية المحدثة */
-    .rpg-card { background: #080605; border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; margin-bottom: 25px; box-shadow: 0 10px 35px rgba(0,0,0,0.85); width: 100%; box-sizing: border-box; }
-    .rpg-banner { height: 95px; background-size: cover; background-position: center; border-bottom: 1px solid #111; background-color: #0d0b08; }
-    .rpg-content { display: flex; align-items: center; padding: 10px 20px; gap: 15px; margin-top: -35px; }
-    .rpg-avatar { width: 85px; height: 85px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; background: #000; box-shadow: 0 6px 15px rgba(0,0,0,0.9); }
-    .rpg-details { flex: 1; text-align: right; margin-top: 25px; }
-    .rpg-name { color: var(--gold-main); font-size: 20px; font-weight: 900; margin: 0 0 3px 0; text-shadow: 0 0 8px rgba(212,175,55,0.2); }
-    .rpg-id { color: #555; font-family: monospace; font-size: 12px; margin: 0 0 8px 0; display: block; }
-    
-    .badges-row { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; }
-    .badge { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; background: #000; border: 1px solid #1f1810; display: inline-block; }
+    .badges-row { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; padding: 0 15px; }
+    .badge { padding: 5px 12px; border-radius: 4px; font-size: 11px; background: #050403; border: 1px solid #222; font-weight: bold; }
 
-    /* شبكة التحكم الرئيسية الاحترافية الجديدة (RPG Grid) */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; width: 100%; box-sizing: border-box; }
-    .gold-card { 
-        background: linear-gradient(135deg, #0a0806 0%, #030202 100%); 
-        border: 1px solid var(--border-color); 
-        border-radius: 12px; 
-        padding: 22px 10px; 
-        text-align: center; 
-        text-decoration: none; 
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        min-height: 100px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.5);
-    }
-    .gold-card:hover { transform: translateY(-3px); border-color: #3d301b; box-shadow: 0 8px 20px rgba(212,175,55,0.08); }
-    .gold-card:active { transform: scale(0.96); background: #000; }
-    .card-icon { font-size: 32px; display: block; margin-bottom: 10px; filter: drop-shadow(0 0 6px rgba(212,175,55,0.15)); }
-    .card-title { color: #ccc; margin: 0; font-size: 13.5px; font-weight: bold; }
-    
-    /* مواجهة الزعيم الأخير */
-    .boss-fight-box { background: radial-gradient(circle, #250606 0%, #050403 100%); border: 2px solid #962d22; border-radius: 14px; padding: 30px 20px; text-align: center; box-shadow: 0 0 30px rgba(150,45,34,0.2); }
+    /* شبكة الأزرار المحدثة والمنسقة */
+    .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 25px; }
+    .menu-item { background: #080605; border: 1px solid #1a150e; border-radius: 10px; padding: 20px 10px; text-align: center; color: #fff; text-decoration: none; transition: 0.2s; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
+    .menu-item:active { transform: scale(0.96); border-color: var(--gold-main); background: #000; }
+    .menu-icon { font-size: 30px; display: block; margin-bottom: 8px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5)); }
+    .menu-title { font-size: 13px; font-weight: bold; color: #ccc; margin: 0; }
 
-    /* شريط تقدم الأحجار (الطابق 1) */
-    .gem-progress-container { background: #000; border: 1px solid #16120b; border-radius: 10px; padding: 12px 15px; margin-bottom: 20px; text-align: right; width: 100%; box-sizing: border-box; }
-    .gem-bar-bg { width: 100%; background: #090705; height: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #222; margin-top: 8px; }
-    .gem-bar-fill { height: 100%; background: linear-gradient(90deg, #2980b9, #27ae60); transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); width: 0%; }
+    .arena-container { background: linear-gradient(145deg, #0d0b08, #050403); border: 1px solid #1a150e; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); text-align: center; }
+    .timer-box { font-family: monospace; font-size: 20px; color: #e74c3c; font-weight: bold; background: #000; display: inline-block; padding: 10px 20px; border-radius: 8px; border: 1px solid #c0392b; margin-bottom: 15px; }
+    .btn-epic { background: #090705; color: #fff; border: 1px solid #332815; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; text-decoration: none; display: inline-block; margin-bottom: 10px; }
+    .btn-epic:active { transform: scale(0.97); border-color: var(--gold-main); }
     
-    /* خريطة أمونغ أس البصرية المتقدمة */
-    .visual-map-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #040302; border: 2px solid var(--border-color); border-radius: 12px; margin: 20px auto; overflow: hidden; box-shadow: inset 0 0 40px #000; }
-    .map-room { position: absolute; background: rgba(212,175,55,0.02); border: 2px solid #261f14; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; color: #777; transition: all 0.3s ease; padding: 4px; text-align: center; box-sizing: border-box; }
-    .map-room.current { border-color: var(--gold-main); background: rgba(212,175,55,0.08); color: #fff; box-shadow: 0 0 12px rgba(212,175,55,0.2); z-index: 10; }
-    .map-room.adjacent { border-color: #27ae60; background: rgba(39,174,96,0.05); color: #27ae60; cursor: pointer; }
-    .map-room.adjacent:active { transform: scale(0.96); background: rgba(39,174,96,0.15); }
-    .map-room.locked { border-color: #222; background: rgba(0,0,0,0.6); color: #444; pointer-events: none; }
+    .boss-fight-box { background: radial-gradient(circle, #250606 0%, #050403 100%); border: 2px solid #962d22; border-radius: 12px; padding: 25px 15px; text-align: center; }
     
-    /* إحداثيات الغرف على شبكة سيفار البصرية */
-    .room-center { top: 38%; left: 35%; width: 30%; height: 26%; border-radius: 10px; } 
+    .gem-progress-container { background: #000; border: 1px solid #1a150e; border-radius: 8px; padding: 12px; margin-bottom: 15px; text-align: right; }
+    .visual-map-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #040302; border: 2px solid #1a150e; border-radius: 12px; margin: 15px auto; overflow: hidden; box-shadow: inset 0 0 30px #000; }
+    .map-room { position: absolute; background: rgba(212,175,55,0.02); border: 2px solid #222; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #777; transition: 0.3s; padding: 4px; text-align: center; box-sizing: border-box; }
+    .map-room.current { border-color: var(--gold-main); color: #fff; background: rgba(212,175,55,0.08); z-index: 10; }
+    .map-room.adjacent { border-color: #27ae60; color: #27ae60; cursor: pointer; }
+    
+    .room-center { top: 38%; left: 35%; width: 30%; height: 26%; } 
     .room-top-left { top: 6%; left: 6%; width: 26%; height: 24%; } 
     .room-top-right { top: 6%; right: 6%; width: 26%; height: 24%; } 
     .room-bottom-left { bottom: 6%; left: 6%; width: 26%; height: 24%; } 
     .room-bottom-right { bottom: 6%; right: 6%; width: 26%; height: 24%; } 
     .room-mid-left { top: 39%; left: 6%; width: 22%; height: 22%; } 
     .room-mid-right { top: 39%; right: 6%; width: 22%; height: 22%; } 
+    
+    .player-dot { width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; margin-top: 3px; }
+    .player-name-map { font-size: 8px; color: #fff; background: #000; padding: 1px 3px; border-radius: 3px; margin-top: 2px; }
 
-    .player-dot { width: 8px; height: 8px; background: #e74c3c; border-radius: 50%; display: inline-block; margin-top: 3px; box-shadow: 0 0 6px #e74c3c; }
-    .player-name-map { font-size: 8.5px; color: #fff; background: #000; padding: 1px 4px; border-radius: 4px; margin-top: 2px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-    /* زر استخراج الأحجار بالضغط المطول التفاعلي */
-    .hold-task-btn { position: relative; background: #090705; border: 1px solid #27ae60; color: #27ae60; padding: 15px; width: 100%; border-radius: 10px; font-weight: bold; overflow: hidden; cursor: pointer; margin-bottom: 12px; text-align: center; user-select: none; -webkit-user-select: none; box-sizing: border-box; }
-    .hold-progress { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: rgba(39,174,96,0.25); transition: width 0.1s linear; z-index: 1; }
-    .hold-text { position: relative; z-index: 2; font-size: 13px; }
-
-    .cursed-dashboard { border: 1px solid #c0392b; background: rgba(15, 3, 3, 0.95); padding: 15px; border-radius: 12px; margin-top: 20px; text-align: right; width: 100%; box-sizing: border-box; }
+    .hold-task-btn { position: relative; background: #090705; border: 1px solid #27ae60; color: #27ae60; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; overflow: hidden; cursor: pointer; margin-bottom: 10px; text-align: center; user-select: none; }
+    .hold-progress { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: rgba(39,174,96,0.25); transition: 0.1s linear; z-index: 1; }
+    .hold-text { position: relative; z-index: 2; font-size: 12px; }
 </style>
 
 <script>
@@ -116,7 +58,7 @@
             var distance = countDownDate - now;
             if (distance < 0) {
                 clearInterval(x);
-                document.getElementById(elementId).innerHTML = "انتهى الميقات الإمبراطوري!";
+                document.getElementById(elementId).innerHTML = "انتهى الوقت!";
                 setTimeout(() => location.reload(), 1500);
             } else {
                 var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -129,150 +71,99 @@
 </script>
 
 {% if winner_user %}
-    <div class="arena-container" style="border-color: var(--gold-main); box-shadow: 0 0 50px rgba(212,175,55,0.25);">
-        <h1 style="color: #fff; font-size: 30px; margin-bottom: 10px; text-shadow: 0 0 15px var(--gold-main);">👑 عهد فوز المتاهة الأسطوري 👑</h1>
-        <p style="color: var(--gold-main); font-size: 18px; font-weight: bold; margin:0;">الفائز المتوج بالعرش: {{ winner_user.username }}</p>
-        <p style="color: #666; font-size: 13px; margin-top: 10px;">انتهى العصر الحالي وسُحقت بقية التطلعات... بانتظار مرسوم إعادة التهيئة.</p>
+    <div class="arena-container" style="border-color: var(--gold-main);">
+        <h1 style="color: #fff; font-size: 26px; text-shadow: 0 0 10px var(--gold-main);">👑 عهد فوز المتاهة الأسطوري 👑</h1>
+        <p style="color: var(--gold-main); font-weight: bold;">الفائز المتوج: {{ winner_user.username }}</p>
     </div>
 {% else %}
-    
     {% if not current_user %}
         <div class="arena-container">
-            <h2 style="color: var(--gold-main); font-weight: 900; margin-top:0;">بوابة العبور للمتاهة</h2>
-            <p style="color: #888; font-size: 13.5px; margin-bottom: 25px;">يجب تسجيل ميثاقك أو الدخول لتعبر لساحات البرج السفلية والعليا.</p>
-            <a href="/login" class="btn-epic" style="border-color: var(--gold-main); color: var(--gold-main); margin-bottom:0;">العبور الفوري للداخل ➔</a>
+            <h2 style="color: var(--gold-main);">بوابة المتاهة</h2>
+            <a href="/login" class="btn-epic" style="border-color: var(--gold-main); color: var(--gold-main);">العبور الفوري للداخل ➔</a>
         </div>
     {% else %}
-        
         {% if settings and settings.sleep_mode_active and current_user.role != 'admin' %}
             <div class="arena-container" style="border-color: #3498db;">
-                <h1 style="color: #3498db; font-size: 36px; margin: 0 0 10px 0;">🌙</h1>
-                <h2 style="color: #fff; margin:0 0 10px 0; font-size: 20px;">السبات الكوني للمتاهة مفعّل</h2>
-                <p style="color: #888; font-size: 13px; margin:0; line-height: 1.6;">توقف الزمن والمؤقتات كلياً بأمر إداري لحماية الرحالة من خمول النوم والنزيف الشامل. استرح حتى الصباح.</p>
+                <h1 style="color: #3498db; font-size: 30px; margin: 0 0 10px 0;">🌙</h1>
+                <h2 style="color: #fff; margin:0 0 10px 0; font-size: 18px;">السبات الكوني مفعل</h2>
+                <p style="color: #888; font-size: 12px;">توقف الزمن لحماية الأرواح من الخمول.</p>
             </div>
-            
         {% elif current_user.status != 'active' and current_user.role != 'admin' %}
             <div class="arena-container" style="border-color: #e74c3c;">
-                <h3 style="color: #e74c3c; margin:0 0 8px 0; font-size: 20px;">💀 روح رحالة مقيدة (طيف) 💀</h3>
-                <p style="color: #777; margin:0 0 15px 0; font-size: 13px;">(مصيرك: {{ current_user.freeze_reason if current_user.freeze_reason else 'سقوط طاقة الروح' }})</p>
+                <h3 style="color: #e74c3c; margin:0 0 8px 0;">💀 روح مقيدة (طيف) 💀</h3>
+                <p style="color: #777; font-size: 12px;">(السبب: {{ current_user.freeze_reason }})</p>
                 {% if settings.war_mode %}
-                    <p style="color:#f1c40f; font-size:12.5px; margin:0; line-height:1.5;">🌟 طاقة الحرب الشاملة مشتعلة! يمكنك استخدام "توتم الحياة" من بروفايلك أو رئيسيتك فوراً لتعود بنصف قوتك إذا كنت تمتلكه!</p>
+                    <p style="color:#f1c40f; font-size:12px;">🌟 يمكنك استخدام التوتم إذا كنت تملكه!</p>
                 {% endif %}
             </div>
-            
         {% elif settings and settings.final_battle_mode and emperor %}
             <div class="boss-fight-box">
-                <h2 style="color: #e74c3c; margin-top: 0; font-size: 24px; text-shadow: 0 0 12px #ff0000; font-weight: 900;">👁️ قاعة العرش: الزعيم الأخير 👁️</h2>
-                <p style="color:#888; font-size: 13px; margin:0 0 20px 0;">الضرر موجه بالكامل نحو صحة الإمبراطور الأسطورية المتبقية!</p>
-                
+                <h2 style="color: #e74c3c; margin-top: 0; font-size: 22px;">👁️ قاعة العرش 👁️</h2>
                 {% set max_hp = settings.emperor_max_hp if settings.emperor_max_hp and settings.emperor_max_hp > 0 else 100000 %}
                 {% set percent = (emperor.health / max_hp) * 100 %}
-                
-                <div style="background: #000; padding: 15px; border-radius: 10px; border: 1px solid #222; margin-bottom: 20px;">
-                    <h3 style="color: #fff; font-size: 18px; margin:0 0 8px 0;">👑 {{ emperor.username }} 👑</h3>
-                    <p style="font-weight: bold; font-size: 14px; margin:0 0 10px 0; color:#aaa;">الروح الحالية للعرش: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
-                    <div style="width: 100%; background: #090705; border-radius: 8px; border: 1px solid #333; height: 20px; overflow: hidden;">
-                        <div style="height: 100%; background: linear-gradient(90deg, #962d22, #e74c3c); width: {{ percent }}%;"></div>
+                <div style="background: #000; padding: 15px; border-radius: 8px; border: 1px solid #222; margin-bottom: 15px;">
+                    <h3 style="color: #fff; margin:0 0 8px 0;">👑 {{ emperor.username }} 👑</h3>
+                    <p style="font-weight: bold; font-size: 13px; margin:0 0 10px 0; color:#aaa;">الروح: <span style="color:#e74c3c;">{{ emperor.health }}</span> / {{ max_hp }}</p>
+                    <div style="width: 100%; background: #090705; border-radius: 6px; height: 15px; overflow: hidden; border: 1px solid #333;">
+                        <div style="height: 100%; background: #e74c3c; width: {{ percent }}%;"></div>
                     </div>
                 </div>
-
                 {% if current_user.status == 'active' and current_user.hunter_id != 1000 %}
                     <form action="/use_item/1000" method="POST" style="display: flex; flex-direction:column; gap: 10px;">
-                        <select name="item_name" style="padding: 14px; background: #000; color: #fff; border: 1px solid #333; border-radius: 8px; font-size: 13px; outline:none; direction:rtl;" required>
-                            <option value="" disabled selected>اختر السلاح الفتاك من حقيبتك المتاحة...</option>
+                        <select name="item_name" style="padding: 12px; background: #000; color: #fff; border: 1px solid #333; border-radius: 8px; font-size: 12px;" required>
+                            <option value="" disabled selected>اختر السلاح من حقيبتك...</option>
                             {% for item in current_user.inventory %}<option value="{{ item }}">{{ item }}</option>{% endfor %}
                         </select>
-                        <button type="submit" class="btn-epic" style="margin:0; border-color:#e74c3c; color:#e74c3c; background:rgba(231,76,60,0.02);">توجيه ضربة حاسمة للعرش ⚔️</button>
+                        <button type="submit" class="btn-epic" style="border-color:#e74c3c; color:#e74c3c;">ضرب العرش ⚔️</button>
                     </form>
                 {% endif %}
             </div>
-
         {% elif settings and settings.gates_mode_active %}
             <div class="arena-container">
-                <h2 class="arena-title">🚪 بوابات القدر الخمس 🚪</h2>
+                <h2 style="color: var(--gold-main); margin-top:0; font-size:18px;">🚪 بوابات القدر الخمس 🚪</h2>
                 <div id="gates_timer" class="timer-box">---</div>
                 <script>startTimer("{{ settings.gates_end_time.isoformat() if settings.gates_end_time else '' }}Z", "gates_timer");</script>
-                <p style="color: #888; font-size: 13px; margin:0 0 20px 0; line-height:1.5;">{{ settings.gates_description }}</p>
-
                 {% if current_user.status == 'active' and current_user.chosen_gate == 0 and current_user.hunter_id != 1000 %}
-                    <div style="display: flex; gap: 10px; flex-direction: column;">
-                        <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا تراجع بعد العبور!');">
-                            <input type="hidden" name="gate_num" value="1">
-                            <button type="submit" class="btn-epic" style="padding:18px; color: #e74c3c; border-color: #e74c3c; margin:0;">بوابة: {{ settings.gate_1_name }}</button>
-                        </form>
-                        <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا تراجع بعد العبور!');">
-                            <input type="hidden" name="gate_num" value="2">
-                            <button type="submit" class="btn-epic" style="padding:18px; color: #3498db; border-color: #3498db; margin:0;">بوابة: {{ settings.gate_2_name }}</button>
-                        </form>
-                        <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا تراجع بعد العبور!');">
-                            <input type="hidden" name="gate_num" value="3">
-                            <button type="submit" class="btn-epic" style="padding:18px; color: #9b59b6; border-color: #9b59b6; margin:0;">بوابة: {{ settings.gate_3_name }}</button>
-                        </form>
+                    <div style="display: flex; gap: 8px; flex-direction: column;">
+                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="1"><button type="submit" class="btn-epic" style="color: #e74c3c; border-color: #e74c3c; margin:0;">{{ settings.gate_1_name }}</button></form>
+                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="2"><button type="submit" class="btn-epic" style="color: #3498db; border-color: #3498db; margin:0;">{{ settings.gate_2_name }}</button></form>
+                        <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="3"><button type="submit" class="btn-epic" style="color: #9b59b6; border-color: #9b59b6; margin:0;">{{ settings.gate_3_name }}</button></form>
                     </div>
-                    <p style="color: #e74c3c; font-size: 12px; margin-top: 15px; font-weight:bold;">⚠️ تنبيه إمبراطوري: التخلف عن الاختيار يعني الموت غرقاً في الخمول عند تصفير العداد!</p>
                 {% elif current_user.chosen_gate > 0 %}
-                    <div style="background: rgba(0,0,0,0.6); padding: 15px; border-radius: 8px; border: 1px dashed #222;">
-                        <h3 style="color: #2ecc71; margin:0 0 5px 0; font-size:16px;">موقفك محجوز خلف البوابة رقم {{ current_user.chosen_gate }}</h3>
-                        <p style="color: #666; font-size: 12.5px; margin: 0;">أغلق عليك الباب... ترقب بهدوء مصيرك السري الذي حددته الإدارة عند نهاية المؤقت.</p>
+                    <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; border: 1px dashed #222;">
+                        <h3 style="color: #2ecc71; margin:0 0 5px 0; font-size:14px;">موقفك محجوز خلف البوابة {{ current_user.chosen_gate }}</h3>
                     </div>
                 {% endif %}
             </div>
-
         {% elif settings and settings.floor1_mode_active and current_user.group_id > 0 %}
-            
             <div class="gem-progress-container">
-                <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; font-weight:bold;">
-                    <span style="color:#2ecc71;">✨ طاقة شريط الأحجار (مجموعتك)</span>
-                    <span style="color:#fff; font-family:monospace;">{{ total_gems }} / {{ gems_needed }}</span>
+                <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:bold; margin-bottom:5px;">
+                    <span style="color:#2ecc71;">✨ الأحجار (مجموعتك)</span><span style="color:#fff;">{{ total_gems }} / {{ gems_needed }}</span>
                 </div>
-                <div class="gem-bar-bg">
-                    <div class="gem-bar-fill" style="width: {{ (total_gems / gems_needed) * 100 }}%;"></div>
+                <div style="width: 100%; background: #090705; height: 12px; border-radius: 6px; border: 1px solid #222;">
+                    <div style="height: 100%; background: #27ae60; width: {{ (total_gems / gems_needed) * 100 }}%; border-radius: 6px;"></div>
                 </div>
             </div>
 
-            <div class="arena-container" style="text-align: right; padding: 20px;">
-                <h3 style="color:var(--gold-main); margin-top:0; font-size:18px; border-bottom:1px solid #1a150e; padding-bottom:8px;">📍 حجرتك الحالية: <span style="color:#fff;">{{ current_user.current_room }}</span></h3>
-                
+            <div class="arena-container" style="text-align: right; padding: 15px;">
+                <h3 style="color:var(--gold-main); margin-top:0; font-size:16px;">📍 حجرتك: <span style="color:#fff;">{{ current_user.current_room }}</span></h3>
                 {% if is_dark %}
-                    <p style="color: #e74c3c; font-weight: bold; text-align: center; padding: 15px; margin:0;">الظلام دامس كلياً بفعل مهارة الملعون! الرؤية معطلة تماماً.</p>
+                    <p style="color: #e74c3c; font-weight: bold; text-align: center;">الظلام دامس! الرؤية معطلة.</p>
                 {% else %}
-                    {% if current_user.current_room == 'مرصد الظلال' %}
-                        <p style="color:#3498db; font-size:12px; margin-top:0;">📡 رادار مرصد الظلال (رصد النقاط الروحية بدون أسماء):</p>
-                        <div style="display:flex; flex-wrap:wrap; gap:6px;">
-                        {% for room, count in room_counts.items() %}
-                            <span class="badge" style="border-color:#3498db; color:#3498db; background:#000;">{{ room }}: {{ count }} روح</span>
-                        {% endfor %}
+                    <p style="color:#aaa; font-size:12px; margin-top:0;">الوجوه المتواجدة معك:</p>
+                    {% if room_players %}
+                        <div style="display:flex; gap:5px; flex-wrap:wrap;">
+                        {% for p in room_players %}<span class="badge" style="color:var(--gold-main);">{{ p.username }}</span>{% endfor %}
                         </div>
-                    {% elif current_user.current_room == 'غرفة المراقبة' %}
-                        <p style="color:#9b59b6; font-size:12px; margin-top:0;">🎥 شبكة كاميرات المراقبة للغرف المجاورة الثلاث:</p>
-                        {% if room_players %}
-                            <ul style="margin:0; padding-right:15px; color:#ccc; font-size:13px; line-height:1.6;">
-                            {% for p in room_players %}<li>الرحالة: <b>{{ p.username }}</b> متواجد حالياً في ({{ p.current_room }})</li>{% endfor %}
-                            </ul>
-                        {% else %}<p style="color:#555; font-size:12px; margin:0;">لا رصد لأي رحالة نشط في الغرف المراقبة حالياً.</p>{% endif %}
-                    {% else %}
-                        <p style="color:#aaa; font-size:12.5px; margin-top:0;">الوجوه المتواجدة معك في الحجرة:</p>
-                        {% if room_players %}
-                            <div style="display:flex; gap:6px; flex-wrap:wrap;">
-                            {% for p in room_players %}<span class="badge" style="color:var(--gold-main);">{{ p.username }}</span>{% endfor %}
-                            </div>
-                        {% else %}<p style="color:#555; font-size:12px; margin:0;">حجرتك خالية تماماً من الأحياء الأخرين...</p>{% endif %}
-                    {% endif %}
+                    {% else %}<p style="color:#555; font-size:11px; margin:0;">حجرتك خالية...</p>{% endif %}
                 {% endif %}
 
-                {% if dead_bodies_in_room %}
-                    <div style="background:rgba(231,76,60,0.08); border:1px solid #e74c3c; padding:10px; border-radius:8px; margin-top:15px; text-align:center; color:#e74c3c; font-weight:bold; font-size:13px;">
-                        💀 جثة رحالة ملقاة على الأرض هنا! استدعى اجتماع أو احذر الغدر.
-                    </div>
-                {% endif %}
-                
                 {% if current_room_tasks %}
-                    <div style="margin-top:20px; border-top:1px dashed #1a150e; padding-top:15px;">
-                        <h4 style="color:#27ae60; margin-top:0; font-size:14px; margin-bottom:10px;">⛏️ استخراج الأحجار المتاحة بالمنطقة:</h4>
+                    <div style="margin-top:15px; border-top:1px dashed #1a150e; padding-top:10px;">
                         {% for t in current_room_tasks %}
                         <div class="hold-task-btn" onmousedown="startHoldTask('{{ t.name }}', this)" onmouseup="stopHoldTask(this)" onmouseleave="stopHoldTask(this)" ontouchstart="startHoldTask('{{ t.name }}', this)" ontouchend="stopHoldTask(this)">
                             <div class="hold-progress"></div>
-                            <span class="hold-text">اضغط مطولاً لاستخراج: {{ t.name }} ({{ t.description }})</span>
+                            <span class="hold-text">اضغط مطولاً لاستخراج: {{ t.name }}</span>
                         </div>
                         <form id="task_form_{{ t.name }}" action="/f1/task" method="POST" style="display:none;"><input type="hidden" name="task_name" value="{{ t.name }}"></form>
                         {% endfor %}
@@ -280,86 +171,21 @@
                 {% endif %}
             </div>
 
-            <h4 style="color:#888; text-align:center; margin-bottom:10px; font-size:13px;">🗺️ خريطة غوف المتاهة المترابطة (اضغط للعبور)</h4>
+            <h4 style="color:#888; text-align:center; font-size:12px; margin-bottom:5px;">🗺️ خريطة الغرف (اضغط للعبور)</h4>
             <div class="visual-map-container">
                 {% set positions = {'ساحة التجمع':'room-center', 'مرصد الظلال':'room-top-left', 'مستوصف الأرواح':'room-top-right', 'قاعة النور الأزلي':'room-bottom-left', 'ترسانة الأسلحة القديمة':'room-bottom-right', 'منبع الأنفاس':'room-mid-left', 'غرفة المراقبة':'room-mid-right'} %}
-                
                 {% for room_name in f1_map.keys() %}
                     {% set is_curr = (room_name == current_user.current_room) %}
                     {% set is_adj = (room_name in adjacent_rooms) %}
-                    {% set pos_class = positions.get(room_name, 'room-top-left') %}
-                    
-                    <div class="map-room {{ pos_class }} {{ 'current' if is_curr else 'adjacent' if is_adj else 'locked' }}"
-                         {% if is_adj %} onclick="document.getElementById('move_form_{{ loop.index }}').submit();" {% endif %}>
-                        
-                        <span style="font-size:10px;">{{ room_name }}</span>
-                        
+                    <div class="map-room {{ positions.get(room_name) }} {{ 'current' if is_curr else 'adjacent' if is_adj else 'locked' }}" {% if is_adj %} onclick="document.getElementById('move_form_{{ loop.index }}').submit();" {% endif %}>
+                        <span style="font-size:9px;">{{ room_name }}</span>
                         {% if is_curr and not is_dark %}
-                            <div style="display:flex; flex-direction:column; align-items:center; width:100%;">
-                                <div class="player-dot"></div>
-                                <span class="player-name-map">أنت</span>
-                                {% for p in room_players %}
-                                    <div class="player-dot" style="background:#f39c12; box-shadow:0 0 6px #f39c12;"></div>
-                                    <span class="player-name-map">{{ p.username }}</span>
-                                {% endfor %}
-                            </div>
-                        {% elif current_user.current_room == 'مرصد الظلال' and room_counts.get(room_name) and not is_dark %}
-                            <div style="display:flex; gap:2px; flex-wrap:wrap; justify-content:center; margin-top:2px;">
-                                {% for _ in range(room_counts[room_name]) %}<div class="player-dot" style="background:#fff; box-shadow:0 0 4px #fff;"></div>{% endfor %}
-                            </div>
+                            <div class="player-dot"></div><span class="player-name-map">أنت</span>
                         {% endif %}
                     </div>
-                    
-                    {% if is_adj %}
-                        <form id="move_form_{{ loop.index }}" action="/f1/move" method="POST" style="display:none;"><input type="hidden" name="room" value="{{ room_name }}"></form>
-                    {% endif %}
+                    {% if is_adj %}<form id="move_form_{{ loop.index }}" action="/f1/move" method="POST" style="display:none;"><input type="hidden" name="room" value="{{ room_name }}"></form>{% endif %}
                 {% endfor %}
             </div>
-
-            {% if current_user.is_cursed %}
-            <div class="cursed-dashboard">
-                <h3 style="color:#e74c3c; margin-top:0; font-size:15px; font-weight:900; border-bottom:1px solid #4a1111; padding-bottom:8px; text-align:center;">🔪 خيارات لعنة الملعون (غدر صامت)</h3>
-                
-                <form action="/f1/kill" method="POST" style="margin-bottom:15px;" onsubmit="return confirm('تأكيد ذبح الهدف؟ إذا كان بالغرفة أكثر من شخصين ستنكشف هويتك للعامة!');">
-                    <select name="target_id" class="form-input" style="border-color:#e74c3c; background:#000; color:#fff;" required>
-                        <option value="" disabled selected>اختر ضحية متواجدة في حجرتك الحالية...</option>
-                        {% for p in room_players %}<option value="{{ p.hunter_id }}">{{ p.username }}</option>{% endfor %}
-                    </select>
-                    <button type="submit" class="btn-epic" style="background:#e74c3c; color:#fff; border-color:#962d22; margin:0; padding:12px;">تنفيذ جريمة الاغتيال الفورية 🩸</button>
-                </form>
-
-                <div style="display:flex; gap:8px;">
-                    {% if not current_user.used_vent %}
-                    <form action="/f1/sabotage" method="POST" style="flex:1; margin:0;">
-                        <input type="hidden" name="sabotage_type" value="vent">
-                        <select name="target_room" class="form-input" style="padding:8px; font-size:11px; margin-bottom:5px;" required>
-                            <option value="" disabled selected>السراديب لـ...</option>
-                            {% for r in f1_map.keys() %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
-                        </select>
-                        <button type="submit" class="btn-epic" style="padding:8px; font-size:11px; color:#9b59b6; border-color:#9b59b6; margin:0; background:transparent;">السراديب 🕳️</button>
-                    </form>
-                    {% endif %}
-
-                    {% if not current_user.used_lights %}
-                    <form action="/f1/sabotage" method="POST" style="flex:1; margin:0;" onsubmit="return confirm('تأكيد إطفاء النور كلياً على الجميع؟ تستخدم مرة واحدة.');">
-                        <input type="hidden" name="sabotage_type" value="lights">
-                        <button type="submit" class="btn-epic" style="padding:8px; font-size:11px; color:#f1c40f; border-color:#f1c40f; margin:0; height:100%; background:transparent;">إعماء الأنوار 💡</button>
-                    </form>
-                    {% endif %}
-
-                    {% if not current_user.used_doors %}
-                    <form action="/f1/sabotage" method="POST" style="flex:1; margin:0;">
-                        <input type="hidden" name="sabotage_type" value="doors">
-                        <select name="target_room" class="form-input" style="padding:8px; font-size:11px; margin-bottom:5px;" required>
-                            <option value="" disabled selected>أقفل باب...</option>
-                            {% for r in f1_map.keys() %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
-                        </select>
-                        <button type="submit" class="btn-epic" style="padding:8px; font-size:11px; color:#e67e22; border-color:#e67e22; margin:0; background:transparent;">حجز الباب 🚪</button>
-                    </form>
-                    {% endif %}
-                </div>
-            </div>
-            {% endif %}
 
             <script>
                 let holdTimer; let holdProgress = 0;
@@ -369,57 +195,54 @@
                     holdTimer = setInterval(() => {
                         holdProgress += 4; 
                         fillBar.style.width = holdProgress + '%';
-                        if(holdProgress >= 100) { 
-                            clearInterval(holdTimer); 
-                            document.getElementById('task_form_' + taskName).submit(); 
-                        }
+                        if(holdProgress >= 100) { clearInterval(holdTimer); document.getElementById('task_form_' + taskName).submit(); }
                     }, 100);
                 }
-                function stopHoldTask(btn) { 
-                    clearInterval(holdTimer); 
-                    let fillBar = btn.querySelector('.hold-progress');
-                    if(fillBar) fillBar.style.width = '0%'; 
-                    holdProgress = 0; 
-                }
+                function stopHoldTask(btn) { clearInterval(holdTimer); let fillBar = btn.querySelector('.hold-progress'); if(fillBar) fillBar.style.width = '0%'; holdProgress = 0; }
             </script>
-
         {% else %}
             
             {% set clean_zone = current_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
-            <div class="rpg-card">
-                <div class="rpg-banner" style="{% if settings and settings.banner_url %}background-image: url('{{ settings.banner_url }}');{% endif %}"></div>
-                <div class="rpg-content">
-                    <img src="/avatar/{{ current_user.hunter_id }}" class="rpg-avatar" onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-                    <div class="rpg-details">
-                        <h2 class="rpg-name">{{ current_user.username }} {% if current_user.hunter_id == 1000 %}👑{% endif %}</h2>
-                        <span class="rpg-id">ID: {{ current_user.hunter_id }}</span>
-                        
-                        <div class="badges-row">
-                            <span class="badge" style="color:var(--gold-main); border-color:#332815;">الطابق: {{ clean_zone }}</span>
-                            <span class="badge" style="color:#2ecc71; border-color:#145a32;">حي نشط في الساحة</span>
-                            {% if current_user.special_rank %}<span class="badge" style="color:#b59b4c; border-color:#7e5109;">🏆 {{ current_user.special_rank }}</span>{% endif %}
-                        </div>
+            <div class="profile-wrap" style="margin-bottom: 25px;">
+                <div class="profile-cover"></div>
+                <div class="profile-header">
+                    <img src="/avatar/{{ current_user.hunter_id }}" class="profile-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
+                    <h2 class="profile-name">{{ current_user.username }} {% if current_user.hunter_id == 1000 %}👑{% endif %}</h2>
+                    <span class="profile-id">ID: {{ current_user.hunter_id }}</span>
+                    <div class="badges-row">
+                        <span class="badge" style="color:#f39c12; border-color:#7d6608;">الطابق: {{ clean_zone }}</span>
+                        <span class="badge" style="color:#2ecc71; border-color:#145a32;">حي نشط</span>
+                        {% if current_user.special_rank %}<span class="badge" style="color:#b59b4c; border-color:#7e5109;">🏆 {{ current_user.special_rank }}</span>{% endif %}
                     </div>
                 </div>
             </div>
 
-            <div class="dashboard-grid">
-                <a href="/news" class="gold-card"><span class="card-icon">📜</span><h3 class="card-title">المراسيم الإمبراطورية</h3></a>
-                <a href="/puzzles" class="gold-card"><span class="card-icon">🧩</span><h3 class="card-title">نقوش الألغاز</h3></a>
-                <a href="/declarations" class="gold-card"><span class="card-icon">📢</span><h3 class="card-title">صدى التصريحات</h3></a>
-                <a href="/friends" class="gold-card"><span class="card-icon">🤝</span><h3 class="card-title">التحالفات الوفية</h3></a>
-                <a href="/altar" class="gold-card"><span class="card-icon">🔮</span><h3 class="card-title">المذبح الكوني</h3></a>
-                <a href="/store" class="gold-card"><span class="card-icon">🐪</span><h3 class="card-title">السوق المظلم</h3></a>
-                <a href="/graveyard" class="gold-card" style="border-color: #4a1111; background:linear-gradient(135deg, #120505 0%, #000 100%);"><span class="card-icon" style="filter: drop-shadow(0 0 10px #e74c3c);">💀</span><h3 class="card-title" style="color: #e74c3c;">وادي المقبرة</h3></a>
-                
+            <div class="menu-grid">
+                <a href="/news" class="menu-item"><span class="menu-icon">📜</span><h3 class="menu-title">المراسيم</h3></a>
+                <a href="/puzzles" class="menu-item"><span class="menu-icon">🧩</span><h3 class="menu-title">النقوش</h3></a>
+                <a href="/declarations" class="menu-item"><span class="menu-icon">📢</span><h3 class="menu-title">التصريحات</h3></a>
+                <a href="/friends" class="menu-item"><span class="menu-icon">🤝</span><h3 class="menu-title">التحالفات</h3></a>
+                <a href="/altar" class="menu-item"><span class="menu-icon">🔮</span><h3 class="menu-title">المذبح</h3></a>
+                <a href="/store" class="menu-item"><span class="menu-icon">🐪</span><h3 class="menu-title">السوق</h3></a>
+                <a href="/graveyard" class="menu-item" style="border-color: #4a1111;"><span class="menu-icon">💀</span><h3 class="menu-title" style="color: #e74c3c;">المقبرة</h3></a>
                 {% if current_user.unlocked_lore_room or current_user.role == 'admin' %}
-                    <a href="/poneglyph" class="gold-card" style="border-color: #b59b4c;"><span class="card-icon">🗿</span><h3 class="card-title" style="color:#f1c40f;">غرفة البونغليف</h3></a>
+                    <a href="/poneglyph" class="menu-item" style="border-color: #b59b4c;"><span class="menu-icon">🗿</span><h3 class="menu-title" style="color:#f1c40f;">البونغليف</h3></a>
                 {% endif %}
             </div>
-            
         {% endif %}
     {% endif %}
 {% endif %}
 
+<script>
+    // اهتزاز الإمبراطور
+    document.querySelectorAll('input[type="text"], input[type="number"], input[type="password"]').forEach(el => {
+        el.addEventListener('keyup', function(e) {
+            if(e.target.value.includes("1000")) {
+                document.body.classList.add("shake-screen");
+                setTimeout(() => { document.body.classList.remove("shake-screen"); }, 4000);
+            }
+        });
+    });
+</script>
 {% endblock %}
 
