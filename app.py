@@ -826,7 +826,22 @@ def declarations():
     
     avatars = {u.username: u.hunter_id for u in User.objects(username__in=set([d.author for d in News.objects(category='declaration')]))}
     return render_template('declarations.html', approved_decs=News.objects(category='declaration', status='approved').order_by('-created_at'), pending_decs=News.objects(category='declaration', status='pending') if user.role == 'admin' else [], my_pending_decs=News.objects(category='declaration', status='pending', author=user.username).order_by('-created_at'), current_user=user, avatars=avatars)
+@app.route('/delete_declaration/<dec_id>', methods=['POST'])
+@login_required
+def delete_declaration(dec_id):
+    dec = News.objects(id=ObjectId(dec_id)).first()
+    if dec and (g.user.role == 'admin' or dec.author == g.user.username):
+        dec.delete()
+        flash('تم طمس التصريح.', 'success')
+    return redirect(url_for('declarations'))
 
+@app.route('/react_declaration/<dec_id>', methods=['POST'])
+@login_required
+def react_declaration(dec_id):
+    dec = News.objects(id=ObjectId(dec_id)).first()
+    if dec and str(g.user.id) not in getattr(dec, 'reactions', []):
+        dec.update(push__reactions=str(g.user.id))
+    return redirect(url_for('declarations'))
 # ==========================================
 # 🛒 السوق، المقبرة، البوابات، والمذبح
 # ==========================================
