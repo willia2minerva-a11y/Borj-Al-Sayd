@@ -434,6 +434,26 @@ def hunter_profile(target_id):
         my_totems=[i for i in my_items if getattr(i, 'item_type', '') == 'totem'],
         settings=fresh_settings
     )
+# ==========================================
+# 🏛️ الغرف السرية (المذبح، البونغليف، الأساطير)
+# ==========================================
+@app.route('/altar')
+@login_required
+def altar():
+    return render_template('altar.html', spells=SpellConfig.objects())
+
+@app.route('/poneglyph')
+@login_required
+def poneglyph():
+    if not g.user.unlocked_lore_room and g.user.role != 'admin': return redirect(url_for('home'))
+    return render_template('poneglyph.html', settings=g.settings)
+
+@app.route('/top_room')
+@login_required
+def top_room():
+    if not g.user.unlocked_top_room and g.user.role != 'admin': return redirect(url_for('home'))
+    return render_template('top_room.html')
+
 
 # ==========================================
 # 👥 التحالفات (الأصدقاء)
