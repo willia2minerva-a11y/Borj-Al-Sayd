@@ -1,99 +1,107 @@
 {% extends 'base.html' %}
 {% block content %}
+
 <style>
-    .dec-container { max-width: 800px; margin: 0 auto; }
-    .dec-header { text-align: center; margin-bottom: 30px; }
-    .dec-title { color: var(--gold-main); font-size: 32px; font-weight: 900; text-shadow: 0 0 10px rgba(212,175,55,0.5); margin: 0;}
+    .dec-header { text-align: center; margin-bottom: 25px; border-bottom: 1px dashed #222; padding-bottom: 15px; }
+    .dec-title { color: var(--gold-main); font-size: 24px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.3); }
+    .dec-desc { color: #888; font-size: 14px; margin-top: 5px; }
     
-    .post-card { background: #110d09; border: 1px solid var(--gold-dark); border-radius: 12px; padding: 20px; margin-bottom: 40px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-    .post-input { width: 100%; background: #000; border: 1px solid #332815; color: #fff; padding: 15px; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-family: inherit; resize: vertical; min-height: 80px; outline: none;}
-    .post-input:focus { border-color: var(--gold-main); }
-    .post-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;}
-    .file-upload-wrapper { position: relative; overflow: hidden; display: inline-block; }
-    .file-upload-btn { background: #222; border: 1px solid #44351c; color: #aaa; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s; display: inline-block;}
-    .file-upload-btn:hover { background: #332815; color: #fff; }
-    .file-upload-wrapper input[type=file] { font-size: 100px; position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
-    .btn-submit-post { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 16px;}
-    .btn-submit-post:hover { transform: scale(1.05); }
+    .control-card { background: #050403; border: 1px solid #1a150e; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 13px; outline: none; transition: 0.2s; }
+    .form-input:focus { border-color: var(--gold-main); }
+    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #332815; padding: 14px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; width: 100%; text-align: center; }
+    .btn-submit:active { transform: scale(0.97); background: #000; border-color: var(--gold-main); }
 
-    .feed-card { background: #0a0806; border: 1px solid #222; border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; position: relative;}
-    .feed-card:hover { border-color: #332815; }
-    .feed-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border-bottom: 1px dashed #222; padding-bottom: 15px;}
-    .feed-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
-    .feed-author { color: var(--gold-main); font-weight: bold; font-size: 18px; text-decoration: none;}
-    .feed-date { color: #666; font-size: 12px; display: block; margin-top: 3px;}
+    .dec-card { background: #080605; border: 1px solid #1a150e; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+    .dec-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold-main); }
     
-    .feed-content { color: #eee; font-size: 16px; line-height: 1.6; margin-bottom: 15px; white-space: pre-wrap; word-wrap: break-word;}
-    .feed-image { max-width: 100%; border-radius: 8px; border: 1px solid #332815; margin-bottom: 15px; max-height: 400px; object-fit: contain; background: #000; display: block;}
+    .dec-author-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #111; padding-bottom: 15px; }
+    .dec-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
+    .dec-author-info { flex: 1; }
+    .dec-author-name { color: var(--gold-main); font-size: 16px; font-weight: 900; margin: 0 0 3px 0; }
+    .dec-date { color: #555; font-size: 11px; margin: 0; }
 
-    .feed-actions { display: flex; gap: 15px; border-top: 1px dashed #222; padding-top: 15px; }
-    .react-btn { background: transparent; border: 1px solid #333; color: #aaa; padding: 8px 15px; border-radius: 20px; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 5px; font-size: 14px;}
-    .react-btn:hover, .react-active { border-color: var(--gold-main); color: var(--gold-light); background: rgba(212,175,55,0.1); }
+    .dec-content { color: #ccc; font-size: 14px; line-height: 1.6; margin-bottom: 15px; word-wrap: break-word; }
+    .dec-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-bottom: 15px; }
     
-    .btn-delete { position: absolute; top: 20px; left: 20px; background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;}
-    .btn-delete:hover { background: #e74c3c; color: #fff; }
+    .dec-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #111; padding-top: 15px; }
+    .react-btn { background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; color: #3498db; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+    .react-btn:active { background: #3498db; color: #fff; transform: scale(0.95); }
+    
+    .delete-btn { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; text-decoration: none; }
+    .delete-btn:active { background: #e74c3c; color: #fff; }
+
+    .section-title { color: #f1c40f; font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #332815; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
 </style>
 
-<div class="dec-container">
-    <div class="dec-header">
-        <h2 class="dec-title">صدى الساحة 📢</h2>
-        <p style="color: var(--text-gray);">أوصل صوتك لجميع أنحاء المتاهة.</p>
-    </div>
+<div class="dec-header">
+    <h1 class="dec-title">📢 صدى الساحة</h1>
+    <p class="dec-desc">أوصل صوتك لجميع أنحاء المتاهة.</p>
+</div>
 
-    <div class="post-card">
-        <form action="/declarations" method="POST" enctype="multipart/form-data">
-            <textarea name="content" class="post-input" placeholder="ماذا تريد أن تقول للرحالة؟..." required></textarea>
-            <div class="post-actions">
-                <div class="file-upload-wrapper">
-                    <span class="file-upload-btn">📷 إرفاق صورة</span>
-                    <input type="file" name="image_file" accept="image/*">
-                </div>
-                <button type="submit" class="btn-submit-post">إطلاق التصريح 🚀</button>
-            </div>
-        </form>
-    </div>
+<div class="control-card">
+    <form action="/declarations" method="POST" enctype="multipart/form-data">
+        <textarea name="content" class="form-input" rows="3" placeholder="ماذا تريد أن تقول للرحالة؟..." required></textarea>
+        <div style="margin-bottom: 15px;">
+            <label style="background:#111; color:#aaa; padding:10px 15px; border-radius:8px; border:1px dashed #333; display:inline-block; cursor:pointer; font-size:13px; width:100%; text-align:center;">
+                📷 إرفاق صورة (اختياري)
+                <input type="file" name="image_file" accept="image/*" style="display:none;">
+            </label>
+        </div>
+        <button type="submit" class="btn-submit">إطلاق التصريح 🚀</button>
+    </form>
+</div>
 
-    <h3 style="color: var(--gold-main); border-bottom: 1px solid #332815; padding-bottom: 10px; margin-bottom: 20px;">📜 أحدث التصريحات</h3>
+<h3 class="section-title">📜 أحدث التصريحات</h3>
+
+{% if not approved_decs %}
+    <p style="text-align: center; color: #666; font-size: 13px;">لا توجد تصريحات في الساحة حالياً.</p>
+{% else %}
     {% for dec in approved_decs %}
-    <div class="feed-card">
-        {% if current_user.role == 'admin' or dec.author == current_user.username %}
-            <form action="/delete_declaration/{{ dec.id }}" method="POST">
-                <button type="submit" class="btn-delete" onclick="return confirm('حذف هذا التصريح نهائياً؟');">🗑️ حذف</button>
-            </form>
-        {% endif %}
-        
-        <div class="feed-header">
-            {% set author_id = avatars.get(dec.author, 0) %}
-            <a href="/hunter/{{ author_id }}" style="text-decoration:none;">
-                <img src="/avatar/{{ author_id }}" class="feed-avatar" onerror="this.onerror=null; this.src='{{ default_avatar }}'">
-            </a>
-            <div>
-                <a href="/hunter/{{ author_id }}" class="feed-author">{{ dec.author }}</a>
-                <span class="feed-date">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    <div class="dec-card">
+        <div class="dec-author-row">
+            <img src="/avatar/{{ avatars.get(dec.author, 0) }}" class="dec-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
+            <div class="dec-author-info">
+                <h4 class="dec-author-name">{{ dec.author }} {% if avatars.get(dec.author) == 1000 %}👑{% endif %}</h4>
+                <p class="dec-date">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
             </div>
+            {% if current_user.role == 'admin' or current_user.username == dec.author %}
+                <form action="/delete_declaration/{{ dec.id }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد طمس التصريح نهائياً؟');">
+                    <button type="submit" class="delete-btn">🗑️ حذف</button>
+                </form>
+            {% endif %}
         </div>
         
-        <div class="feed-content">{{ dec.content }}</div>
+        <div class="dec-content">{{ dec.content }}</div>
         
         {% if dec.image_data %}
-            <img src="{{ dec.image_data }}" class="feed-image">
+            <img src="{{ dec.image_data }}" class="dec-img">
         {% endif %}
         
-        <div class="feed-actions">
-            <form action="/react_declaration/{{ dec.id }}/like" method="POST" style="margin:0;">
-                <button type="submit" class="react-btn {% if current_user and current_user.id|string in dec.likes %}react-active{% endif %}">
-                    ❤️ {{ dec.likes|length }}
-                </button>
-            </form>
-            <form action="/react_declaration/{{ dec.id }}/laugh" method="POST" style="margin:0;">
-                <button type="submit" class="react-btn {% if current_user and current_user.id|string in dec.laughs %}react-active{% endif %}">
-                    😂 {{ dec.laughs|length }}
-                </button>
-            </form>
+        <div class="dec-footer">
+            {% if dec.author != 'Admin' and avatars.get(dec.author) != 1000 %}
+                <form action="/react_declaration/{{ dec.id }}" method="POST" style="margin:0;">
+                    <button type="submit" class="react-btn">😂 أضحكني ({{ dec.reactions|length if dec.reactions else 0 }})</button>
+                </form>
+            {% else %}
+                <span style="color:#e74c3c; font-size:12px; font-weight:bold; letter-spacing: 0.5px;">⚔️ مرسوم إمبراطوري لا يقبل الرد</span>
+            {% endif %}
         </div>
     </div>
-    {% else %}
-        <p style="text-align: center; color: #666; font-style: italic;">الساحة صامتة... كن أول من يطلق تصريحاً!</p>
     {% endfor %}
-</div>
+{% endif %}
+
+{% if current_user.role == 'admin' and pending_decs %}
+    <h3 class="section-title" style="color: #e74c3c; border-color: #4a1111; margin-top: 40px;">⚠️ تصريحات تنتظر الموافقة (للإدارة)</h3>
+    {% for p_dec in pending_decs %}
+    <div class="dec-card" style="border-color: #e74c3c;">
+        <div class="dec-author-row"><div class="dec-author-info"><h4 class="dec-author-name">{{ p_dec.author }}</h4></div></div>
+        <div class="dec-content">{{ p_dec.content }}</div>
+        <div class="dec-footer" style="justify-content: flex-start; gap: 10px;">
+            <form action="/delete_declaration/{{ p_dec.id }}" method="POST" style="margin:0;"><button type="submit" class="delete-btn">رفض وحذف</button></form>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
 {% endblock %}
