@@ -1,53 +1,64 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 8px; margin-bottom: 15px; overflow: hidden; border-right: 4px solid var(--gold-dark); }
-    .accordion-header { padding: 15px 20px; cursor: pointer; color: var(--gold-light); font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; }
-    .accordion-body { padding: 20px; color: #ddd; line-height: 1.8; background: var(--bg-card); font-size: 15px; }
+    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 10px; margin-bottom: 15px; overflow: hidden; border-right: 4px solid var(--gold-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.5);}
+    .accordion-header { padding: 18px 20px; cursor: pointer; color: var(--gold-light); font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; transition: 0.2s;}
+    .accordion-header:hover { background: rgba(212,175,55,0.05); }
+    .accordion-body { padding: 20px; color: #ddd; line-height: 1.8; background: #080605; font-size: 14px; }
     
-    /* إصلاح مربع الإدخال */
-    .form-control-puzzle { width: 100%; padding: 15px; background: #000; color: #fff; border: 1px solid var(--gold-dark); border-radius: 6px; margin-bottom: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
-    .form-control-puzzle:focus { border-color: var(--gold-main); box-shadow: 0 0 10px rgba(212,175,55,0.3); }
+    .form-control-puzzle { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 8px; margin-bottom: 12px; box-sizing: border-box; font-size: 14px; outline: none; transition: 0.2s;}
+    .form-control-puzzle:focus { border-color: var(--gold-main); box-shadow: 0 0 10px rgba(212,175,55,0.1); }
     
-    .btn-gold { background: linear-gradient(45deg, var(--gold-dark), var(--gold-light)); color: #000; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; }
+    .btn-gold { background: linear-gradient(135deg, #d4af37, #aa8421); color: #000; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.2s; font-size: 13px;}
+    .btn-gold:active { transform: scale(0.97); }
+    
+    .news-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-bottom: 15px; display: block; }
+    .btn-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .btn-delete:active { background: #e74c3c; color: #fff; transform: scale(0.95); }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
-    <h2 style="color: var(--gold-main); margin: 0;">🧩 النقوش والألغاز</h2>
-    <p style="color: #aaa; font-size: 14px;">حل الألغاز قبل الآخرين لتكسب الدنانير والذكاء.</p>
+    <h2 style="color: var(--gold-main); margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2);">🧩 النقوش والألغاز</h2>
+    <p style="color: #aaa; font-size: 13px;">حل الألغاز قبل الآخرين لتكسب الدنانير ومقدار الذكاء.</p>
 </div>
 
 {% for p in puzzles_list %}
 <div class="accordion-item">
     <div class="accordion-header">
         <span>{{ p.title }}</span>
-        <span style="font-size: 12px; color: #aaa;">الجوائز المتبقية: {{ p.max_winners - p.current_winners }}</span>
+        <span style="font-size: 11px; color: #aaa; background: #000; padding: 4px 8px; border-radius: 4px; border: 1px solid #333;">الجوائز المتبقية: {{ p.max_winners - p.current_winners }}</span>
     </div>
     <div class="accordion-body">
-        <div style="margin-bottom: 20px; white-space: pre-wrap; font-size: 16px; border-bottom: 1px dashed #333; padding-bottom: 15px;">{{ p.content }}</div>
+        <div style="margin-bottom: 15px; white-space: pre-wrap;">{{ p.content }}</div>
         
-        {% if current_user and current_user.id|string in p.winners_list %}
-            <div style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; border: 1px solid #2ecc71;">لقد قمت بحل هذا اللغز بنجاح! 🏆</div>
-        {% elif p.current_winners >= p.max_winners %}
-            <div style="background: rgba(231,76,60,0.1); color: #e74c3c; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; border: 1px solid #e74c3c;">نفدت الجوائز وتم الحل!</div>
-        {% else %}
-            {% if p.puzzle_type == 'none' or not p.puzzle_type %}
-            <form action="/puzzles" method="POST">
-                <input type="hidden" name="puzzle_id" value="{{ p.id }}">
-                <input type="text" name="guess" class="form-control-puzzle" placeholder="اكتب إجابتك هنا..." required>
-                <button type="submit" class="btn-gold">تحقق من الإجابة</button>
-            </form>
-            {% endif %}
+        {% if p.image_data %}
+            <img src="{{ p.image_data }}" class="news-img" alt="صورة اللغز">
         {% endif %}
         
+        <div style="border-top: 1px dashed #222; margin-top: 15px; padding-top: 15px;">
+            {% if current_user and current_user.id|string in p.winners_list %}
+                <div style="background: rgba(46,204,113,0.1); color: #2ecc71; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; border: 1px solid #2ecc71; font-size: 13px;">لقد قمت بحل هذا اللغز بنجاح واستلمت المكافأة! 🏆</div>
+            {% elif p.current_winners >= p.max_winners %}
+                <div style="background: rgba(231,76,60,0.1); color: #e74c3c; padding: 15px; border-radius: 8px; text-align: center; font-weight: bold; border: 1px solid #e74c3c; font-size: 13px;">نفدت الجوائز وتم حل هذا اللغز من قبل الآخرين!</div>
+            {% else %}
+                <form action="/puzzles" method="POST">
+                    <input type="hidden" name="puzzle_id" value="{{ p.id }}">
+                    <input type="text" name="guess" class="form-control-puzzle" placeholder="اكتب إجابتك بدقة هنا..." required>
+                    <button type="submit" class="btn-gold">فك شفرة النقش ⚡</button>
+                </form>
+            {% endif %}
+        </div>
+        
         {% if current_user and current_user.role == 'admin' %}
-        <form action="/delete_puzzle/{{ p.id }}" method="POST" style="margin-top: 15px; text-align: left;">
-            <button type="submit" style="background: transparent; color: #e74c3c; border: 1px solid #e74c3c; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">حذف اللغز</button>
+        <form action="/delete_news/{{ p.id }}" method="POST" style="margin-top: 20px; border-top: 1px dashed #222; padding-top: 15px; text-align: left;" onsubmit="return confirm('تأكيد طمس هذا اللغز نهائياً؟');">
+            <button type="submit" class="btn-delete">🗑️ طمس اللغز</button>
         </form>
         {% endif %}
     </div>
 </div>
 {% else %}
-<div style="text-align: center; color: #555; margin-top: 50px; padding: 50px;">النقوش ممسوحة حالياً...</div>
+<div style="text-align: center; color: #555; margin-top: 50px; padding: 50px; background: #050403; border-radius: 10px; border: 1px dashed #222;">
+    جدران المتاهة خالية من النقوش والألغاز حالياً...
+</div>
 {% endfor %}
 {% endblock %}
