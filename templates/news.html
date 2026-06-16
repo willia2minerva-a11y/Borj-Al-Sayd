@@ -1,37 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
 <style>
-    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
-    .accordion-header { padding: 15px 20px; cursor: pointer; color: var(--gold-main); font-weight: bold; font-size: 18px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; }
+    .accordion-item { background: #110d09; border: 1px solid #332815; border-radius: 10px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .accordion-header { padding: 18px 20px; cursor: pointer; color: var(--gold-main); font-weight: bold; font-size: 16px; display: flex; justify-content: space-between; align-items: center; user-select: none; background: #050403; transition: 0.2s; }
     .accordion-header:hover { background: rgba(212,175,55,0.05); }
     .accordion-header::after { content: '▼'; font-size: 12px; color: #888; transition: transform 0.3s; }
     details[open] .accordion-header::after { transform: rotate(180deg); color: var(--gold-light); }
     details[open] .accordion-header { border-bottom: 1px dashed #332815; }
-    .accordion-body { padding: 20px; color: #ccc; line-height: 1.8; background: var(--bg-card); font-size: 15px; white-space: pre-wrap; }
+    .accordion-body { padding: 20px; color: #ccc; line-height: 1.8; background: #080605; font-size: 14px; white-space: pre-wrap; }
     details { outline: none; } summary { list-style: none; } summary::-webkit-details-marker { display: none; }
+    
+    .news-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-top: 15px; display: block; }
+    .btn-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .btn-delete:active { background: #e74c3c; color: #fff; transform: scale(0.95); }
 </style>
 
 <div style="text-align: center; margin-bottom: 30px;">
-    <h2 style="color: var(--gold-main); margin: 0;">📜 المراسيم الملكية</h2>
-    <p style="color: #aaa; font-size: 14px;">أخبار وقرارات الإمبراطور للرحالة.</p>
+    <h2 style="color: var(--gold-main); margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2);">📜 المراسيم الإمبراطورية</h2>
+    <p style="color: #aaa; font-size: 13px;">أخبار وقرارات الإدارة العليا للرحالة.</p>
 </div>
 
 {% for news in news_list %}
 <details class="accordion-item">
     <summary class="accordion-header">
         <span>{{ news.title }}</span>
-        <span style="font-size: 11px; color: #666; font-weight: normal;">{{ news.created_at.strftime('%Y-%m-%d') }}</span>
+        <span style="font-size: 11px; color: #666; font-weight: normal; margin-right:auto; margin-left:10px;">{{ news.created_at.strftime('%Y-%m-%d') }}</span>
     </summary>
     <div class="accordion-body">
-        {{ news.content }}
+        <div style="margin-bottom: 10px;">{{ news.content }}</div>
+        
+        {% if news.image_data %}
+            <img src="{{ news.image_data }}" class="news-img" alt="صورة المرسوم">
+        {% endif %}
+        
         {% if current_user and current_user.role == 'admin' %}
-        <form action="/delete_puzzle/{{ news.id }}" method="POST" style="margin-top: 15px; text-align: left;">
-            <button type="submit" style="background: #e74c3c; color: #fff; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer;">حذف</button>
+        <form action="/delete_news/{{ news.id }}" method="POST" style="margin-top: 20px; border-top: 1px dashed #222; padding-top: 15px; text-align: left;" onsubmit="return confirm('تأكيد طمس هذا المرسوم نهائياً؟');">
+            <button type="submit" class="btn-delete">🗑️ طمس المرسوم</button>
         </form>
         {% endif %}
     </div>
 </details>
 {% else %}
-<p style="text-align: center; color: #888; margin-top: 50px;">لا توجد مراسيم حالياً، المتاهة صامتة.</p>
+<div style="text-align: center; color: #555; margin-top: 50px; padding: 50px; background: #050403; border-radius: 10px; border: 1px dashed #222;">
+    الساحة صامتة... لا توجد مراسيم حالياً.
+</div>
 {% endfor %}
 {% endblock %}
