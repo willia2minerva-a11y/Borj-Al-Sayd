@@ -19,7 +19,7 @@
     .control-card { background: #050403; border: 1px solid #1a150e; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: inset 0 0 15px rgba(0,0,0,0.5); }
     .control-card h4 { color: var(--gold-main); margin-top: 0; border-bottom: 1px dashed #222; padding-bottom: 12px; margin-bottom: 15px; font-size: 15px; }
     
-    .form-input { width: 100%; padding: 12px; background: #0d0a08; color: #fff; border: 1px solid #332815; border-radius: 8px; margin-bottom: 12px; font-size: 13px; font-family: 'Cairo', sans-serif; outline: none;}
+    .form-input { width: 100%; padding: 12px; background: #0d0a08; color: #fff; border: 1px solid #332815; border-radius: 8px; margin-bottom: 12px; font-size: 13px; outline: none; box-sizing: border-box;}
     .form-input:focus { border-color: var(--gold-main); background: #000; }
     .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .form-row > * { flex: 1; min-width: 140px; }
@@ -55,29 +55,13 @@
 </div>
 
 <script>
-    // System State Variables for Conflict Prevention
-    var isF1Active = {{ 'true' if settings.floor1_mode_active else 'false' }};
-    var isF2Active = {{ 'true' if getattr(settings, 'war_mode', False) else 'false' }};
-    var isF3Active = {{ 'true' if getattr(settings, 'floor3_mode_active', False) else 'false' }};
-    var isBossActive = {{ 'true' if getattr(settings, 'final_battle_mode', False) else 'false' }};
-
+    // System State Variables
     let formToSubmit = null;
     function requireConfirm(event, message) {
         event.preventDefault();
         formToSubmit = event.target.closest('form') || event.target.closest('a');
         document.getElementById('confirmMessage').innerText = message;
         document.getElementById('confirmModal').classList.add('active');
-    }
-    
-    function confirmFloor(event, floorName, isCurrentlyActive) {
-        if (isCurrentlyActive) {
-            requireConfirm(event, 'هل أنت متأكد من إيقاف ' + floorName + '؟');
-        } else {
-            let activeCount = [isF1Active, isF2Active, isF3Active, isBossActive].filter(Boolean).length;
-            let msg = 'تأكيد تشغيل ' + floorName + '؟';
-            if (activeCount > 0) msg += '\n\n⚠️ تحذير: يوجد طابق آخر يعمل حالياً!';
-            requireConfirm(event, msg);
-        }
     }
 
     function closeConfirm() { document.getElementById('confirmModal').classList.remove('active'); formToSubmit = null; }
@@ -110,12 +94,11 @@
     function toggleSpellOpts() {
         let val = document.getElementById('spell_type').value;
         document.getElementById('spell_val_field').className = ['hp_gain', 'hp_loss', 'points_gain'].includes(val) ? 'dynamic-field active' : 'dynamic-field';
-        document.getElementById('spell_item_field').className = ['give_item', 'give_seal'].includes(val) ? 'dynamic-field active' : 'dynamic-field';
+        document.getElementById('spell_item_field').className = val === 'give_item' ? 'dynamic-field active' : 'dynamic-field';
     }
     function toggleTrapOpts() {
         let val = document.getElementById('trap_eff').value;
         document.getElementById('trap_pts_field').className = ['give_points', 'steal_points'].includes(val) ? 'dynamic-field active' : 'dynamic-field';
-        document.getElementById('trap_itm_field').className = ['give_item', 'steal_item', 'give_seal'].includes(val) ? 'dynamic-field active' : 'dynamic-field';
         document.getElementById('trap_dur_field').className = val === 'quicksand' ? 'dynamic-field active' : 'dynamic-field';
     }
 </script>
@@ -157,7 +140,7 @@
                 <h4>🎨 تخصيص واجهة البرج</h4>
                 <form action="/admin" method="POST" enctype="multipart/form-data">
                     <input type="hidden" name="action" value="update_home_settings">
-                    <input type="text" name="home_title" class="form-input" placeholder="اسم البرج والمنصة..." value="{{ settings.home_title }}">
+                    <input type="text" name="home_title" class="form-input" placeholder="اسم المنصة والبرج..." value="{{ settings.home_title }}">
                     <label style="color:#aaa; font-size:12px; margin-bottom:5px; display:block;">تغيير غلاف البروفايل والرئيسية:</label>
                     <input type="file" name="banner_file" class="form-input" accept="image/*">
                     <h5 style="color:#f1c40f; margin:15px 0 10px; border-bottom:1px dashed #333; padding-bottom:5px;">📢 إعدادات شريط الأخبار المتحرك:</h5>
@@ -325,7 +308,7 @@
                 <form action="/admin" method="POST">
                     <input type="hidden" name="action" value="toggle_floor1">
                     {% if settings.floor1_mode_active %}
-                        <button type="submit" class="btn-submit btn-danger" onclick="confirmFloor(event, 'الطابق الأول', true)">إيقاف الطابق وتصفير اللعنات 🛑</button>
+                        <button type="submit" class="btn-submit btn-danger" onclick="requireConfirm(event, 'إيقاف الطابق وتصفير اللعنات؟')">إيقاف الطابق وتصفير اللعنات 🛑</button>
                     {% else %}
                         <div class="form-row">
                             <input type="number" name="group_size" class="form-input" placeholder="حجم المجموعة (مثال: 5)" value="5">
@@ -333,9 +316,12 @@
                         </div>
                         <div class="form-row">
                             <input type="number" name="gems_target" class="form-input" placeholder="الأحجار المطلوبة للفرد" value="3">
-                            <input type="number" name="kill_cooldown" class="form-input" placeholder="تبريد جريمة القتل (ثواني)" value="60">
+                            <input type="number" name="kill_cooldown" class="form-input" placeholder="تبريد القتل (ثواني)" value="60">
                         </div>
-                        <button type="button" class="btn-submit" onclick="confirmFloor(event, 'الطابق الأول', false)">توزيع اللعنات وتشغيل الطابق 🕵️</button>
+                        <div class="form-row">
+                            <input type="number" name="move_cooldown" class="form-input" placeholder="تبريد الانتقال بين الغرف (ثواني)" value="30">
+                        </div>
+                        <button type="submit" class="btn-submit" onclick="requireConfirm(event, 'توزيع اللعنات وتشغيل الطابق؟')">توزيع اللعنات وتشغيل الطابق 🕵️</button>
                     {% endif %}
                 </form>
             </div>
@@ -349,7 +335,7 @@
                     <input type="hidden" name="action" value="toggle_war">
                     {% if getattr(settings, 'war_mode', False) %}
                         <p style="color:#e74c3c; font-weight:bold; font-size:13px; text-align:center;">🔥 الحرب مشتعلة! إيقافها سيعيد صحة الجميع لـ 100%.</p>
-                        <button type="submit" class="btn-submit btn-danger" onclick="confirmFloor(event, 'الحرب الشاملة', true)">إيقاف الحرب وشفاء الجميع</button>
+                        <button type="submit" class="btn-submit btn-danger" onclick="requireConfirm(event, 'إيقاف الحرب وشفاء الجميع؟')">إيقاف الحرب وشفاء الجميع</button>
                     {% else %}
                         <div class="form-row">
                             <input type="number" name="bleed_rate_minutes" class="form-input" placeholder="تكرار نزيف الروح التلقائي (بالدقائق)..." value="{{ settings.bleed_rate_minutes or 60 }}">
@@ -362,8 +348,7 @@
                         <div class="form-row">
                             <input type="number" name="war_hours" class="form-input" placeholder="مدة استمرار الحرب الكلية بالساعات..." value="24">
                         </div>
-                        <p style="color:#aaa; font-size: 11px; margin-bottom:12px; text-align:center;">ملاحظة: تفعيل الحرب يفتح خانة استخدام "توتم الحياة" ذاتياً أو حليفاً للعودة بنصف طاقة الروح.</p>
-                        <button type="button" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="confirmFloor(event, 'الطابق الثاني (الحرب)', false)">إعلان الحرب الشاملة بالساحة 🩸</button>
+                        <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="requireConfirm(event, 'إعلان الحرب الشاملة بالساحة؟')">إعلان الحرب الشاملة بالساحة 🩸</button>
                     {% endif %}
                 </form>
             </div>
@@ -376,15 +361,15 @@
                 <form action="/admin" method="POST">
                     <input type="hidden" name="action" value="toggle_floor3">
                     {% if getattr(settings, 'floor3_mode_active', False) %}
-                        <button type="submit" class="btn-submit btn-danger" onclick="confirmFloor(event, 'الطابق الثالث', true)">تجميد المحكمة مؤقتاً ⏸️</button>
+                        <button type="submit" class="btn-submit btn-danger" onclick="requireConfirm(event, 'تجميد المحكمة مؤقتاً؟')">تجميد المحكمة مؤقتاً ⏸️</button>
                     {% elif getattr(settings, 'floor3_paused', False) %}
-                        <button type="submit" class="btn-submit" style="color:#2ecc71; border-color:#2ecc71;" onclick="requireConfirm(event, 'استئناف الوقت؟')">استئناف وقت المحكمة ▶️</button>
+                        <button type="submit" class="btn-submit" style="color:#2ecc71; border-color:#2ecc71;" onclick="requireConfirm(event, 'استئناف وقت المحكمة؟')">استئناف وقت المحكمة ▶️</button>
                     {% else %}
                         <div class="form-row">
                             <input type="number" name="vote_hours" class="form-input" placeholder="مدة التصويت (ساعات)..." value="24">
                             <input type="number" name="top_n" class="form-input" placeholder="عدد الناجين للصعود للعرش..." value="5">
                         </div>
-                        <button type="button" class="btn-submit" onclick="confirmFloor(event, 'الطابق الثالث (المحكمة)', false)">بدء المحكمة ⚖️</button>
+                        <button type="submit" class="btn-submit" onclick="requireConfirm(event, 'بدء المحكمة؟')">بدء المحكمة ⚖️</button>
                     {% endif %}
                 </form>
             </div>
@@ -397,16 +382,16 @@
                 <form action="/admin" method="POST">
                     <input type="hidden" name="action" value="toggle_final_battle">
                     {% if getattr(settings, 'final_battle_mode', False) %}
-                        <button type="submit" class="btn-submit btn-danger" onclick="confirmFloor(event, 'المعركة الأخيرة', true)">إغلاق المعركة والعودة للظلال</button>
+                        <button type="submit" class="btn-submit btn-danger" onclick="requireConfirm(event, 'إغلاق المعركة والعودة للظلال؟')">إغلاق المعركة والعودة للظلال</button>
                     {% else %}
                         <input type="number" name="emperor_hp" class="form-input" placeholder="صحة الإمبراطور (HP)..." value="{{ settings.emperor_max_hp if settings.emperor_max_hp else 100000 }}">
-                        <button type="button" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="confirmFloor(event, 'المعركة الأخيرة (العرش)', false)">بدء المعركة الكبرى!</button>
+                        <button type="submit" class="btn-submit" style="color:#e74c3c; border-color:#e74c3c;" onclick="requireConfirm(event, 'بدء المعركة الكبرى نحو العرش؟')">بدء المعركة الكبرى!</button>
                     {% endif %}
                 </form>
             </div>
         </div>
 
-        <!-- المراسيم والألغاز (منسدلات ذكية) -->
+        <!-- المراسيم والألغاز -->
         <div id="tab-news" class="tab-section">
             <div class="control-card">
                 <h4>إطلاق مرسوم أو لغز تكتيكي</h4>
@@ -424,7 +409,6 @@
                     <label style="color:#aaa; font-size:12px; display:block; margin-bottom:5px;">إرفاق صورة اختيارية للتوضيح:</label>
                     <input type="file" name="image_file" class="form-input" accept="image/*">
                     
-                    <!-- حقول اللغز الذكية (تظهر فقط عند اختيار لغز) -->
                     <div id="puzzle_fields" class="dynamic-field">
                         <h5 style="color:var(--gold-main); margin:0 0 10px 0; border-bottom:1px dashed #333; padding-bottom:5px;">إعدادات اللغز الدقيقة:</h5>
                         <input type="text" name="puzzle_answer" class="form-input" placeholder="الجواب الصحيح بدقة لفك الشفرة...">
@@ -449,7 +433,7 @@
             </div>
         </div>
 
-        <!-- المذبح والتعاويذ الكبرى (منسدلات ذكية) -->
+        <!-- المذبح والتعاويذ الكبرى -->
         <div id="tab-altar" class="tab-section">
             <div class="control-card">
                 <h4>زرع تعويذة سحرية بالمذبح 🔮</h4>
@@ -463,19 +447,23 @@
                             <option value="hp_loss">ضريبة دم وسحب 🩸</option>
                             <option value="points_gain">منح دنانير 🪙</option>
                             <option value="give_item">منح أداة عادية من السوق 🎁</option>
-                            <option value="give_seal">منح ختم أسطوري 🔮</option>
+                            <option value="give_seal_whispers">منح ختم الهمسات 🔮</option>
                             <option value="unlock_poneglyph">تفتيح غرفة البونغليف 🗿</option>
                             <option value="unlock_top_room">تفتيح قاعة الأساطير 🏆</option>
                             <option value="kill_emperor">التعويذة المحرمة (قتل الإمبراطور) 👁️</option>
                         </select>
                     </div>
                     
-                    <!-- حقول ذكية تتغير حسب التعويذة المحددة -->
                     <div id="spell_val_field" class="dynamic-field">
                         <input type="number" name="effect_value" class="form-input" placeholder="المقدار الممنوح أو المسلوب (أرقام فقط)...">
                     </div>
                     <div id="spell_item_field" class="dynamic-field">
-                        <input type="text" name="item_name" class="form-input" placeholder="اسم الأداة أو الختم ليتجسد في حقيبة المستخدم...">
+                        <select name="item_name" class="form-input">
+                            <option value="" disabled selected>اختر الأداة من السوق ليتم منحها...</option>
+                            {% for item in store_items %}
+                                <option value="{{ item }}">{{ item }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     
                     <div class="form-row">
@@ -487,26 +475,28 @@
             </div>
         </div>
 
-        <!-- السوق المظلم (الذكي - مع صناديق الحظ) -->
+        <!-- السوق المظلم -->
         <div id="tab-store" class="tab-section">
             <div class="control-card">
                 <h4>زرع الأسلحة والأختام والتوتم في السوق 🐪</h4>
                 <form action="/admin" method="POST">
                     <input type="hidden" name="action" value="add_store_item">
                     <div class="form-row">
-                        <input type="text" name="name" class="form-input" placeholder="اسم الغنيمة/الختم بدقة..." required>
+                        <input type="text" name="name" class="form-input" placeholder="اسم الغنيمة بدقة..." required>
                         <input type="number" name="price" class="form-input" placeholder="الثمن بالدنانير الأثرية..." required>
-                        <select name="item_type" id="store_type" class="form-input" onchange="toggleStoreOpts()" style="color:var(--gold-main); border-color:#332815;">
+                        <select name="item_type" id="store_type" class="form-input" onchange="toggleStoreOpts()" required style="color:var(--gold-main); border-color:#332815;">
                             <option value="" disabled selected>حدد نوع البضاعة...</option>
                             <option value="weapon">سلاح هجومي حاد ⚔️</option>
                             <option value="heal">جرعة علاج للأرواح ❤️</option>
                             <option value="totem">توتم الحياة للعودة 🌟</option>
-                            <option value="seal">ختم الحقيقة الأسطوري 🔮</option>
+                            <option value="sephar_hand">يد سيفار (سرقة عشوائية) ✋</option>
+                            <option value="sephar_eye">عين سيفار (تجسس ملفات) 👁️</option>
+                            <option value="spy">جاسوس عادي 🕵️</option>
+                            <option value="steal">خطاف عادي (سرقة محددة) 🪝</option>
                             <option value="box">صندوق حظ متقلب 📦</option>
                         </select>
                     </div>
                     
-                    <!-- حقول ذكية للسوق -->
                     <div id="store_eff_fields" class="dynamic-field">
                         <input type="number" name="effect_amount" class="form-input" placeholder="مقدار الضرر القاطع أو الشفاء الروحي...">
                     </div>
@@ -529,7 +519,7 @@
             </div>
         </div>
 
-        <!-- الكيانات والفخاخ (الذكية) -->
+        <!-- الكيانات والفخاخ -->
         <div id="tab-traps" class="tab-section">
             <div class="control-card">
                 <h4>زرع كيان مخفي أو رابط فخ 🕸️</h4>
@@ -544,20 +534,15 @@
                             <option value="" disabled selected>حدد نوع تأثير الكيان...</option>
                             <option value="give_points">منح دنانير أثرية</option>
                             <option value="steal_points">سلب دنانير (فخ)</option>
-                            <option value="give_item">منح أداة عادية للحقيبة</option>
-                            <option value="steal_item">سلب أداة من الحقيبة (فخ)</option>
-                            <option value="give_seal">منح ختم أسطوري</option>
+                            <option value="give_seal">منح ختم (الأرواح/الغموض تلقائياً)</option>
                             <option value="quicksand">تجميد في الرمال المتحركة (فخ)</option>
                         </select>
                     </div>
-                    <input type="text" name="puzzle_answer" class="form-input" placeholder="كلمة الرابط أو الـ ID السري للشبح..." required>
+                    <input type="text" name="puzzle_answer" class="form-input" placeholder="الرابط المخفي أو الـ ID السري للشبح..." required>
                     
-                    <!-- حقول الكيانات الذكية -->
                     <div id="trap_pts_field" class="dynamic-field">
                         <input type="number" name="reward_points" class="form-input" placeholder="مقدار الدنانير للمنح أو السلب...">
-                    </div>
-                    <div id="trap_itm_field" class="dynamic-field">
-                        <input type="text" name="reward_item" class="form-input" placeholder="اسم الأداة أو الختم المعني بالكيان...">
+                        <input type="number" name="trap_penalty" class="form-input" placeholder="عقوبة السلب (للفخاخ)...">
                     </div>
                     <div id="trap_dur_field" class="dynamic-field">
                         <input type="number" name="trap_duration" class="form-input" placeholder="مدة التجميد في الرمال بالدقائق...">
