@@ -2,106 +2,121 @@
 {% block content %}
 
 <style>
-    .dec-header { text-align: center; margin-bottom: 25px; border-bottom: 1px dashed #222; padding-bottom: 15px; }
-    .dec-title { color: var(--gold-main); font-size: 24px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.3); }
-    .dec-desc { color: #888; font-size: 14px; margin-top: 5px; }
+    .dec-card { background: #080605; border: 1px solid #1a150e; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.6); position: relative; }
+    .dec-header { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px dashed #222; padding-bottom: 15px; }
+    .dec-avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; background: #000; }
+    .dec-author { color: var(--gold-main); font-weight: bold; font-size: 15px; }
+    .dec-date { color: #666; font-size: 11px; }
+    .dec-content { color: #ddd; font-size: 14px; line-height: 1.7; white-space: pre-wrap; }
     
-    .control-card { background: #050403; border: 1px solid #1a150e; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
-    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; font-size: 13px; outline: none; transition: 0.2s; }
+    .news-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-top: 15px; display: block; }
+    
+    .btn-react { background: transparent; border: 1px solid #332815; color: #aaa; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; display: inline-flex; align-items: center; gap: 5px;}
+    .btn-react:hover { border-color: var(--gold-main); color: var(--gold-main); }
+    
+    .btn-action { background: #111; color: #fff; border: 1px solid #332815; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; margin-top: 10px;}
+    .btn-action:active { transform: scale(0.97); }
+    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 8px; margin-bottom: 12px; font-size: 14px; outline: none; box-sizing: border-box;}
     .form-input:focus { border-color: var(--gold-main); }
-    .btn-submit { background: #111; color: var(--gold-main); border: 1px solid #332815; padding: 14px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 14px; width: 100%; text-align: center; }
-    .btn-submit:active { transform: scale(0.97); background: #000; border-color: var(--gold-main); }
-
-    .dec-card { background: #080605; border: 1px solid #1a150e; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
-    .dec-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold-main); }
     
-    .dec-author-row { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #111; padding-bottom: 15px; }
-    .dec-avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold-main); object-fit: cover; }
-    .dec-author-info { flex: 1; }
-    .dec-author-name { color: var(--gold-main); font-size: 16px; font-weight: 900; margin: 0 0 3px 0; }
-    .dec-date { color: #555; font-size: 11px; margin: 0; }
-
-    .dec-content { color: #ccc; font-size: 14px; line-height: 1.6; margin-bottom: 15px; word-wrap: break-word; }
-    .dec-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-bottom: 15px; }
-    
-    .dec-footer { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #111; padding-top: 15px; }
-    .react-btn { background: rgba(52, 152, 219, 0.1); border: 1px solid #3498db; color: #3498db; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
-    .react-btn:active { background: #3498db; color: #fff; transform: scale(0.95); }
-    
-    .delete-btn { background: rgba(231, 76, 60, 0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; text-decoration: none; }
-    .delete-btn:active { background: #e74c3c; color: #fff; }
-
-    .section-title { color: #f1c40f; font-size: 18px; margin-bottom: 15px; border-bottom: 1px solid #332815; padding-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .admin-controls { display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px; border-top: 1px dashed #222; padding-top: 15px; }
+    .btn-approve { background: rgba(46,204,113,0.1); color: #2ecc71; border: 1px solid #2ecc71; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+    .btn-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
 </style>
 
-<div class="dec-header">
-    <h1 class="dec-title">📢 صدى الساحة</h1>
-    <p class="dec-desc">أوصل صوتك لجميع أنحاء المتاهة.</p>
+<div style="text-align: center; margin-bottom: 30px;">
+    <h2 style="color: var(--gold-main); margin: 0;">📢 صدى الساحة</h2>
+    <p style="color: #aaa; font-size: 13px;">أوصل صوتك لجميع أنحاء المتاهة.</p>
 </div>
 
-<div class="control-card">
+<!-- نموذج إطلاق التصريح (يدعم رفع الصور) -->
+{% if current_user.status == 'active' %}
+<div class="dec-card" style="border-color: #332815; background: #050403;">
     <form action="/declarations" method="POST" enctype="multipart/form-data">
         <textarea name="content" class="form-input" rows="3" placeholder="ماذا تريد أن تقول للرحالة؟..." required></textarea>
-        <div style="margin-bottom: 15px;">
-            <label style="background:#111; color:#aaa; padding:10px 15px; border-radius:8px; border:1px dashed #333; display:inline-block; cursor:pointer; font-size:13px; width:100%; text-align:center;">
-                📷 إرفاق صورة (اختياري)
-                <input type="file" name="image_file" accept="image/*" style="display:none;">
-            </label>
-        </div>
-        <button type="submit" class="btn-submit">إطلاق التصريح 🚀</button>
+        
+        <label style="color:#aaa; font-size:12px; display:block; margin-bottom:5px; border: 1px dashed #333; padding: 10px; border-radius: 8px; text-align: center; cursor: pointer;">
+            📷 إرفاق صورة (اختياري)
+            <input type="file" name="image_file" accept="image/*" style="display: none;" onchange="this.parentElement.style.borderColor='var(--gold-main)'; this.parentElement.style.color='var(--gold-main)';">
+        </label>
+        
+        <button type="submit" class="btn-action" style="color: var(--gold-main); border-color: var(--gold-main);">إطلاق التصريح 🚀</button>
     </form>
 </div>
-
-<h3 class="section-title">📜 أحدث التصريحات</h3>
-
-{% if not approved_decs %}
-    <p style="text-align: center; color: #666; font-size: 13px;">لا توجد تصريحات في الساحة حالياً.</p>
-{% else %}
-    {% for dec in approved_decs %}
-    <div class="dec-card">
-        <div class="dec-author-row">
-            <img src="/avatar/{{ avatars.get(dec.author, 0) }}" class="dec-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
-            <div class="dec-author-info">
-                <h4 class="dec-author-name">{{ dec.author }} {% if avatars.get(dec.author) == 1000 %}👑{% endif %}</h4>
-                <p class="dec-date">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
-            </div>
-            {% if current_user.role == 'admin' or current_user.username == dec.author %}
-                <form action="/delete_declaration/{{ dec.id }}" method="POST" style="margin:0;" onsubmit="return confirm('تأكيد طمس التصريح نهائياً؟');">
-                    <button type="submit" class="delete-btn">🗑️ حذف</button>
-                </form>
-            {% endif %}
-        </div>
-        
-        <div class="dec-content">{{ dec.content }}</div>
-        
-        {% if dec.image_data %}
-            <img src="{{ dec.image_data }}" class="dec-img">
-        {% endif %}
-        
-        <div class="dec-footer">
-            {% if dec.author != 'Admin' and avatars.get(dec.author) != 1000 %}
-                <form action="/react_declaration/{{ dec.id }}" method="POST" style="margin:0;">
-                    <button type="submit" class="react-btn">😂 أضحكني ({{ dec.reactions|length if dec.reactions else 0 }})</button>
-                </form>
-            {% else %}
-                <span style="color:#e74c3c; font-size:12px; font-weight:bold; letter-spacing: 0.5px;">⚔️ مرسوم إمبراطوري لا يقبل الرد</span>
-            {% endif %}
-        </div>
-    </div>
-    {% endfor %}
 {% endif %}
 
-{% if current_user.role == 'admin' and pending_decs %}
-    <h3 class="section-title" style="color: #e74c3c; border-color: #4a1111; margin-top: 40px;">⚠️ تصريحات تنتظر الموافقة (للإدارة)</h3>
-    {% for p_dec in pending_decs %}
-    <div class="dec-card" style="border-color: #e74c3c;">
-        <div class="dec-author-row"><div class="dec-author-info"><h4 class="dec-author-name">{{ p_dec.author }}</h4></div></div>
-        <div class="dec-content">{{ p_dec.content }}</div>
-        <div class="dec-footer" style="justify-content: flex-start; gap: 10px;">
-            <form action="/delete_declaration/{{ p_dec.id }}" method="POST" style="margin:0;"><button type="submit" class="delete-btn">رفض وحذف</button></form>
+<h3 style="color: var(--gold-light); margin-top: 30px; border-bottom: 1px dashed #333; padding-bottom: 10px;">📜 أحدث التصريحات</h3>
+
+{% for dec in approved_decs %}
+<div class="dec-card">
+    <div class="dec-header">
+        <img src="/avatar/{{ avatars.get(dec.author, 0) }}" class="dec-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
+        <div>
+            <div class="dec-author">{{ dec.author }}</div>
+            <div class="dec-date">{{ dec.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        </div>
+    </div>
+    
+    <div class="dec-content">{{ dec.content }}</div>
+    
+    {% if dec.image_data %}
+        <img src="{{ dec.image_data }}" class="news-img" alt="صورة مرفقة">
+    {% endif %}
+    
+    <div style="margin-top: 15px; display: flex; justify-content: space-between; align-items: center;">
+        {% if current_user.hunter_id not in [1000, 1001] %}
+        <form action="/react_declaration/{{ dec.id }}" method="POST">
+            <button type="submit" class="btn-react">👍 أؤيد ({{ dec.reactions|length }})</button>
+        </form>
+        {% else %}
+        <span style="color: #666; font-size: 12px;">التأييد: {{ dec.reactions|length }}</span>
+        {% endif %}
+        
+        {% if current_user.role == 'admin' or current_user.username == dec.author %}
+        <form action="/delete_declaration/{{ dec.id }}" method="POST" onsubmit="return confirm('تأكيد مسح التصريح؟');">
+            <button type="submit" style="background: transparent; border: none; color: #e74c3c; cursor: pointer; font-size: 12px;">حذف التصريح</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<p style="text-align: center; color: #666; margin-top: 40px;">لا توجد تصريحات في الساحة حالياً.</p>
+{% endfor %}
+
+<!-- تصريحات قيد الانتظار (تظهر للإدارة أو للكاتب نفسه) -->
+{% if pending_decs or my_pending_decs %}
+<div style="margin-top: 50px; border-top: 2px solid #e74c3c; padding-top: 20px;">
+    <h3 style="color: #e74c3c; display: flex; align-items: center; gap: 10px;">⚠️ تصريحات تنتظر الموافقة</h3>
+    
+    {% set display_decs = pending_decs if current_user.role == 'admin' else my_pending_decs %}
+    
+    {% for p_dec in display_decs %}
+    <div class="dec-card" style="border-color: #78281f; background: #1a0806;">
+        <div class="dec-header" style="border-color: #551912;">
+            <div class="dec-author" style="color: #e74c3c;">{{ p_dec.author }}</div>
+            <div class="dec-date">{{ p_dec.created_at.strftime('%Y-%m-%d') }}</div>
+        </div>
+        
+        <div class="dec-content" style="color: #ecc;">{{ p_dec.content }}</div>
+        
+        {% if p_dec.image_data %}
+            <img src="{{ p_dec.image_data }}" class="news-img" style="border-color: #e74c3c;" alt="صورة مرفقة">
+        {% endif %}
+        
+        <div class="admin-controls" style="border-color: #551912;">
+            {% if current_user.role == 'admin' %}
+            <form action="/approve_declaration/{{ p_dec.id }}" method="POST">
+                <button type="submit" class="btn-approve">موافقة ونشر ✔️</button>
+            </form>
+            {% endif %}
+            
+            <form action="/delete_declaration/{{ p_dec.id }}" method="POST">
+                <button type="submit" class="btn-delete">رفض وحذف ❌</button>
+            </form>
         </div>
     </div>
     {% endfor %}
+</div>
 {% endif %}
 
 {% endblock %}
