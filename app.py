@@ -824,6 +824,53 @@ def react_declaration(dec_id):
         dec.update(push__reactions=str(g.user.id))
     return redirect(url_for('declarations'))
 
+@app.route('/delete_news/<news_id>', methods=['POST'])
+@admin_required
+def delete_news_route(news_id):
+    News.objects(id=ObjectId(news_id)).delete()
+    flash('تم طمس المرسوم/اللغز بنجاح!', 'success')
+    return redirect(request.referrer)
+
+@app.route('/use_spell', methods=['POST'])
+@login_required
+def use_spell():
+    user = g.user
+    spell_word = request.form.get('spell_word', '').strip()
+    spell = SpellConfig.objects(spell_word=spell_word).first()
+    
+    if not spell:
+        user.update(dec__health=5, dec__intelligence_points=2)
+        flash('كلمة خاطئة! غضب المذبح وسحب من روحك.', 'error')
+        return redirect(url_for('altar'))
+        
+    if getattr(spell, 'expires_at', None) and datetime.utcnow() > spell.expires_at:
+        flash('هذه التعويذة فقدت طاقتها الزمنية!', 'error')
+        return redirect(url_for('altar'))
+        
+    if len(spell.used_by) >= spell.max_uses and str(user.id) not in spell.used_by:
+        flash('استُنزفت طاقة هذه التعويذة من قبل رحالة آخرين!', 'error')
+        return redirect(url_for('altar'))
+        
+    if str(user.id) in spell.used_by:
+        flash('لقد استخدمت هذه التعويذة مسبقاً!', 'info')
+        return redirect(url_for('altar'))
+
+    # تأثيرات التعاويذ الكبرى
+    st = spell.spell_type
+    if st == 'hp_gain': user.update(inc__health=getattr(spell, 'effect_value', 0)); flash('شُفيت روحك!', 'success')
+    elif st == 'hp_loss': user.update(dec__health=getattr(spell, 'effect_value', 0)); flash('ضريبة دم! سُحبت روحك!', 'error')
+    elif st == 'points_gain': user.update(inc__points=getattr(spell, 'effect_value', 0)); flash('حصلت على الدنانير!', 'success')
+    elif st == 'give_item' or st == 'give_seal': user.update(push__inventory=spell.item_name); flash(f'تجسد لك: {spell.item_name}!', 'success')
+    elif st == 'unlock_poneglyph': user.update(set__unlocked_lore_room=True); flash('انشقت الأرض وظهر لك طريق البونغليف!', 'success')
+    elif st == 'unlock_top_room': user.update(set__unlocked_top_room=True); flash('فُتحت لك أبواب قاعة الأساطير!', 'success')
+    elif st == 'kill_emperor': 
+        emp = User.objects(hunter_id=1000).first()
+        if emp: emp.update(set__health=0)
+        flash('تعويذة محرمة! لقد طعنت الإمبراطور في مقتل!', 'success')
+        
+    spell.update(push__used_by=str(user.id))
+    return redirect(url_for('altar'))
+
 # ==========================================
 # 🏛️ الغرف السرية (المذبح، البونغليف، الأساطير)
 # ==========================================
