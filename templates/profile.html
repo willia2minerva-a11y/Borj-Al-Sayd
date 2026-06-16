@@ -4,117 +4,138 @@
 {% set clean_zone = user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
 
 <style>
-    .profile-wrap { background: rgba(8, 6, 5, 0.9); border-radius: 12px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 40px rgba(0,0,0,0.9); max-width: 500px; margin: 0 auto; padding-bottom: 20px;}
-    .profile-cover { height: 120px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
+    /* الحاوية الرئيسية للبروفايل */
+    .profile-wrap { background: rgba(8, 6, 5, 0.95); border-radius: 14px; overflow: hidden; border: 1px solid #1a150e; box-shadow: 0 10px 40px rgba(0,0,0,0.9); max-width: 600px; margin: 0 auto; padding-bottom: 25px;}
+    .profile-cover { height: 130px; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(8,6,5,0.95)), url('{{ settings.banner_url if settings and settings.banner_url else "" }}'); background-size: cover; background-position: center; border-bottom: 1px solid #111; }
     
-    .profile-header { text-align: center; margin-top: -50px; padding-bottom: 10px; position: relative; z-index: 5; }
-    .profile-avatar { width: 90px; height: 90px; border-radius: 50%; border: 3px solid var(--gold-dark); object-fit: cover; margin-bottom: 10px; background: #000; box-shadow: 0 5px 15px rgba(0,0,0,0.9);}
+    .profile-header { text-align: center; margin-top: -55px; padding-bottom: 15px; position: relative; z-index: 5; }
+    .profile-avatar { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold-main); object-fit: cover; margin-bottom: 12px; background: #000; box-shadow: 0 8px 25px rgba(0,0,0,0.9);}
     
-    .profile-name { color: var(--gold-main); font-size: 24px; font-weight: 900; margin: 0; text-shadow: 0 0 10px rgba(212,175,55,0.2);}
-    .profile-id { color: #777; font-family: monospace; font-size: 13px; display: block; margin-bottom: 15px;}
+    .profile-name { color: var(--gold-main); font-size: 26px; font-weight: 900; margin: 0; text-shadow: 0 0 12px rgba(212,175,55,0.3);}
+    .profile-id { color: #777; font-family: monospace; font-size: 14px; display: block; margin-bottom: 15px; letter-spacing: 1px;}
     
-    /* الخانات الأنيقة المصغرة المتراصة */
-    .badges-row { display: inline-flex; justify-content: center; gap: 8px; flex-wrap: wrap; background: #000; padding: 8px 15px; border-radius: 8px; border: 1px solid #111;}
-    .badge { padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: bold; background: #0a0806; border: 1px solid #222; }
+    /* الشارات (Badges) */
+    .badges-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; background: #000; padding: 10px 15px; border-radius: 8px; border: 1px solid #111; margin: 0 20px 20px;}
+    .badge { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; background: #0a0806; border: 1px solid #222; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 15px 20px; }
-    .stat-card { background: #050403; border: 1px solid #1a150e; padding: 12px; border-radius: 8px; text-align: center; position: relative;}
-    .stat-val { font-size: 20px; font-weight: 900; margin-bottom: 3px; color: #fff;}
-    .stat-label { color: #888; font-size: 11px; font-weight: bold; }
-    
-    .edit-pen { position: absolute; top: 8px; left: 8px; font-size: 11px; cursor: pointer; background: #111; border: 1px solid #333; border-radius: 4px; padding: 2px 6px; color:#ccc;}
+    /* شبكة الإحصائيات (Stats Grid) */
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 20px 20px; }
+    .stat-card { background: linear-gradient(145deg, #0a0806, #030202); border: 1px solid #1a150e; padding: 15px; border-radius: 10px; text-align: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.4);}
+    .stat-val { font-size: 24px; font-weight: 900; margin-bottom: 5px; color: #fff;}
+    .stat-label { color: #888; font-size: 12px; font-weight: bold; }
 
-    .btn-action { background: #050403; color: #fff; border: 1px solid #332815; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; text-align: center; display: inline-block; width: 100%; box-sizing: border-box;}
-    .form-input { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 10px; font-size: 13px; outline:none;}
+    /* الأزرار والنماذج */
+    .btn-action { background: #090705; color: #fff; border: 1px solid #332815; padding: 14px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; text-align: center; display: block; width: 100%; box-sizing: border-box; transition: 0.2s; text-decoration: none;}
+    .btn-action:active { transform: scale(0.97); background: #000; border-color: var(--gold-main); color: var(--gold-main);}
     
-    /* النافذة الإمبراطورية المخصصة */
-    .custom-confirm { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .custom-confirm.active { display: flex; }
-    .confirm-box { background: #050403; border: 1px solid #e74c3c; width: 90%; max-width: 320px; border-radius: 12px; padding: 25px; text-align: center; box-shadow: 0 10px 40px rgba(231,76,60,0.2); }
+    .form-input { width: 100%; padding: 14px; background: #000; color: #fff; border: 1px solid #1a150e; border-radius: 8px; margin-bottom: 12px; font-size: 13px; outline:none; transition: 0.2s;}
+    .form-input:focus { border-color: var(--gold-main); }
+    
+    /* النافذة المنبثقة (Modal) للإعدادات */
+    .custom-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.93); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    .custom-modal.active { display: flex; animation: fadeInModal 0.3s ease; }
+    .modal-box { background: #050403; border: 1px solid var(--gold-main); width: 90%; max-width: 380px; border-radius: 14px; padding: 25px; box-shadow: 0 10px 50px rgba(212,175,55,0.15); max-height: 90vh; overflow-y: auto; text-align: right;}
+    
+    @keyframes fadeInModal { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+    /* قسم الحقيبة (Inventory) */
+    .inventory-section { padding: 0 20px; }
+    .inventory-title { color: var(--gold-main); font-size: 16px; border-bottom: 1px dashed #222; padding-bottom: 10px; margin-bottom: 15px;}
+    .inventory-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .item-tag { background: #111; color: #ccc; padding: 8px 12px; border-radius: 6px; font-size: 12px; border: 1px solid #332815; font-weight: bold;}
 </style>
-
-<div class="custom-confirm" id="confirmModal">
-    <div class="confirm-box">
-        <h3 style="color:#e74c3c; margin:0 0 15px 0;">⚠️ تأكيد الأمر</h3>
-        <p id="confirmMessage" style="color:#ccc; font-size:13px; margin-bottom:20px;">هل أنت متأكد؟</p>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-action" style="background:#111; border-color:#333; color:#aaa;" onclick="closeConfirm()">تراجع</button>
-            <button class="btn-action" style="color:#e74c3c; border-color:#78281f;" id="confirmYesBtn">تنفيذ ⚡</button>
-        </div>
-    </div>
-</div>
 
 <div class="profile-wrap">
     <div class="profile-cover"></div>
     <div class="profile-header">
-        <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar">
-        <h2 class="profile-name">{{ user.username }}</h2>
+        <img src="/avatar/{{ user.hunter_id }}" class="profile-avatar" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzU1NSI+PHBhdGggZD0iTTEyIDEyYzIuMjEgMCA0LTEuNzkgNC00cy0xLjc5LTQtNC00LTQgMS43OS00IDQgMS43OSA0IDQgNHptMCAyYy0yLjY3IDAtOCAxLjM0LTggNHYyaDE2di0yYzAtMi42Ni01LjMzLTQtOC00eiIvPjwvc3ZnPg==';">
+        <h2 class="profile-name">{{ user.username }} {% if user.hunter_id == 1000 %}👑{% endif %}</h2>
         <span class="profile-id">ID: {{ user.hunter_id }}</span>
-        
-        <div class="badges-row">
-            <span class="badge" style="color: #2ecc71; border-color: #145a32;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد/ميت' }}</span>
-            <span class="badge" style="color: #f39c12; border-color: #7d6608;">{{ clean_zone }}</span>
-            {% if user.special_rank %}<span class="badge" style="color: #b59b4c; border-color: #7e5109;">🏆 {{ user.special_rank }}</span>{% endif %}
-        </div>
+    </div>
+    
+    <div class="badges-row">
+        <span class="badge" style="color: #2ecc71; border-color: #145a32;">{{ 'حي يُرزق' if user.status == 'active' else 'مقيد/ميت' }}</span>
+        <span class="badge" style="color: #f39c12; border-color: #7d6608;">الطابق: {{ clean_zone }}</span>
+        {% if user.special_rank %}<span class="badge" style="color: #b59b4c; border-color: #7e5109;">🏆 {{ user.special_rank }}</span>{% endif %}
     </div>
 
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-val" style="color: #f1c40f;">{{ user.points }}</div><div class="stat-label">دنانير</div>
-            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_points', 'تعديل الدنانير')">✏️</span>{% endif %}
+            <div class="stat-val" style="color: #f1c40f;">{{ user.points }}</div><div class="stat-label">دنانير 🪙</div>
         </div>
         <div class="stat-card">
-            <div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">وفاء</div>
-            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_loyalty', 'تعديل الوفاء')">✏️</span>{% endif %}
+            <div class="stat-val" style="color: #3498db;">{{ user.loyalty_points }}</div><div class="stat-label">وفاء 🤝</div>
         </div>
         <div class="stat-card">
-            <div class="stat-val" style="color: #e74c3c;">{{ user.health }}%</div><div class="stat-label">الروح</div>
-            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_hp', 'تعديل الروح')">✏️</span>{% endif %}
+            <div class="stat-val" style="color: #e74c3c;">{{ user.health }}%</div><div class="stat-label">الروح ❤️</div>
         </div>
         <div class="stat-card">
-            <div class="stat-val" style="color: #1abc9c;">{{ user.intelligence_points }}</div><div class="stat-label">ذكاء</div>
-            {% if user.role == 'admin' %}<span class="edit-pen" onclick="openAdminEdit('edit_iq', 'تعديل الذكاء')">✏️</span>{% endif %}
+            <div class="stat-val" style="color: #1abc9c;">{{ user.intelligence_points }}</div><div class="stat-label">ذكاء 🧠</div>
         </div>
     </div>
 
-    <div style="padding: 0 20px;">
-        <button class="btn-action" style="margin-bottom:10px; color:#b59b4c; border-color:#b59b4c;" onclick="document.getElementById('settingsBox').style.display='block'">إعدادات الهوية ⚙️</button>
-    </div>
-</div>
-
-{% if user.role == 'admin' %}
-<div class="custom-confirm" id="adminEditModal">
-    <div class="confirm-box">
-        <h3 id="adminEditTitle" style="color: #b59b4c; margin: 0 0 15px 0;">تعديل</h3>
-        <form action="/admin_update_profile/{{ user.hunter_id }}" method="POST">
-            <input type="hidden" name="action" id="adminEditAction">
-            <input type="text" name="new_val" class="form-input" placeholder="القيمة الجديدة..." required>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" class="btn-action" style="background:#111; border-color:#333; color:#aaa;" onclick="document.getElementById('adminEditModal').classList.remove('active')">إلغاء</button>
-                <button type="submit" class="btn-action" style="color:#b59b4c; border-color:#b59b4c;">تأكيد ⚡</button>
+    <!-- قسم حقيبة الرحالة -->
+    <div class="inventory-section">
+        <h3 class="inventory-title">🎒 حقيبة المقتنيات</h3>
+        {% if user.inventory %}
+            <div class="inventory-grid">
+                {% for item in user.inventory %}
+                    <span class="item-tag">{{ item }}</span>
+                {% endfor %}
             </div>
-        </form>
+        {% else %}
+            <p style="color: #666; font-size: 13px; text-align: center; background: #000; padding: 15px; border-radius: 8px; border: 1px dashed #222;">حقيبتك فارغة كجيوب الأطياف...</p>
+        {% endif %}
+        
+        {% if user.collected_seals %}
+            <h3 class="inventory-title" style="color:#9b59b6; border-color:#4a235a; margin-top:20px;">🔮 الأختام المدمجة</h3>
+            <div class="inventory-grid">
+                {% for seal in user.collected_seals %}
+                    <span class="item-tag" style="border-color:#9b59b6; color:#d2b4de;">{{ seal }}</span>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div style="padding: 25px 20px 0;">
+        <button class="btn-action" style="color:#b59b4c; border-color:#b59b4c;" onclick="document.getElementById('settingsModal').classList.add('active')">⚙️ إعدادات الهوية والتخصيص</button>
     </div>
 </div>
-{% endif %}
 
-<script>
-    let formToSubmit = null;
-    function requireConfirm(event, message) {
-        event.preventDefault();
-        formToSubmit = event.target.closest('form');
-        document.getElementById('confirmMessage').innerText = message;
-        document.getElementById('confirmModal').classList.add('active');
-    }
-    function closeConfirm() { document.getElementById('confirmModal').classList.remove('active'); formToSubmit = null; }
-    document.getElementById('confirmYesBtn').onclick = function() { if(formToSubmit) formToSubmit.submit(); };
-    
-    {% if user.role == 'admin' %}
-    function openAdminEdit(act, title) {
-        document.getElementById('adminEditAction').value = act;
-        document.getElementById('adminEditTitle').innerText = title;
-        document.getElementById('adminEditModal').classList.add('active');
-    }
-    {% endif %}
-</script>
+<!-- نافذة إعدادات الهوية (Modal) -->
+<div class="custom-modal" id="settingsModal">
+    <div class="modal-box">
+        <h3 style="color:var(--gold-main); text-align: center; margin: 0 0 20px 0; border-bottom: 1px dashed #332815; padding-bottom: 15px;">إعدادات الهوية</h3>
+        
+        <!-- تغيير الصورة -->
+        <form action="/settings" method="POST" enctype="multipart/form-data" style="margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #111;">
+            <input type="hidden" name="action" value="change_avatar">
+            <label style="color:#aaa; font-size:12px; margin-bottom:8px; display:block;">تغيير النقش (الصورة الشخصية):</label>
+            <input type="file" name="avatar_file" class="form-input" accept="image/*" required style="padding: 10px;">
+            <button type="submit" class="btn-action">حفظ الصورة 🖼️</button>
+        </form>
+        
+        <!-- تغيير الاسم -->
+        <form action="/settings" method="POST" style="margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #111;">
+            <input type="hidden" name="action" value="change_name">
+            <label style="color:#aaa; font-size:12px; margin-bottom:8px; display:block;">تغيير الاسم (متاح مرة كل 7 أيام):</label>
+            <input type="text" name="new_name" class="form-input" placeholder="الاسم الجديد..." required>
+            <button type="submit" class="btn-action">تغيير الاسم ✏️</button>
+        </form>
+        
+        <!-- تغيير كلمة المرور -->
+        <form action="/settings" method="POST">
+            <input type="hidden" name="action" value="change_password">
+            <label style="color:#aaa; font-size:12px; margin-bottom:8px; display:block;">تغيير الختم السري (كلمة المرور):</label>
+            <input type="password" name="old_password" class="form-input" placeholder="كلمة المرور الحالية..." required>
+            <input type="password" name="new_password" class="form-input" placeholder="كلمة المرور الجديدة..." required>
+            <input type="password" name="confirm_password" class="form-input" placeholder="تأكيد الكلمة الجديدة..." required>
+            <button type="submit" class="btn-action" style="color:#e74c3c; border-color:#78281f;">تغيير الختم 🔑</button>
+        </form>
+        
+        <button class="btn-action" style="background:transparent; border:none; margin-top:15px; color:#666;" onclick="document.getElementById('settingsModal').classList.remove('active')">إغلاق ❌</button>
+    </div>
+</div>
+
 {% endblock %}
+
