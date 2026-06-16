@@ -11,7 +11,7 @@
     details { outline: none; } summary { list-style: none; } summary::-webkit-details-marker { display: none; }
     
     .news-img { max-width: 100%; border-radius: 8px; border: 1px solid #222; margin-top: 15px; display: block; }
-    .btn-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+    .btn-delete { background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid #e74c3c; padding: 6px 15px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; display: inline-block;}
     .btn-delete:active { background: #e74c3c; color: #fff; transform: scale(0.95); }
 </style>
 
@@ -34,9 +34,11 @@
         {% endif %}
         
         {% if current_user and current_user.role == 'admin' %}
-        <form action="/delete_news/{{ news.id }}" method="POST" style="margin-top: 20px; border-top: 1px dashed #222; padding-top: 15px; text-align: left;" onsubmit="return confirm('تأكيد طمس هذا المرسوم نهائياً؟');">
-            <button type="submit" class="btn-delete">🗑️ طمس المرسوم</button>
-        </form>
+        <div style="margin-top: 20px; border-top: 1px dashed #222; padding-top: 15px; text-align: left;">
+            <form action="/delete_news/{{ news.id }}" method="POST" onsubmit="return confirm('تأكيد طمس هذا المرسوم نهائياً؟');">
+                <button type="submit" class="btn-delete">🗑️ طمس المرسوم</button>
+            </form>
+        </div>
         {% endif %}
     </div>
 </details>
