@@ -31,6 +31,33 @@
     .dynamic-item:active { transform: scale(0.95); background: #000; border-color: var(--gold-main); }
     .dynamic-icon { font-size: 28px; margin-bottom: 8px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.1)); }
     .dynamic-title { color: #ccc; font-size: 11px; font-weight: bold; margin: 0; }
+
+    /* خريطة الاستنتاج - الطراز البصري (Among Us) */
+    .map-container { position: relative; width: 100%; aspect-ratio: 1/1; background: #050403; border: 2px solid #222; border-radius: 12px; margin: 20px 0; overflow: hidden; background-image: radial-gradient(#111 1px, transparent 1px); background-size: 20px 20px; box-shadow: inset 0 0 50px #000; }
+    .map-room { position: absolute; background: rgba(10, 8, 6, 0.9); border: 2px solid #332815; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; color: #888; text-align: center; transition: 0.3s; box-shadow: 0 0 10px rgba(0,0,0,0.8); cursor: pointer;}
+    .map-room.current { border-color: #2ecc71; background: rgba(46, 204, 113, 0.1); color: #fff; animation: pulseRoom 2s infinite; pointer-events: none; z-index: 10;}
+    .map-room.adjacent { border-color: var(--gold-main); background: rgba(212, 175, 55, 0.05); color: var(--gold-main); }
+    .map-room.adjacent:active { transform: scale(0.9); background: var(--gold-main); color: #000; }
+    @keyframes pulseRoom { 0% { box-shadow: 0 0 10px rgba(46,204,113,0.2); } 50% { box-shadow: 0 0 25px rgba(46,204,113,0.6); } 100% { box-shadow: 0 0 10px rgba(46,204,113,0.2); } }
+    
+    .player-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin: 2px; box-shadow: 0 0 8px currentColor; }
+    .player-label { font-size: 8px; color: #fff; background: #000; padding: 2px 4px; border-radius: 4px; margin-top: 2px; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+
+    /* مواضع الغرف على الخريطة */
+    .room-center { top: 35%; left: 30%; width: 40%; height: 30%; z-index: 5; }
+    .room-top-left { top: 5%; left: 5%; width: 25%; height: 20%; }
+    .room-top-right { top: 5%; right: 5%; width: 25%; height: 20%; }
+    .room-bottom-left { bottom: 5%; left: 5%; width: 25%; height: 20%; }
+    .room-bottom-right { bottom: 5%; right: 5%; width: 25%; height: 20%; }
+    .room-mid-left { top: 40%; left: 2%; width: 22%; height: 20%; }
+    .room-mid-right { top: 40%; right: 2%; width: 22%; height: 20%; }
+
+    /* نظام التصويت (المحكمة) */
+    .vote-card { background: #080605; border: 1px solid #1a150e; border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+    .vote-select-wrap { flex: 1; position: relative; }
+    .vote-select { width: 100%; padding: 12px; background: #000; color: #fff; border: 1px solid #332815; border-radius: 8px; font-size: 13px; outline: none; appearance: none; cursor: pointer; }
+    .vote-input { width: 80px; padding: 12px; background: #000; color: var(--gold-main); border: 1px solid #332815; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; outline: none; }
+    .vote-input:focus { border-color: #e74c3c; box-shadow: 0 0 10px rgba(231,76,60,0.2); }
 </style>
 
 <script>
@@ -52,6 +79,28 @@
             if (distance < 0) { clearInterval(x); document.getElementById(elementId).innerHTML = "انتهى الميقات!"; setTimeout(() => location.reload(), 1500); } 
             else { document.getElementById(elementId).innerHTML = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) + "س " + Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)) + "د " + Math.floor((distance % (1000 * 60)) / 1000) + "ث"; }
         }, 1000);
+    }
+
+    // تحقق صارم لنموذج التصويت
+    function validateVote(e) {
+        e.preventDefault();
+        let inputs = document.querySelectorAll('.vote-input');
+        let selects = document.querySelectorAll('.vote-select');
+        
+        for(let i=0; i < inputs.length; i++) {
+            if(selects[i].value !== "") {
+                let val = parseInt(inputs[i].value);
+                if(isNaN(val) || val <= 0 || val >= 97) {
+                    alert("⚠️ خطأ: يجب أن يكون عدد الأصوات في الخانة المعبأة أكبر من 0 وأقل من 97!");
+                    inputs[i].focus();
+                    return false;
+                }
+            }
+        }
+        
+        if(confirm("⚖️ هل أنت متأكد من توزيع أصواتك؟ لا يمكنك التراجع بعد إطلاق الحكم.")) {
+            e.target.submit();
+        }
     }
 </script>
 
@@ -81,18 +130,116 @@
                     </form>
                 {% endif %}
             </div>
+            
+        <!-- واجهة الطابق الأول: خريطة الاستنتاج -->
+        {% elif getattr(settings, 'floor1_mode_active', False) and current_user.group_id > 0 %}
+            <div class="arena-container" style="padding: 15px;">
+                <h3 style="color: var(--gold-main); margin-top:0;">📍 الطابق 1: المتاهة المظلمة</h3>
+                
+                <div class="map-container">
+                    {% set positions = {'ساحة التجمع':'room-center', 'مرصد الظلال':'room-top-left', 'مستوصف الأرواح':'room-top-right', 'قاعة النور الأزلي':'room-bottom-left', 'ترسانة الأسلحة القديمة':'room-bottom-right', 'منبع الأنفاس':'room-mid-left', 'غرفة المراقبة':'room-mid-right'} %}
+                    
+                    {% for room_name in f1_map.keys() %}
+                        {% set is_curr = (room_name == current_user.current_room) %}
+                        {% set is_adj = (room_name in adjacent_rooms) %}
+                        {% set pos_class = positions.get(room_name, 'room-top-left') %}
+                        
+                        <div class="map-room {{ pos_class }} {{ 'current' if is_curr else 'adjacent' if is_adj else 'locked' }}"
+                             {% if is_adj %} onclick="document.getElementById('move_form_{{ loop.index }}').submit();" {% endif %}>
+                            
+                            <span>{{ room_name }}</span>
+                            
+                            <!-- عرض اللاعبين في الغرفة -->
+                            {% if is_curr and not is_dark %}
+                                <div style="display:flex; flex-direction:column; align-items:center; margin-top: 5px;">
+                                    <div style="display:flex; align-items:center; gap:3px;"><div class="player-dot" style="background:#2ecc71;"></div><span class="player-label">أنت</span></div>
+                                    {% for p in room_players %}
+                                        <div style="display:flex; align-items:center; gap:3px;"><div class="player-dot" style="background:#f39c12;"></div><span class="player-label">{{ p.username }}</span></div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if is_adj %}
+                            <form id="move_form_{{ loop.index }}" action="/f1/move" method="POST" style="display:none;"><input type="hidden" name="room" value="{{ room_name }}"></form>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                
+                {% if is_dark %}
+                    <div style="background: rgba(231,76,60,0.1); border: 1px solid #e74c3c; color: #e74c3c; padding: 10px; border-radius: 8px; font-weight: bold; margin-top: 15px;">
+                        ⚠️ الأنوار معطلة! الرؤية معدومة كلياً في المتاهة.
+                    </div>
+                {% endif %}
+                
+                <!-- مهام الطابق (الضغط المطول) -->
+                {% if current_room_tasks %}
+                    <div style="margin-top: 20px; text-align: right;">
+                        <h4 style="color:#2ecc71; margin-top:0;">⛏️ مهام الغرفة الحالية:</h4>
+                        {% for t in current_room_tasks %}
+                            <form action="/f1/task" method="POST" style="margin-bottom: 10px;">
+                                <input type="hidden" name="task_name" value="{{ t.name }}">
+                                <button type="submit" class="btn-epic" style="border-color:#2ecc71; color:#2ecc71; padding: 12px;">تنفيذ: {{ t.name }}</button>
+                            </form>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- لوحة الملعون -->
+                {% if current_user.is_cursed %}
+                    <div style="margin-top: 20px; border-top: 1px dashed #e74c3c; padding-top: 15px; text-align: right;">
+                        <h4 style="color:#e74c3c; margin-top:0;">🔪 قدرات الملعون:</h4>
+                        <form action="/f1/kill" method="POST" style="margin-bottom: 10px;" onsubmit="return confirm('تأكيد الاغتيال؟');">
+                            <select name="target_id" class="form-control-puzzle" style="border-color:#e74c3c;" required>
+                                <option value="" disabled selected>اختر ضحية في غرفتك...</option>
+                                {% for p in room_players %}<option value="{{ p.hunter_id }}">{{ p.username }}</option>{% endfor %}
+                            </select>
+                            <button type="submit" class="btn-epic" style="background:#e74c3c; color:#fff; border:none;">اغتيال 🩸</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+
+        <!-- واجهة الطابق الثالث: المحكمة الكبرى -->
+        {% elif getattr(settings, 'floor3_mode_active', False) and not getattr(settings, 'floor3_paused', False) %}
+            <div class="arena-container">
+                <h2 style="color: #3498db; margin-top:0;">⚖️ المحكمة الكبرى: توزيع أصوات النجاة</h2>
+                <div id="vote_timer" class="timer-box" style="color:#3498db; border-color:#3498db; box-shadow: 0 0 15px rgba(52,152,219,0.2);">---</div>
+                <script>startTimer("{{ settings.vote_end_time.isoformat() if settings.vote_end_time else '' }}Z", "vote_timer");</script>
+                <p style="color: #aaa; font-size: 13px; margin-bottom: 20px;">وزع أصواتك على الرحالة. اترك الخانة فارغة إذا لم ترغب باستخدامها. أقصى تصويت 96.</p>
+
+                <form action="/f3/submit_votes" method="POST" onsubmit="validateVote(event)">
+                    {% for i in range(5) %}
+                    <div class="vote-card">
+                        <div class="vote-select-wrap">
+                            <select name="target_{{ i }}" class="vote-select">
+                                <option value="" selected>اختر رحالة لمنحه أصوات...</option>
+                                {% for h in active_hunters %}
+                                    <option value="{{ h.hunter_id }}">{{ h.username }} (ID: {{ h.hunter_id }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <input type="number" name="points_{{ i }}" class="vote-input" placeholder="الأصوات">
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn-epic" style="background: #111; color: #3498db; border-color: #3498db; margin-top: 15px;">إصدار الحكم وتأكيد الأصوات ⚖️</button>
+                </form>
+            </div>
+
+        <!-- واجهة البوابات -->
         {% elif getattr(settings, 'gates_mode_active', False) %}
             <div class="arena-container">
                 <h2 style="color: var(--gold-main); margin-top:0;">🚪 بوابات القدر الخمس 🚪</h2>
                 <div id="gates_timer" class="timer-box">---</div><script>startTimer("{{ settings.gates_end_time.isoformat() if settings.gates_end_time else '' }}Z", "gates_timer");</script>
                 {% if current_user.status == 'active' and current_user.chosen_gate == 0 %}
-                    <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="1"><button type="submit" class="btn-epic" style="color:#e74c3c;">{{ settings.gate_1_name }}</button></form>
-                    <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="2"><button type="submit" class="btn-epic" style="color:#3498db;">{{ settings.gate_2_name }}</button></form>
-                    <form action="/choose_gate" method="POST"><input type="hidden" name="gate_num" value="3"><button type="submit" class="btn-epic" style="color:#9b59b6;">{{ settings.gate_3_name }}</button></form>
+                    <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا مجال للتراجع.');"><input type="hidden" name="gate_num" value="1"><button type="submit" class="btn-epic" style="color:#e74c3c; border-color:#e74c3c;">{{ settings.gate_1_name }}</button></form>
+                    <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا مجال للتراجع.');"><input type="hidden" name="gate_num" value="2"><button type="submit" class="btn-epic" style="color:#3498db; border-color:#3498db;">{{ settings.gate_2_name }}</button></form>
+                    <form action="/choose_gate" method="POST" onsubmit="return confirm('تأكيد اختيار البوابة؟ لا مجال للتراجع.');"><input type="hidden" name="gate_num" value="3"><button type="submit" class="btn-epic" style="color:#9b59b6; border-color:#9b59b6;">{{ settings.gate_3_name }}</button></form>
                 {% endif %}
             </div>
-        {% else %}
             
+        <!-- الواجهة الافتراضية (RPG والشبكة المتحركة) -->
+        {% else %}
             {% set clean_zone = current_user.zone | replace('الطابق 1', 'الأول') | replace('الطابق 2', 'الثاني') | replace('الطابق 3', 'الثالث') | replace('الطابق 4', 'الرابع') | replace('الطابق 5', 'الخامس') %}
             
             <a href="/profile" style="text-decoration: none; display: block;">
@@ -130,4 +277,3 @@
     {% endif %}
 {% endif %}
 {% endblock %}
-
