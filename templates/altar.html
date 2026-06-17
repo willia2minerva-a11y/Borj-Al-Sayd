@@ -1,49 +1,26 @@
 {% extends 'base.html' %}
 {% block content %}
-<style>
-    .altar-container { background: linear-gradient(180deg, #0a0806 0%, #1a0a0a 100%); border: 2px solid #551111; border-radius: 15px; padding: 50px 20px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 0 50px rgba(138,3,3,0.2); margin-top: 30px; }
-    .altar-container::before { content: '👁️'; font-size: 200px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.02; z-index: 0; }
-    .altar-title { color: #e74c3c; font-size: 35px; margin: 0 0 10px 0; position: relative; z-index: 1; text-shadow: 0 0 20px rgba(231,76,60,0.6); font-weight: 900; }
-    .spell-input { background: #000; color: #fff; border: 2px dashed #e74c3c; padding: 20px; font-size: 24px; text-align: center; border-radius: 10px; width: 80%; max-width: 400px; margin-bottom: 20px; outline: none; position: relative; z-index: 1; transition: 0.3s; letter-spacing: 5px; font-weight: bold; }
-    .spell-input:focus { border-color: var(--gold-main); box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-    .btn-cast { background: linear-gradient(45deg, #8a0303, #e74c3c); color: #fff; border: none; padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.3s; position: relative; z-index: 1; box-shadow: 0 5px 15px rgba(231,76,60,0.4); }
-    .btn-cast:hover { transform: scale(1.05); }
 
-    .shake-screen { animation: shake 0.5s infinite; }
-    .blood-flash { animation: bloodFlash 1s ease-out 3; }
-    @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(1px, -1px) rotate(1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 80% { transform: translate(-1px, -1px) rotate(1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
-    @keyframes bloodFlash { 0% { box-shadow: inset 0 0 0px #8a0303; } 50% { box-shadow: inset 0 0 150px #e74c3c; } 100% { box-shadow: inset 0 0 0px #8a0303; } }
-    .coin { position: fixed; top: -50px; z-index: 9999; font-size: 25px; animation: fall linear forwards; }
-    @keyframes fall { to { transform: translateY(100vh) rotate(360deg); } }
+<style>
+    .altar-box { background: radial-gradient(circle, #1a0b1c 0%, #050403 100%); border: 1px solid #4a235a; border-radius: 14px; padding: 30px; text-align: center; box-shadow: 0 0 30px rgba(155,89,182,0.15); margin-bottom: 25px; }
+    .altar-title { color: #9b59b6; font-size: 26px; font-weight: 900; margin: 0 0 10px 0; text-shadow: 0 0 15px rgba(155,89,182,0.4); }
+    .altar-desc { color: #aaa; font-size: 14px; margin-bottom: 25px; line-height: 1.6; }
+    
+    .spell-input { width: 100%; padding: 18px; background: #000; color: #e0b0ff; border: 2px solid #4a235a; border-radius: 10px; font-size: 18px; text-align: center; outline: none; margin-bottom: 20px; font-weight: bold; transition: 0.3s; box-sizing: border-box; }
+    .spell-input:focus { border-color: #9b59b6; box-shadow: 0 0 20px rgba(155,89,182,0.3); }
+    
+    .btn-spell { background: #150b1a; color: #9b59b6; border: 1px solid #9b59b6; padding: 16px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; }
+    .btn-spell:active { transform: scale(0.97); background: #9b59b6; color: #fff; }
 </style>
 
-<div class="altar-container">
-    <h2 class="altar-title">مذبح الطلاسم 🔮</h2>
-    <p style="color: #aaa; margin-bottom: 30px; position: relative; z-index: 1;">اكتب الكلمة السحرية.. قد تمنحك الحياة، وقد تسحب روحك إلى الأبد.</p>
-    <form action="/altar" method="POST">
-        <input type="text" name="spell_word" class="spell-input" placeholder="التعويذة..." required autocomplete="off"><br>
-        <button type="submit" class="btn-cast">إلقاء التعويذة 🪄</button>
+<div class="altar-box">
+    <h2 class="altar-title">🔮 المذبح السري</h2>
+    <p class="altar-desc">مكان مظلم تغمره طاقة غريبة... إذا كنت تملك كلمة سحرية (تعويذة)، انطقها هنا لتحصل على قدراتها.<br><span style="color:#e74c3c; font-weight:bold;">احذر!</span> نطق كلمات خاطئة سيغضب المذبح ويسلب من روحك.</p>
+    
+    <form action="/use_spell" method="POST">
+        <input type="text" name="spell_word" class="spell-input" placeholder="...انطق التعويذة هنا..." required autocomplete="off">
+        <button type="submit" class="btn-spell">إلقاء التعويذة ⚡</button>
     </form>
 </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const flashes = document.querySelectorAll(".flash");
-        let msgText = ""; flashes.forEach(f => { msgText += f.innerText + " "; });
-
-        if(msgText.includes("ثراء") || msgText.includes("دنانير") || msgText.includes("نجاح")) {
-            for(let i=0; i<30; i++) {
-                let coin = document.createElement("div"); coin.className = "coin"; coin.innerText = "🪙";
-                coin.style.left = Math.random() * 100 + "vw"; coin.style.animationDuration = (Math.random() * 2 + 1) + "s";
-                document.body.appendChild(coin); setTimeout(() => coin.remove(), 3000);
-            }
-        }
-        if(msgText.includes("ضريبة") || msgText.includes("دم") || msgText.includes("خطأ") || msgText.includes("سحب")) {
-            document.body.classList.add("blood-flash"); setTimeout(() => document.body.classList.remove("blood-flash"), 3000);
-        }
-        if(msgText.includes("بونغليف") || msgText.includes("أساطير")) {
-            document.body.classList.add("shake-screen"); setTimeout(() => document.body.classList.remove("shake-screen"), 1500);
-        }
-    });
-</script>
 {% endblock %}
